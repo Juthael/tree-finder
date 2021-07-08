@@ -11,10 +11,6 @@ public class InvalidTreeException extends Exception {
 		super(message);
 	}
 
-	public InvalidTreeException(Throwable cause) {
-		super(cause);
-	}
-
 	public InvalidTreeException(String message, Throwable cause) {
 		super(message, cause);
 	}
@@ -22,6 +18,10 @@ public class InvalidTreeException extends Exception {
 	public InvalidTreeException(String message, Throwable cause, boolean enableSuppression,
 			boolean writableStackTrace) {
 		super(message, cause, enableSuppression, writableStackTrace);
+	}
+
+	public InvalidTreeException(Throwable cause) {
+		super(cause);
 	}
 
 }

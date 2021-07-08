@@ -11,10 +11,6 @@ public class InvalidSemiLatticeExeption extends Exception {
 		super(message);
 	}
 
-	public InvalidSemiLatticeExeption(Throwable cause) {
-		super(cause);
-	}
-
 	public InvalidSemiLatticeExeption(String message, Throwable cause) {
 		super(message, cause);
 	}
@@ -22,6 +18,10 @@ public class InvalidSemiLatticeExeption extends Exception {
 	public InvalidSemiLatticeExeption(String message, Throwable cause, boolean enableSuppression,
 			boolean writableStackTrace) {
 		super(message, cause, enableSuppression, writableStackTrace);
+	}
+
+	public InvalidSemiLatticeExeption(Throwable cause) {
+		super(cause);
 	}
 
 }

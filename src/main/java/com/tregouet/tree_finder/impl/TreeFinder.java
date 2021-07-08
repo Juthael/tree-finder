@@ -6,38 +6,57 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.api.hyperdrive.Coord;
 import org.jgrapht.GraphPath;
 import org.jgrapht.Graphs;
+import org.jgrapht.alg.connectivity.ConnectivityInspector;
 import org.jgrapht.alg.shortestpath.AllDirectedPaths;
-import org.jgrapht.graph.SimpleDirectedGraph;
+import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import com.tregouet.tree_finder.ITreeFinder;
+import com.tregouet.tree_finder.data.InTree;
+import com.tregouet.tree_finder.error.InvalidSemiLatticeExeption;
 import com.tregouet.tree_finder.utils.CoordAdvancer;
 import com.tregouet.tree_finder.utils.NArrayBool;
 
 public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 
-	private final SimpleDirectedGraph<V, E> upperSemiLattice;
+	public static <V,E> boolean lateIntersectionFound(GraphPath<V, E> path1, GraphPath<V, E> path2) {
+		boolean lateIntersection = false;
+		List<V> path1Vertices = path1.getVertexList();
+		int path1NbOfVert = path1Vertices.size();
+		int path1Idx = 0;
+		Iterator<V> path2Ite = path2.getVertexList().iterator();
+		while (path2Ite.hasNext() 
+				&& path1Vertices.get(path1Idx).equals(path2Ite.next())) {
+			path1Idx++;
+		}
+		while (path2Ite.hasNext() && !lateIntersection) {
+			lateIntersection = path1Vertices.subList(path1Idx, path1NbOfVert).contains(path2Ite.next());
+		}
+		return lateIntersection;
+	}
+	private final DirectedAcyclicGraph<V, E> upperSemiLattice;
 	private final List<V> sortedVertices = new ArrayList<V>();
 	private V root;
 	private final List<V> sortedLeaves = new ArrayList<V>();
-	//paths in ith list start from the ith leaf
+	//paths in ith list start from the ith leaf in the list of leaves
 	private final List<List<GraphPath<V,E>>> listsOfPaths = new ArrayList<>();
 	private final int[] intersArrayDimensions;
 	private final NArrayBool intersectionArray;
 	private final int[] coords;
-	private SimpleDirectedGraph<V,E> nextTree = null;
+	private InTree<V,E> nextTree = null;
 	
-	
-	public TreeFinder(SimpleDirectedGraph<V, E> upperSemiLattice, boolean validateArg) {
+	//Unsafe
+	public TreeFinder(DirectedAcyclicGraph<V, E> upperSemiLattice) {
 		this.upperSemiLattice = upperSemiLattice;
 		TopologicalOrderIterator<V, E> verticesSorter = new TopologicalOrderIterator<V,E>(upperSemiLattice);
 		verticesSorter.forEachRemaining(sortedVertices::add);
 		for (V vertex : sortedVertices) {
 			if (upperSemiLattice.inDegreeOf(vertex) == 0)
 				sortedLeaves.add(vertex);
-			else if (upperSemiLattice.outDegreeOf(vertex) == 0)
+			if (upperSemiLattice.outDegreeOf(vertex) == 0)
 				root = vertex;
 		}
 		AllDirectedPaths<V, E> pathFinder = new AllDirectedPaths<>(upperSemiLattice);
@@ -54,32 +73,77 @@ public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 		engage();
 	}
 
+	//Safe if 2nd argument is 'true'
+	public TreeFinder(DirectedAcyclicGraph<V, E> upperSemiLattice, boolean validateArg) 
+			throws InvalidSemiLatticeExeption {
+		this(upperSemiLattice);
+		if (validateArg && !thisIsAnUpperSemilattice())
+			throw new InvalidSemiLatticeExeption("TreeFinder constructor : argument is not an "
+						+ "upper semilattice.");
+	}
+
+	@Override
+	public int getNbOfTrees() {
+		int nbOfTrees = 0;
+		int[] coords = new int[intersArrayDimensions.length];
+		do {
+			if (intersectionArray.get(coords) == false)
+				nbOfTrees++;
+		}
+		while (Coord.advance(coords, intersArrayDimensions));
+		return nbOfTrees;
+	}
+	
 	@Override
 	public boolean hasNext() {
 		return (nextTree != null);
 	}
-
+	
 	@Override
-	public SimpleDirectedGraph<V, E> next() {
-		SimpleDirectedGraph<V, E> returned = nextTree;
-		SimpleDirectedGraph<V, E> newTree;
-		boolean nextTreeFound = false;
+	public InTree<V, E> next() {
+		InTree<V, E> returned = nextTree;
+		InTree<V, E> newTree;
+		boolean newTreeFound = false;
 		do {
 			if (intersectionArray.get(coords) == false) {
-				newTree = new SimpleDirectedGraph<>(null, null, false);
-				Set<E> edges = new HashSet<>();
+				newTree = new InTree<>(root, sortedLeaves);
+				Set<E> newTreeEdges = new HashSet<>();
 				for (int i = 0 ; i < coords.length ; i++) {
-					edges.addAll(listsOfPaths.get(i).get(coords[i]).getEdgeList());
+					newTreeEdges.addAll(listsOfPaths.get(i).get(coords[i]).getEdgeList());
 				}
-				Graphs.addAllEdges(newTree, upperSemiLattice, edges);
+				Graphs.addAllEdges(newTree, upperSemiLattice, newTreeEdges);
 				nextTree = newTree;
-				nextTreeFound = true;
+				newTreeFound = true;
 			}
 		}
-		while (!nextTreeFound && CoordAdvancer.advance(coords, intersArrayDimensions));
-		if (!nextTreeFound)
+		while (Coord.advance(coords, intersArrayDimensions) && !newTreeFound);
+		if (!newTreeFound)
 			nextTree = null;
 		return returned;
+	}
+	
+	private boolean admitsASupremum(V vertex1, V vertex2, ConnectivityInspector<V, E> inspector) {
+		//there can't be two distinct but equal vertices
+		if (vertex1 == vertex2)
+			return true;
+		//if two elements are related, then the greatest is the supremum
+		V firstVertex = (sortedVertices.indexOf(vertex1) < sortedVertices.indexOf(vertex2) ? vertex1 : vertex2);
+		V secondVertex = ((firstVertex == vertex1) ? vertex2 : vertex1);
+		if (inspector.pathExists(firstVertex, secondVertex))
+			return true;
+		//whether two elements are connected or not, their supremum is their least upper bound
+		Set<V> upperSet = upperSemiLattice.getDescendants(vertex1);
+		upperSet.removeAll(upperSemiLattice.getDescendants(vertex2));
+		if (upperSet.isEmpty())
+			return false;
+		int nbOfMinimalElemInUpperSet = 0;
+		for (V upperBound : upperSet) {
+			List<V> upperBoundPrecInUpperSet = Graphs.predecessorListOf(upperSemiLattice, upperBound);
+			upperBoundPrecInUpperSet.retainAll(upperSet);
+			if (upperBoundPrecInUpperSet.isEmpty())
+				nbOfMinimalElemInUpperSet++;
+		}
+		return (nbOfMinimalElemInUpperSet == 1);
 	}
 	
 	private void engage() {
@@ -108,20 +172,24 @@ public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 			}
 		}
 	}
-	
-	public static <V,E> boolean lateIntersectionFound(GraphPath<V, E> path1, GraphPath<V, E> path2) {
-		boolean lateIntersection = false;
-		List<V> path1Vertices = path1.getVertexList();
-		int path1NbOfVert = path1Vertices.size();
-		Iterator<V> path2Ite = path2.getVertexList().iterator();
-		int path1Idx = 0;
-		while (path2Ite.hasNext() 
-				&& path1Vertices.get(path1Idx).equals(path2Ite.next())) {
-			path1Idx++;
+
+	//if true, then every pair of elements admits a supremum
+	private boolean thisIsAnUpperSemilattice() {
+		if (sortedVertices.size() < 2)
+			return true;
+		boolean isAnUpperSL = true;
+		ConnectivityInspector<V, E> inspector = new ConnectivityInspector<>(upperSemiLattice);
+		int vertex1Idx = 0;
+		while (isAnUpperSL && vertex1Idx < sortedVertices.size() - 1) {
+			int vertex2Idx = vertex1Idx + 1;
+			while (isAnUpperSL && vertex2Idx < sortedVertices.size()) {
+				isAnUpperSL = 
+						admitsASupremum(sortedVertices.get(vertex1Idx), sortedVertices.get(vertex2Idx), inspector);
+				vertex2Idx++;
+			}
+			vertex1Idx++;
 		}
-		while (path2Ite.hasNext() && !lateIntersection) {
-			lateIntersection = path1Vertices.subList(path1Idx, path1NbOfVert).contains(path2Ite.next());
-		}
-		return lateIntersection;
+		return isAnUpperSL;
 	}
+	
 }
