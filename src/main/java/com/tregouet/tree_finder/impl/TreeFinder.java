@@ -2,7 +2,6 @@ package com.tregouet.tree_finder.impl;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -22,21 +21,6 @@ import com.tregouet.tree_finder.utils.NArrayBool;
 
 public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 
-	public static <V,E> boolean lateIntersectionFound(GraphPath<V, E> path1, GraphPath<V, E> path2) {
-		boolean lateIntersection = false;
-		List<V> path1Vertices = path1.getVertexList();
-		int path1NbOfVert = path1Vertices.size();
-		int path1Idx = 0;
-		Iterator<V> path2Ite = path2.getVertexList().iterator();
-		while (path2Ite.hasNext() 
-				&& path1Vertices.get(path1Idx).equals(path2Ite.next())) {
-			path1Idx++;
-		}
-		while (path2Ite.hasNext() && !lateIntersection) {
-			lateIntersection = path1Vertices.subList(path1Idx, path1NbOfVert).contains(path2Ite.next());
-		}
-		return lateIntersection;
-	}
 	private final DirectedAcyclicGraph<V, E> upperSemiLattice;
 	private final List<V> sortedVertices = new ArrayList<V>();
 	private V root;
@@ -46,6 +30,7 @@ public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 	private final int[] intersArrayDimensions;
 	private final NArrayBool intersectionArray;
 	private final int[] coords;
+	private boolean lastCoordReached = false;
 	private InTree<V,E> nextTree = null;
 	
 	//Unsafe
@@ -114,9 +99,10 @@ public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 				nextTree = newTree;
 				newTreeFound = true;
 			}
+			lastCoordReached = !Coord.advance(coords, intersArrayDimensions);
 		}
-		while (Coord.advance(coords, intersArrayDimensions) && !newTreeFound);
-		if (!newTreeFound)
+		while (!newTreeFound && !lastCoordReached);
+		if (lastCoordReached)
 			nextTree = null;
 		return returned;
 	}
@@ -156,7 +142,7 @@ public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 					for (int path2Idx = 0 ; path2Idx < listsOfPaths.get(path2ListIdx).size() ; path2Idx++) {
 						GraphPath<V, E> path1 = listsOfPaths.get(path1ListIdx).get(path1Idx);
 						GraphPath<V, E> path2 = listsOfPaths.get(path2ListIdx).get(path2Idx);
-						if (lateIntersectionFound(path1, path2)) {
+						if (earlyIntersectionFound(path1, path2)) {
 							int[] closedAreaInitialCoord = new int[listsOfPaths.size()];
 							closedAreaInitialCoord[path1ListIdx] = path1Idx;
 							closedAreaInitialCoord[path2ListIdx] = path2Idx;
@@ -191,4 +177,26 @@ public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 		return isAnUpperSL;
 	}
 	
+	
+	private boolean earlyIntersectionFound(GraphPath<V, E> path1, GraphPath<V, E> path2) {
+		if (path1.getVertexList().isEmpty() || path2.getVertexList().isEmpty()) {
+			//should not happen
+			return false;
+		}
+		List<V> path1VertexList = path1.getVertexList();
+		List<V> path2VertexList = path2.getVertexList();
+		int path1Idx = 0;
+		int path2Idx = -1;
+		while (path2Idx == -1 && path1Idx < path1VertexList.size()) {
+			path2Idx = path2VertexList.indexOf(path1VertexList.get(path1Idx));
+			if (path2Idx == -1)
+				path1Idx++;
+		}
+		if (path2Idx == -1) {
+			//should not happen
+			return false;
+		}
+		return !path1VertexList.subList(path1Idx, path1VertexList.size())
+				.equals(path2VertexList.subList(path2Idx, path2VertexList.size()));
+	}	
 }
