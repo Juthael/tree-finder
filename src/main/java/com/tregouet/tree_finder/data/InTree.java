@@ -1,7 +1,9 @@
 package com.tregouet.tree_finder.data;
 
 import java.util.List;
+import java.util.Set;
 
+import org.jgrapht.Graphs;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 
 import com.tregouet.tree_finder.ITreeFinder;
@@ -13,10 +15,20 @@ public class InTree<V, E> extends DirectedAcyclicGraph<V, E> {
 	private V root;
 	private List<V> sortedLeaves;
 
-	public InTree(V root, List<V> sortedLeaves) {
+	//Unsafe
+	public InTree(V root, List<V> sortedLeaves, DirectedAcyclicGraph<V, E> source, Set<E> edges) {
 		super(null, null, false);
 		this.root = root;
 		this.sortedLeaves = sortedLeaves;
+		Graphs.addAllEdges(this, source, edges);
+	}
+	
+	//Safe if last argument is 'true'
+	public InTree(V root, List<V> sortedLeaves, DirectedAcyclicGraph<V, E> source, Set<E> edges, boolean validate) 
+			throws InvalidTreeException {
+		this(root, sortedLeaves, source, edges);
+		if (validate)
+			validate();
 	}
 	
 	public void validate() throws InvalidTreeException {

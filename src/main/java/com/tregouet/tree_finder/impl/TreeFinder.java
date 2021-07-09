@@ -106,12 +106,11 @@ public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 		boolean newTreeFound = false;
 		do {
 			if (intersectionArray.get(coords) == false) {
-				newTree = new InTree<>(root, sortedLeaves);
 				Set<E> newTreeEdges = new HashSet<>();
 				for (int i = 0 ; i < coords.length ; i++) {
 					newTreeEdges.addAll(listsOfPaths.get(i).get(coords[i]).getEdgeList());
 				}
-				Graphs.addAllEdges(newTree, upperSemiLattice, newTreeEdges);
+				newTree = new InTree<>(root, sortedLeaves, upperSemiLattice, newTreeEdges);
 				nextTree = newTree;
 				newTreeFound = true;
 			}
