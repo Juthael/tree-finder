@@ -131,10 +131,32 @@ public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 		return (nbOfMinimalElemInUpperSet == 1);
 	}
 	
+	private boolean earlyIntersectionFound(GraphPath<V, E> path1, GraphPath<V, E> path2) {
+		if (path1.getVertexList().isEmpty() || path2.getVertexList().isEmpty()) {
+			//should not happen
+			return false;
+		}
+		List<V> path1VertexList = path1.getVertexList();
+		List<V> path2VertexList = path2.getVertexList();
+		int path1Idx = 0;
+		int path2Idx = -1;
+		while (path2Idx == -1 && path1Idx < path1VertexList.size()) {
+			path2Idx = path2VertexList.indexOf(path1VertexList.get(path1Idx));
+			if (path2Idx == -1)
+				path1Idx++;
+		}
+		if (path2Idx == -1) {
+			//should not happen
+			return false;
+		}
+		return !path1VertexList.subList(path1Idx, path1VertexList.size())
+				.equals(path2VertexList.subList(path2Idx, path2VertexList.size()));
+	}
+	
 	private void engage() {
 		next();
 	}
-	
+
 	private final void setIntersectionArray() {
 		for (int path1ListIdx = 0 ; path1ListIdx < listsOfPaths.size() - 1 ; path1ListIdx++) {
 			for (int path1Idx = 0 ; path1Idx < listsOfPaths.get(path1ListIdx).size() ; path1Idx++) {
@@ -157,7 +179,8 @@ public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 			}
 		}
 	}
-
+	
+	
 	//if true, then every pair of elements admits a supremum
 	private boolean thisIsAnUpperSemilattice() {
 		if (sortedVertices.size() < 2)
@@ -175,28 +198,5 @@ public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 			vertex1Idx++;
 		}
 		return isAnUpperSL;
-	}
-	
-	
-	private boolean earlyIntersectionFound(GraphPath<V, E> path1, GraphPath<V, E> path2) {
-		if (path1.getVertexList().isEmpty() || path2.getVertexList().isEmpty()) {
-			//should not happen
-			return false;
-		}
-		List<V> path1VertexList = path1.getVertexList();
-		List<V> path2VertexList = path2.getVertexList();
-		int path1Idx = 0;
-		int path2Idx = -1;
-		while (path2Idx == -1 && path1Idx < path1VertexList.size()) {
-			path2Idx = path2VertexList.indexOf(path1VertexList.get(path1Idx));
-			if (path2Idx == -1)
-				path1Idx++;
-		}
-		if (path2Idx == -1) {
-			//should not happen
-			return false;
-		}
-		return !path1VertexList.subList(path1Idx, path1VertexList.size())
-				.equals(path2VertexList.subList(path2Idx, path2VertexList.size()));
 	}	
 }

@@ -31,17 +31,17 @@ public class InTree<V, E> extends DirectedAcyclicGraph<V, E> {
 			validate();
 	}
 	
-	public void validate() throws InvalidTreeException {
-		if (!ITreeFinder.isAnInTree(this))
-			throw new InvalidTreeException();
+	public List<V> getLeaves(){
+		return sortedLeaves;
 	}
 	
 	public V getRoot() {
 		return root;
 	}
 	
-	public List<V> getLeaves(){
-		return sortedLeaves;
+	public void validate() throws InvalidTreeException {
+		if (!ITreeFinder.isAnInTree(this))
+			throw new InvalidTreeException();
 	}
 
 }

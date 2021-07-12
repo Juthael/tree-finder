@@ -44,6 +44,24 @@ public class InTreeTest {
 		setManyPathsFromLeafToRoot();
 	}
 
+	@Test
+	public void whenDifferentVerticesThenNotEqual() throws InvalidTreeException {
+		DirectedAcyclicGraph<String, Edge> smallerTreeArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
+		smallerTreeArg.addVertex(abc);
+		smallerTreeArg.addVertex(ab);
+		smallerTreeArg.addVertex(ac);
+		smallerTreeArg.addVertex(a);
+		smallerTreeArg.addVertex(b);
+		smallerTreeArg.addEdge(ab, abc);
+		smallerTreeArg.addEdge(ac, abc);
+		smallerTreeArg.addEdge(b, ab);
+		smallerTreeArg.addEdge(a, ac);
+		List<String> smallerTreeLeaves = new ArrayList<>(Arrays.asList(new String[] {a, b}));
+		InTree<String, Edge> smallerTree = 
+				new InTree<String, Edge>(abc, smallerTreeLeaves, smallerTreeArg, smallerTreeArg.edgeSet(), true);
+		assertFalse(properTreeArg.equals(smallerTree));
+	}
+	
 	@SuppressWarnings("unused")
 	@Test
 	public void whenSafeConstructorUsedThenIllegalArgThrowsException() {
@@ -83,24 +101,6 @@ public class InTreeTest {
 	}
 	
 	@Test
-	public void whenDifferentVerticesThenNotEqual() throws InvalidTreeException {
-		DirectedAcyclicGraph<String, Edge> smallerTreeArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
-		smallerTreeArg.addVertex(abc);
-		smallerTreeArg.addVertex(ab);
-		smallerTreeArg.addVertex(ac);
-		smallerTreeArg.addVertex(a);
-		smallerTreeArg.addVertex(b);
-		smallerTreeArg.addEdge(ab, abc);
-		smallerTreeArg.addEdge(ac, abc);
-		smallerTreeArg.addEdge(b, ab);
-		smallerTreeArg.addEdge(a, ac);
-		List<String> smallerTreeLeaves = new ArrayList<>(Arrays.asList(new String[] {a, b}));
-		InTree<String, Edge> smallerTree = 
-				new InTree<String, Edge>(abc, smallerTreeLeaves, smallerTreeArg, smallerTreeArg.edgeSet(), true);
-		assertFalse(properTreeArg.equals(smallerTree));
-	}
-	
-	@Test
 	public void whenSameVerticesAndDifferentEdgesThenNotEqual() throws InvalidTreeException {
 		DirectedAcyclicGraph<String, Edge> differentTreeArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
 		Graphs.addAllVertices(differentTreeArg, properTreeArg.vertexSet());
@@ -131,6 +131,40 @@ public class InTreeTest {
 		assertTrue(sameTree.equals(propertTree));
 	}
 	
+	private void setManyPathsFromLeafToRoot() {
+		Set<Edge> edgesInManyPaths = new HashSet<>(upperSemiLattice.edgeSet());
+		edgesInManyPaths.add(upperSemiLattice.getEdge(b, bc));
+		manyPathsArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
+		Graphs.addAllEdges(manyPathsArg, upperSemiLattice, edgesInManyPaths);
+	}
+	
+	private void setNoRoot() {
+		noRootArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
+		Graphs.addAllEdges(noRootArg, upperSemiLattice, upperSemiLattice.edgeSet());
+		noRootArg.removeVertex(abc);
+		
+	}
+	
+	private void setNotConnected() {
+		Set<Edge> edgesInNotConnected = upperSemiLattice.edgeSet()
+				.stream()
+				.filter(e -> !e.getSource().equals(a))
+				.collect(Collectors.toSet());
+		notConnectedArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
+		Graphs.addAllEdges(notConnectedArg, upperSemiLattice, edgesInNotConnected);
+	}
+	
+	private void setProperTree() {
+		Set<Edge> edgesInProperTree = new HashSet<>();
+		edgesInProperTree.add(upperSemiLattice.getEdge(a, ab));
+		edgesInProperTree.add(upperSemiLattice.getEdge(b, ab));
+		edgesInProperTree.add(upperSemiLattice.getEdge(c, bc));
+		edgesInProperTree.add(upperSemiLattice.getEdge(ab, abc));
+		edgesInProperTree.add(upperSemiLattice.getEdge(bc, abc));
+		properTreeArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
+		Graphs.addAllEdges(properTreeArg, upperSemiLattice, edgesInProperTree);
+	}
+	
 	private void setUpperSemiLattice() {
 		upperSemiLattice = new DirectedAcyclicGraph<>(null, Edge::new, false);
 		upperSemiLattice.addVertex(a);
@@ -150,46 +184,20 @@ public class InTreeTest {
 		upperSemiLattice.addEdge(ac, abc);
 		upperSemiLattice.addEdge(bc, abc);
 	}
-	
-	private void setNotConnected() {
-		Set<Edge> edgesInNotConnected = upperSemiLattice.edgeSet()
-				.stream()
-				.filter(e -> !e.getSource().equals(a))
-				.collect(Collectors.toSet());
-		notConnectedArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
-		Graphs.addAllEdges(notConnectedArg, upperSemiLattice, edgesInNotConnected);
-	}
-	
-	private void setNoRoot() {
-		noRootArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
-		Graphs.addAllEdges(noRootArg, upperSemiLattice, upperSemiLattice.edgeSet());
-		noRootArg.removeVertex(abc);
-		
-	}
-	
-	private void setProperTree() {
-		Set<Edge> edgesInProperTree = new HashSet<>();
-		edgesInProperTree.add(upperSemiLattice.getEdge(a, ab));
-		edgesInProperTree.add(upperSemiLattice.getEdge(b, ab));
-		edgesInProperTree.add(upperSemiLattice.getEdge(c, bc));
-		edgesInProperTree.add(upperSemiLattice.getEdge(ab, abc));
-		edgesInProperTree.add(upperSemiLattice.getEdge(bc, abc));
-		properTreeArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
-		Graphs.addAllEdges(properTreeArg, upperSemiLattice, edgesInProperTree);
-	}
-	
-	private void setManyPathsFromLeafToRoot() {
-		Set<Edge> edgesInManyPaths = new HashSet<>(upperSemiLattice.edgeSet());
-		edgesInManyPaths.add(upperSemiLattice.getEdge(b, bc));
-		manyPathsArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
-		Graphs.addAllEdges(manyPathsArg, upperSemiLattice, edgesInManyPaths);
-	}
 
 }
 
 @SuppressWarnings("serial")
 class Edge extends DefaultEdge {
 
+	@Override
+	public boolean equals(Object o) {
+		if (getClass() != o.getClass())
+			return false;
+		Edge other = (Edge) o;
+		return (getSource().equals(other.getSource()) && getTarget().equals(other.getTarget()));
+	}
+	
 	@Override
 	public String getSource() {
 		return (String) super.getSource();
@@ -198,14 +206,6 @@ class Edge extends DefaultEdge {
 	@Override
 	public int hashCode() {
 		return getSource().hashCode() + getTarget().hashCode();
-	}
-	
-	@Override
-	public boolean equals(Object o) {
-		if (getClass() != o.getClass())
-			return false;
-		Edge other = (Edge) o;
-		return (getSource().equals(other.getSource()) && getTarget().equals(other.getTarget()));
 	}
 	
 }
