@@ -70,6 +70,7 @@ public class TreeFinderTest {
 	}
 
 	
+	//Can last up to 300 sec.
 	@Test
 	public void whenLargeInputThenTreesStillReturned() throws InvalidSemiLatticeExeption, IOException {
 		@SuppressWarnings("unused")
