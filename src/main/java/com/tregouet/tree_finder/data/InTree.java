@@ -39,10 +39,6 @@ public class InTree<V, E> extends DirectedAcyclicGraph<V, E> {
 		return root;
 	}
 	
-	public boolean isA(V v1, V v2) {
-		return getDescendants(v1).contains(v2);
-	}
-	
 	public void validate() throws InvalidTreeException {
 		if (!ITreeFinder.isAnInTree(this))
 			throw new InvalidTreeException();
