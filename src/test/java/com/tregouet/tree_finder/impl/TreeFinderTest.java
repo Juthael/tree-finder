@@ -156,7 +156,7 @@ public class TreeFinderTest {
 		expected.add(setN5());
 		expected.add(setN6());
 		expected.add(setN7());
-		expected.add(setN8());
+		expected.add(setN8()); 
 		if (finder.getNbOfTrees() != expected.size())
 			asExpected = false;
 		else {
