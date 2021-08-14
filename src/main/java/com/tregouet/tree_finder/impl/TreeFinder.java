@@ -107,14 +107,14 @@ public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 		return returned;
 	}
 	
-	private boolean admitsASupremum(V vertex1, V vertex2, ConnectivityInspector<V, E> inspector) {
+	private boolean admitsASupremum(V vertex1, V vertex2) {
 		//there can't be two distinct but equal vertices
 		if (vertex1 == vertex2)
 			return true;
 		//if two elements are related, then the greatest is the supremum
 		V firstVertex = (sortedVertices.indexOf(vertex1) < sortedVertices.indexOf(vertex2) ? vertex1 : vertex2);
 		V secondVertex = ((firstVertex == vertex1) ? vertex2 : vertex1);
-		if (inspector.pathExists(firstVertex, secondVertex))
+		if (upperSemiLattice.getDescendants(firstVertex).contains(secondVertex))
 			return true;
 		//whether two elements are connected or not, their supremum is their least upper bound
 		Set<V> upperSet = upperSemiLattice.getDescendants(vertex1);
@@ -186,13 +186,12 @@ public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 		if (sortedVertices.size() < 2)
 			return true;
 		boolean isAnUpperSL = true;
-		ConnectivityInspector<V, E> inspector = new ConnectivityInspector<>(upperSemiLattice);
 		int vertex1Idx = 0;
 		while (isAnUpperSL && vertex1Idx < sortedVertices.size() - 1) {
 			int vertex2Idx = vertex1Idx + 1;
 			while (isAnUpperSL && vertex2Idx < sortedVertices.size()) {
 				isAnUpperSL = 
-						admitsASupremum(sortedVertices.get(vertex1Idx), sortedVertices.get(vertex2Idx), inspector);
+						admitsASupremum(sortedVertices.get(vertex1Idx), sortedVertices.get(vertex2Idx));
 				vertex2Idx++;
 			}
 			vertex1Idx++;
