@@ -1,6 +1,6 @@
 package com.tregouet.tree_finder.impl;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,12 +23,12 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.DefaultAttribute;
 import org.jgrapht.nio.dot.DOTExporter;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.tregouet.tree_finder.ITreeFinder;
 import com.tregouet.tree_finder.data.InTree;
-import com.tregouet.tree_finder.error.InvalidSemiLatticeExeption;
+import com.tregouet.tree_finder.error.InvalidSemiLatticeException;
 import com.tregouet.tree_finder.error.InvalidTreeException;
 
 import guru.nidi.graphviz.engine.Format;
@@ -39,40 +39,40 @@ import guru.nidi.graphviz.parse.Parser;
 public class TreeFinderTest {
 
 	//toy dataset "One2Seven
-	private Integer one = 1;
-	private Integer two = 2;
-	private Integer three = 3;
-	private Integer four = 4;
-	private Integer five = 5;
-	private Integer six = 6;
-	private Integer seven = 7;
-	DirectedAcyclicGraph<Integer, Edge> upperSemiLatticeOne2Seven;
+	private static Integer one = 1;
+	private static Integer two = 2;
+	private static Integer three = 3;
+	private static Integer four = 4;
+	private static Integer five = 5;
+	private static Integer six = 6;
+	private static Integer seven = 7;
+	private static DirectedAcyclicGraph<Integer, Edge> falseUSLOne2Seven;
 	
 	//toy dataset "ABC"
-	private String a = "A";
-	private String b = "B";
-	private String c = "C";
-	private String ab = "AB";
-	private String ac = "AC";
-	private String bc = "BC";
-	private String abc = "ABC";
-	private List<String> verticesABC = new ArrayList<>(Arrays.asList(new String[] {a, b, c, ab, ac, bc, abc}));
-	private List<String> leavesABC = new ArrayList<>(Arrays.asList(new String[]{a, b, c}));
-	DirectedAcyclicGraph<String, Edge> upperSemiLatticeABC;
+	private static String a = "A";
+	private static String b = "B";
+	private static String c = "C";
+	private static String ab = "AB";
+	private static String ac = "AC";
+	private static String bc = "BC";
+	private static String abc = "ABC";
+	private static List<String> verticesABC = new ArrayList<>(Arrays.asList(new String[] {a, b, c, ab, ac, bc, abc}));
+	private static List<String> leavesABC = new ArrayList<>(Arrays.asList(new String[]{a, b, c}));
+	private static DirectedAcyclicGraph<String, Edge> upperSemiLatticeABC;
 	
 	//toy dataset "PowerSet"
-	DirectedAcyclicGraph<Set<Integer>, Edge> upperSemiLatticePowerSet;
+	private static DirectedAcyclicGraph<Set<Integer>, Edge> upperSemiLatticePowerSet;
 	
-	@Before
-	public void setUp() throws Exception {
-		setUpUpperSemiLatticeOne2Seven();
+	@BeforeClass
+	public static void setUpBeforeClass() {
+		setUpFalseUSLOne2Seven();
 		setUpperSemiLatticeABC();
 	}
 
 	
 	//Can last up to 300 sec.
 	@Test
-	public void whenLargeInputThenTreesStillReturned() throws InvalidSemiLatticeExeption, IOException {
+	public void whenLargeInputThenTreesStillReturned() throws InvalidSemiLatticeException, IOException {
 		@SuppressWarnings("unused")
 		int nbOfTreesReturned = 0;
 		int nbOfAtomsInPowerSet = 5;
@@ -89,12 +89,43 @@ public class TreeFinderTest {
 		}
 	}
 	
+	@SuppressWarnings("unused")
 	@Test
-	public void whenTreesRequestedThenAllTreesReturnedAreValid() throws InvalidSemiLatticeExeption {
+	public void whenParameterIsNotAnUpperSemilatticeThenExceptionThrownWithSafeConstructor() throws IOException {
+		boolean exceptionThrownWithFalseUSL = false;
+		boolean exceptionThrownWithABC = false;
+		boolean exceptionThrownWithPowerSet = false;		
+		ITreeFinder<Integer, Edge> treeFinderFalseUSL;
+		ITreeFinder<String, Edge> treeFinderABC;
+		ITreeFinder<Set<Integer>, Edge> treeFinderPowerSet;
+		setUpUpperSemiLatticeFromPowerSetOfNElements(4);
+		try {
+			treeFinderFalseUSL = new TreeFinder<>(falseUSLOne2Seven, true);
+		}
+		catch (InvalidSemiLatticeException e) {
+			exceptionThrownWithFalseUSL = true;
+		}
+		try {
+			treeFinderABC = new TreeFinder<>(upperSemiLatticeABC, true);
+		}
+		catch (InvalidSemiLatticeException e) {
+			exceptionThrownWithABC = true;
+		}
+		try {
+			treeFinderPowerSet = new TreeFinder<>(upperSemiLatticePowerSet, true);
+		}
+		catch (InvalidSemiLatticeException e) {
+			exceptionThrownWithPowerSet = true;
+		}
+		assertTrue(exceptionThrownWithFalseUSL && !exceptionThrownWithABC && !exceptionThrownWithPowerSet);
+	}
+	
+	@Test
+	public void whenTreesRequestedThenAllTreesReturnedAreValid() throws InvalidSemiLatticeException {
 		boolean allTreesReturnedAreValid = true;
-		ITreeFinder<Integer, Edge> finder = new TreeFinder<>(upperSemiLatticeOne2Seven, true);
+		ITreeFinder<String, Edge> finder = new TreeFinder<>(upperSemiLatticeABC, true);
 		while (finder.hasNext()) {
-			InTree<Integer, Edge> currTree = finder.next();
+			InTree<String, Edge> currTree = finder.next();
 			try {
 				currTree.validate();
 			}
@@ -106,15 +137,15 @@ public class TreeFinderTest {
 	}
 	
 	@Test
-	public void whenTreesRequestedThenExpectedNbOfTreesReturned() throws InvalidSemiLatticeExeption {
-		int nbOfTreesExpected = 12;
-		ITreeFinder<Integer, Edge> finder = new TreeFinder<>(upperSemiLatticeOne2Seven, true);
+	public void whenTreesRequestedThenExpectedNbOfTreesReturned() throws InvalidSemiLatticeException {
+		int nbOfTreesExpected = 8;
+		ITreeFinder<String, Edge> finder = new TreeFinder<>(upperSemiLatticeABC, true);
 		assertTrue(nbOfTreesExpected == finder.getNbOfTrees());
 	}
 	
 	@Test
 	public void whenTreesRequestedThenExpectedTreesReturned() 
-			throws InvalidTreeException, InvalidSemiLatticeExeption {
+			throws InvalidTreeException, InvalidSemiLatticeException {
 		ITreeFinder<String, Edge> finder = new TreeFinder<>(upperSemiLatticeABC, true);
 		boolean asExpected = true;
 		Set<InTree<String, Edge>> expected = new HashSet<>();
@@ -265,7 +296,7 @@ public class TreeFinderTest {
 		return new InTree<String, Edge>(abc, leavesABC, nArg, nArg.edgeSet(), true);
 	}
 	
-	private void setUpperSemiLatticeABC() {
+	private static void setUpperSemiLatticeABC() {
 		upperSemiLatticeABC = new DirectedAcyclicGraph<>(null, Edge::new, false);
 		upperSemiLatticeABC.addVertex(a);
 		upperSemiLatticeABC.addVertex(b);
@@ -285,7 +316,7 @@ public class TreeFinderTest {
 		upperSemiLatticeABC.addEdge(bc, abc);
 	}
 	
-	private void setUpUpperSemiLatticeFromPowerSetOfNElements(int n) throws IOException {
+	private static void setUpUpperSemiLatticeFromPowerSetOfNElements(int n) throws IOException {
 		List<Set<Integer>> powerSet = new ArrayList<>();
 		//build power set
 		int[] atoms = new int[n];
@@ -320,25 +351,25 @@ public class TreeFinderTest {
 		//printGraph(upperSemiLatticePowerSet);
 	}
 	
-	private void setUpUpperSemiLatticeOne2Seven() {
-		upperSemiLatticeOne2Seven = new DirectedAcyclicGraph<>(null, Edge::new, false);
-		upperSemiLatticeOne2Seven.addVertex(one);
-		upperSemiLatticeOne2Seven.addVertex(two);
-		upperSemiLatticeOne2Seven.addVertex(three);
-		upperSemiLatticeOne2Seven.addVertex(four);
-		upperSemiLatticeOne2Seven.addVertex(five);
-		upperSemiLatticeOne2Seven.addVertex(six);
-		upperSemiLatticeOne2Seven.addVertex(seven);
-		upperSemiLatticeOne2Seven.addEdge(six,four);
-		upperSemiLatticeOne2Seven.addEdge(six,five);
-		upperSemiLatticeOne2Seven.addEdge(seven,four);
-		upperSemiLatticeOne2Seven.addEdge(seven,five);
-		upperSemiLatticeOne2Seven.addEdge(four,two);
-		upperSemiLatticeOne2Seven.addEdge(four,three);
-		upperSemiLatticeOne2Seven.addEdge(five,two);
-		upperSemiLatticeOne2Seven.addEdge(five,three);
-		upperSemiLatticeOne2Seven.addEdge(two,one);
-		upperSemiLatticeOne2Seven.addEdge(three,one);
+	private static void setUpFalseUSLOne2Seven() {
+		falseUSLOne2Seven = new DirectedAcyclicGraph<>(null, Edge::new, false);
+		falseUSLOne2Seven.addVertex(one);
+		falseUSLOne2Seven.addVertex(two);
+		falseUSLOne2Seven.addVertex(three);
+		falseUSLOne2Seven.addVertex(four);
+		falseUSLOne2Seven.addVertex(five);
+		falseUSLOne2Seven.addVertex(six);
+		falseUSLOne2Seven.addVertex(seven);
+		falseUSLOne2Seven.addEdge(six,four);
+		falseUSLOne2Seven.addEdge(six,five);
+		falseUSLOne2Seven.addEdge(seven,four);
+		falseUSLOne2Seven.addEdge(seven,five);
+		falseUSLOne2Seven.addEdge(four,two);
+		falseUSLOne2Seven.addEdge(four,three);
+		falseUSLOne2Seven.addEdge(five,two);
+		falseUSLOne2Seven.addEdge(five,three);
+		falseUSLOne2Seven.addEdge(two,one);
+		falseUSLOne2Seven.addEdge(three,one);
 	}	
 
 }

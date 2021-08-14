@@ -15,7 +15,7 @@ import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import com.tregouet.tree_finder.ITreeFinder;
 import com.tregouet.tree_finder.data.InTree;
-import com.tregouet.tree_finder.error.InvalidSemiLatticeExeption;
+import com.tregouet.tree_finder.error.InvalidSemiLatticeException;
 import com.tregouet.tree_finder.utils.CoordAdvancer;
 import com.tregouet.tree_finder.utils.NArrayBool;
 
@@ -60,10 +60,10 @@ public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 
 	//Safe if 2nd argument is 'true'
 	public TreeFinder(DirectedAcyclicGraph<V, E> upperSemiLattice, boolean validateArg) 
-			throws InvalidSemiLatticeExeption {
+			throws InvalidSemiLatticeException {
 		this(upperSemiLattice);
 		if (validateArg && !thisIsAnUpperSemilattice())
-			throw new InvalidSemiLatticeExeption("TreeFinder constructor : argument is not an "
+			throw new InvalidSemiLatticeException("TreeFinder constructor : argument is not an "
 						+ "upper semilattice.");
 	}
 
@@ -118,7 +118,7 @@ public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 			return true;
 		//whether two elements are connected or not, their supremum is their least upper bound
 		Set<V> upperSet = upperSemiLattice.getDescendants(vertex1);
-		upperSet.removeAll(upperSemiLattice.getDescendants(vertex2));
+		upperSet.retainAll(upperSemiLattice.getDescendants(vertex2));
 		if (upperSet.isEmpty())
 			return false;
 		int nbOfMinimalElemInUpperSet = 0;
