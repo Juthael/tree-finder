@@ -46,7 +46,9 @@ public class TreeFinderTest {
 	private static Integer five = 5;
 	private static Integer six = 6;
 	private static Integer seven = 7;
-	private static DirectedAcyclicGraph<Integer, Edge> falseUSLOne2Seven;
+	private static DirectedAcyclicGraph<Integer, Edge> notConnectedDAG;
+	private static DirectedAcyclicGraph<Integer, Edge> notRootedDAG;
+	private static DirectedAcyclicGraph<Integer, Edge> notInvertedDAG;
 	
 	//toy dataset "ABC"
 	private static String a = "A";
@@ -65,7 +67,9 @@ public class TreeFinderTest {
 	
 	@BeforeClass
 	public static void setUpBeforeClass() {
-		setUpFalseUSLOne2Seven();
+		setUpNotConnectedDAG();
+		setUpNotRootedDAG();
+		setUpNotInvertedDAG();
 		setUpperSemiLatticeABC();
 	}
 
@@ -91,19 +95,35 @@ public class TreeFinderTest {
 	
 	@SuppressWarnings("unused")
 	@Test
-	public void whenParameterIsNotAnUpperSemilatticeThenExceptionThrownWithSafeConstructor() throws IOException {
-		boolean exceptionThrownWithFalseUSL = false;
+	public void whenParameterIsNotARootedInvertedDAGThenExceptionThrownWithSafeConstructor() throws IOException {
+		boolean exceptionThrownWithNotConnectedDAG = false;
+		boolean exceptionThrownWithNotRootedDAG = false;
+		boolean exceptionThrownWithNotInvertedDAG = false;
 		boolean exceptionThrownWithABC = false;
 		boolean exceptionThrownWithPowerSet = false;		
-		ITreeFinder<Integer, Edge> treeFinderFalseUSL;
+		ITreeFinder<Integer, Edge> treeFinderNotConnected;
+		ITreeFinder<Integer, Edge> treeFinderNotRooted;
+		ITreeFinder<Integer, Edge> treeFinderNotInverted;
 		ITreeFinder<String, Edge> treeFinderABC;
 		ITreeFinder<Set<Integer>, Edge> treeFinderPowerSet;
 		setUpUpperSemiLatticeFromPowerSetOfNElements(4);
 		try {
-			treeFinderFalseUSL = new TreeFinder<>(falseUSLOne2Seven, true);
+			treeFinderNotConnected = new TreeFinder<>(notConnectedDAG, true);
+		}
+		catch (Exception e) {
+			exceptionThrownWithNotConnectedDAG = true;
+		}
+		try {
+			treeFinderNotRooted = new TreeFinder<>(notRootedDAG, true);
 		}
 		catch (InvalidSemiLatticeException e) {
-			exceptionThrownWithFalseUSL = true;
+			exceptionThrownWithNotRootedDAG = true;
+		}
+		try {
+			treeFinderNotInverted = new TreeFinder<>(notInvertedDAG, true);
+		}
+		catch (InvalidSemiLatticeException e) {
+			exceptionThrownWithNotInvertedDAG = true;
 		}
 		try {
 			treeFinderABC = new TreeFinder<>(upperSemiLatticeABC, true);
@@ -117,7 +137,11 @@ public class TreeFinderTest {
 		catch (InvalidSemiLatticeException e) {
 			exceptionThrownWithPowerSet = true;
 		}
-		assertTrue(exceptionThrownWithFalseUSL && !exceptionThrownWithABC && !exceptionThrownWithPowerSet);
+		assertTrue(exceptionThrownWithNotConnectedDAG 
+				&& exceptionThrownWithNotRootedDAG
+				&& exceptionThrownWithNotInvertedDAG
+				&& !exceptionThrownWithABC 
+				&& !exceptionThrownWithPowerSet);
 	}
 	
 	@Test
@@ -351,26 +375,63 @@ public class TreeFinderTest {
 		//printGraph(upperSemiLatticePowerSet);
 	}
 	
-	private static void setUpFalseUSLOne2Seven() {
-		falseUSLOne2Seven = new DirectedAcyclicGraph<>(null, Edge::new, false);
-		falseUSLOne2Seven.addVertex(one);
-		falseUSLOne2Seven.addVertex(two);
-		falseUSLOne2Seven.addVertex(three);
-		falseUSLOne2Seven.addVertex(four);
-		falseUSLOne2Seven.addVertex(five);
-		falseUSLOne2Seven.addVertex(six);
-		falseUSLOne2Seven.addVertex(seven);
-		falseUSLOne2Seven.addEdge(six,four);
-		falseUSLOne2Seven.addEdge(six,five);
-		falseUSLOne2Seven.addEdge(seven,four);
-		falseUSLOne2Seven.addEdge(seven,five);
-		falseUSLOne2Seven.addEdge(four,two);
-		falseUSLOne2Seven.addEdge(four,three);
-		falseUSLOne2Seven.addEdge(five,two);
-		falseUSLOne2Seven.addEdge(five,three);
-		falseUSLOne2Seven.addEdge(two,one);
-		falseUSLOne2Seven.addEdge(three,one);
+	private static void setUpNotConnectedDAG() {
+		notConnectedDAG = new DirectedAcyclicGraph<>(null, Edge::new, false);
+		notConnectedDAG.addVertex(one);
+		notConnectedDAG.addVertex(two);
+		notConnectedDAG.addVertex(three);
+		notConnectedDAG.addVertex(four);
+		notConnectedDAG.addVertex(five);
+		notConnectedDAG.addVertex(six);
+		notConnectedDAG.addVertex(seven);
+		notConnectedDAG.addEdge(seven,four);
+		notConnectedDAG.addEdge(seven,five);
+		notConnectedDAG.addEdge(four,two);
+		notConnectedDAG.addEdge(four,three);
+		notConnectedDAG.addEdge(five,two);
+		notConnectedDAG.addEdge(five,three);
+		notConnectedDAG.addEdge(two,one);
+		notConnectedDAG.addEdge(three,one);
+	}
+	
+	private static void setUpNotRootedDAG() {
+		notRootedDAG = new DirectedAcyclicGraph<>(null, Edge::new, false);
+		notRootedDAG.addVertex(two);
+		notRootedDAG.addVertex(three);
+		notRootedDAG.addVertex(four);
+		notRootedDAG.addVertex(five);
+		notRootedDAG.addVertex(six);
+		notRootedDAG.addVertex(seven);
+		notRootedDAG.addEdge(six,four);
+		notRootedDAG.addEdge(six,five);
+		notRootedDAG.addEdge(seven,four);
+		notRootedDAG.addEdge(seven,five);
+		notRootedDAG.addEdge(four,two);
+		notRootedDAG.addEdge(four,three);
+		notRootedDAG.addEdge(five,two);
+		notRootedDAG.addEdge(five,three);
 	}	
+	
+	private static void setUpNotInvertedDAG() {
+		notInvertedDAG = new DirectedAcyclicGraph<>(null, Edge::new, false);
+		notInvertedDAG.addVertex(one);
+		notInvertedDAG.addVertex(two);
+		notInvertedDAG.addVertex(three);
+		notInvertedDAG.addVertex(four);
+		notInvertedDAG.addVertex(five);
+		notInvertedDAG.addVertex(six);
+		notInvertedDAG.addVertex(seven);
+		notInvertedDAG.addEdge(four, six);
+		notInvertedDAG.addEdge(five, six);
+		notInvertedDAG.addEdge(four, seven);
+		notInvertedDAG.addEdge(five, seven);
+		notInvertedDAG.addEdge(two, four);
+		notInvertedDAG.addEdge(three, four);
+		notInvertedDAG.addEdge(two, five);
+		notInvertedDAG.addEdge(three, five);
+		notInvertedDAG.addEdge(one, two);
+		notInvertedDAG.addEdge(one, three);
+	}
 
 }
 
