@@ -85,23 +85,25 @@ public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 	@Override
 	public InTree<V, E> next() {
 		InTree<V, E> returned = nextTree;
-		InTree<V, E> newTree;
-		boolean newTreeFound = false;
-		do {
-			if (intersectionArray.get(coords) == false) {
-				Set<E> newTreeEdges = new HashSet<>();
-				for (int i = 0 ; i < coords.length ; i++) {
-					newTreeEdges.addAll(listsOfPaths.get(i).get(coords[i]).getEdgeList());
-				}
-				newTree = new InTree<>(root, sortedLeaves, upperSemiLattice, newTreeEdges);
-				nextTree = newTree;
-				newTreeFound = true;
-			}
-			lastCoordReached = !Coord.advance(coords, intersArrayDimensions);
-		}
-		while (!newTreeFound && !lastCoordReached);
 		if (lastCoordReached)
 			nextTree = null;
+		else {
+			InTree<V, E> newTree;
+			boolean newTreeFound = false;
+			do {
+				if (intersectionArray.get(coords) == false) {
+					Set<E> newTreeEdges = new HashSet<>();
+					for (int i = 0 ; i < coords.length ; i++) {
+						newTreeEdges.addAll(listsOfPaths.get(i).get(coords[i]).getEdgeList());
+					}
+					newTree = new InTree<>(root, sortedLeaves, upperSemiLattice, newTreeEdges);
+					nextTree = newTree;
+					newTreeFound = true;
+				}
+				lastCoordReached = !Coord.advance(coords, intersArrayDimensions);
+			}
+			while (!newTreeFound && !lastCoordReached);
+		}
 		return returned;
 	}
 	
