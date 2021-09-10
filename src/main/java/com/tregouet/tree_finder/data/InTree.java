@@ -13,13 +13,13 @@ public class InTree<V, E> extends DirectedAcyclicGraph<V, E> {
 
 	private static final long serialVersionUID = 2206651329473240403L;
 	private V root;
-	private List<V> sortedLeaves;
+	private List<V> leaves;
 
 	//Unsafe
 	public InTree(V root, List<V> sortedLeaves, DirectedAcyclicGraph<V, E> source, Set<E> edges) {
 		super(null, null, false);
 		this.root = root;
-		this.sortedLeaves = sortedLeaves;
+		this.leaves = sortedLeaves;
 		Graphs.addAllEdges(this, source, edges);
 	}
 	
@@ -32,7 +32,7 @@ public class InTree<V, E> extends DirectedAcyclicGraph<V, E> {
 	}
 	
 	public List<V> getLeaves(){
-		return sortedLeaves;
+		return leaves;
 	}
 	
 	public V getRoot() {

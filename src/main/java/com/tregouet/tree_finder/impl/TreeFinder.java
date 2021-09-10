@@ -22,7 +22,7 @@ public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 	private final DirectedAcyclicGraph<V, E> upperSemiLattice;
 	private final List<V> sortedVertices = new ArrayList<V>();
 	private V root;
-	private final List<V> sortedLeaves = new ArrayList<V>();
+	private final List<V> leaves = new ArrayList<V>();
 	//paths in ith list start from the ith leaf in the list of leaves
 	private final List<List<GraphPath<V,E>>> listsOfPaths = new ArrayList<>();
 	private final int[] intersArrayDimensions;
@@ -38,21 +38,21 @@ public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 		verticesSorter.forEachRemaining(sortedVertices::add);
 		for (V vertex : sortedVertices) {
 			if (rootedInvertedDAG.inDegreeOf(vertex) == 0)
-				sortedLeaves.add(vertex);
+				leaves.add(vertex);
 			if (rootedInvertedDAG.outDegreeOf(vertex) == 0)
 				root = vertex;
 		}
 		AllDirectedPaths<V, E> pathFinder = new AllDirectedPaths<>(rootedInvertedDAG);
-		for (V leaf : sortedLeaves) {
+		for (V leaf : leaves) {
 			listsOfPaths.add(pathFinder.getAllPaths(leaf, root, true, null));
 		}
-		intersArrayDimensions = new int[sortedLeaves.size()];
-		for (int i = 0 ; i < sortedLeaves.size() ; i++) {
+		intersArrayDimensions = new int[leaves.size()];
+		for (int i = 0 ; i < leaves.size() ; i++) {
 			intersArrayDimensions[i] = listsOfPaths.get(i).size();
 		}
 		intersectionArray = new NArrayBool(intersArrayDimensions);
 		setIntersectionArray();
-		coords = new int[sortedLeaves.size()];
+		coords = new int[leaves.size()];
 		engage();
 	}
 
@@ -96,7 +96,7 @@ public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 					for (int i = 0 ; i < coords.length ; i++) {
 						newTreeEdges.addAll(listsOfPaths.get(i).get(coords[i]).getEdgeList());
 					}
-					newTree = new InTree<>(root, sortedLeaves, upperSemiLattice, newTreeEdges);
+					newTree = new InTree<>(root, leaves, upperSemiLattice, newTreeEdges);
 					nextTree = newTree;
 					newTreeFound = true;
 				}
