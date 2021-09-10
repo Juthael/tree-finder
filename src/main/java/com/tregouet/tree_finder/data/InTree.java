@@ -1,10 +1,12 @@
 package com.tregouet.tree_finder.data;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import org.jgrapht.Graphs;
 import org.jgrapht.graph.DirectedAcyclicGraph;
+import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import com.tregouet.tree_finder.ITreeFinder;
 import com.tregouet.tree_finder.error.InvalidTreeException;
@@ -14,6 +16,7 @@ public class InTree<V, E> extends DirectedAcyclicGraph<V, E> {
 	private static final long serialVersionUID = 2206651329473240403L;
 	private V root;
 	private List<V> leaves;
+	private List<V> topologicalSortingOfVertices = null;
 
 	//Unsafe
 	public InTree(V root, List<V> sortedLeaves, DirectedAcyclicGraph<V, E> source, Set<E> edges) {
@@ -42,6 +45,14 @@ public class InTree<V, E> extends DirectedAcyclicGraph<V, E> {
 	public void validate() throws InvalidTreeException {
 		if (!ITreeFinder.isAnInTree(this))
 			throw new InvalidTreeException();
+	}
+	
+	public List<V> getTopologicalSortingOfVertices() {
+		if (topologicalSortingOfVertices == null) {
+			topologicalSortingOfVertices = new ArrayList<>();
+			new TopologicalOrderIterator<V, E>(this).forEachRemaining(topologicalSortingOfVertices::add);
+		}
+		return topologicalSortingOfVertices;
 	}
 
 }
