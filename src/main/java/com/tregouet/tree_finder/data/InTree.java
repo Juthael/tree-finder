@@ -3,8 +3,10 @@ package com.tregouet.tree_finder.data;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.jgrapht.Graphs;
+import org.jgrapht.alg.TransitiveReduction;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
@@ -19,19 +21,36 @@ public class InTree<V, E> extends DirectedAcyclicGraph<V, E> {
 	private List<V> topologicalSortingOfVertices = null;
 
 	//Unsafe
-	public InTree(V root, List<V> sortedLeaves, DirectedAcyclicGraph<V, E> source, Set<E> edges) {
+	public InTree(V root, List<V> leaves, DirectedAcyclicGraph<V, E> source, Set<E> edges) {
 		super(null, null, false);
 		this.root = root;
-		this.leaves = sortedLeaves;
+		this.leaves = leaves;
 		Graphs.addAllEdges(this, source, edges);
 	}
 	
 	//Safe if last argument is 'true'
-	public InTree(V root, List<V> sortedLeaves, DirectedAcyclicGraph<V, E> source, Set<E> edges, boolean validate) 
+	public InTree(V root, List<V> leaves, DirectedAcyclicGraph<V, E> source, Set<E> edges, boolean validate) 
 			throws InvalidTreeException {
-		this(root, sortedLeaves, source, edges);
+		this(root, leaves, source, edges);
 		if (validate)
 			validate();
+	}
+	
+	/* 
+	 * No transitive reduction must have been operated on first parameter. 
+	 * Safe if last argument is 'true'
+	 */
+	public InTree(DirectedAcyclicGraph<V, E> unreducedLattice, Set<V> treeVertices, V root, Set<V> leaves, 
+			boolean validate) {
+		super(null, null, false);
+		this.root = root;
+		this.leaves = new ArrayList<>(leaves);
+		Set<E> edges = unreducedLattice.edgeSet().stream()
+				.filter(e -> treeVertices.contains(unreducedLattice.getEdgeSource(e)) 
+						&& treeVertices.contains(unreducedLattice.getEdgeTarget(e)))
+				.collect(Collectors.toSet());
+		Graphs.addAllEdges(this, unreducedLattice, edges);
+		TransitiveReduction.INSTANCE.reduce(this);
 	}
 	
 	public List<V> getLeaves(){
