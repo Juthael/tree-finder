@@ -60,7 +60,7 @@ public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 	public TreeFinder(DirectedAcyclicGraph<V, E> rootedInvertedDAG, boolean validateArg) 
 			throws InvalidSemiLatticeException {
 		this(rootedInvertedDAG);
-		if (validateArg && !ITreeFinder.isRootedInvertedDirectedAcyclicGraph(rootedInvertedDAG))
+		if (validateArg && !ITreeFinder.isARootedInvertedDirectedAcyclicGraph(rootedInvertedDAG))
 			throw new InvalidSemiLatticeException("TreeFinder constructor : argument is not an "
 						+ "upper semilattice.");
 	}
