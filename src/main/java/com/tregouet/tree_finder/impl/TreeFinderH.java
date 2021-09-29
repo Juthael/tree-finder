@@ -25,10 +25,11 @@ public class TreeFinderH<V, E> implements ITreeFinder<V, E> {
 	
 	private final DirectedAcyclicGraph<V, E> upperSemiLattice;
 	private final List<V> reversedTopoList = new ArrayList<>();
+	private final List<V> leaves = new ArrayList<>();
 	private final List<E> edgeList = new ArrayList<>();
 	private final int nbOfVertices;
 	private final SparseIntDirectedGraph sparseGraph;
-	private final List<Integer> leaves = new ArrayList<>();
+	private final List<Integer> sparseLeaves = new ArrayList<>();
 	private final int nbOfLeaves;
 	private final List<List<Integer>> ancestorSets = new ArrayList<>();
 	private final List<Set<Integer>> encodingSubsetsOfLeaves = new ArrayList<>();
@@ -53,10 +54,12 @@ public class TreeFinderH<V, E> implements ITreeFinder<V, E> {
 		}
 		sparseGraph = new SparseIntDirectedGraph(nbOfVertices, sparseEdges);
 		for (Integer vertex : sparseGraph.vertexSet()) {
-			if (sparseGraph.inDegreeOf(vertex) == 0)
-				leaves.add(vertex);
+			if (sparseGraph.inDegreeOf(vertex) == 0) {
+				sparseLeaves.add(vertex);
+				leaves.add(reversedTopoList.get(vertex));
+			}
 		}
-		nbOfLeaves = leaves.size();
+		nbOfLeaves = sparseLeaves.size();
 		populateLists();
 		sparseTrees = buildTrees();
 	}
@@ -75,9 +78,9 @@ public class TreeFinderH<V, E> implements ITreeFinder<V, E> {
 		sparseGraph = new SparseIntDirectedGraph(nbOfVertices, sparseEdges);
 		for (Integer vertex : sparseGraph.vertexSet()) {
 			if (sparseGraph.inDegreeOf(vertex) == 0)
-				leaves.add(vertex);
+				sparseLeaves.add(vertex);
 		}
-		nbOfLeaves = leaves.size();
+		nbOfLeaves = sparseLeaves.size();
 		populateLists();
 		sparseTrees = buildTrees();
 	}	
@@ -89,21 +92,27 @@ public class TreeFinderH<V, E> implements ITreeFinder<V, E> {
 
 	@Override
 	public InTree<V, E> next() {
-		List<E> edges = new ArrayList();
-		List<Integer> sparseVertices = sparseTrees.get(sparseTreeIdx);
+		Set<E> edgeSet = new HashSet<>();
+		List<Integer> sparseVertices = new ArrayList<>();
+		for (Integer sparseVertex : sparseTrees.get(sparseTreeIdx)) {
+			sparseVertices.add(sparseVertex);
+		}
 		for (Integer edge : sparseGraph.edgeSet()) {
-			if (sparseVertices.contains(sparseGraph.getEdgeSource(edge)) 
-					&& sparseVertices.contains(sparseGraph.getEdgeTarget(edge))) {
-				edges.add(edgeList.get(edge));
+			Integer source = sparseGraph.getEdgeSource(edge);
+			Integer target = sparseGraph.getEdgeTarget(edge);
+			if (sparseVertices.contains(source) 
+					&& sparseVertices.contains(target)) {
+				edgeSet.add(edgeList.get(edge));
 			}
 		}
-		
+		sparseTreeIdx++;
+		return new InTree<V, E>(reversedTopoList.get(0), leaves, upperSemiLattice, edgeSet);
+		//REFAIR IL FAUT UN IN TREE
 	}
 
 	@Override
 	public int getNbOfTrees() {
-		// TODO Auto-generated method stub
-		return 0;
+		return sparseTrees.size();
 	}
 	
 	private List<List<Integer>> buildTrees() {
@@ -149,7 +158,7 @@ public class TreeFinderH<V, E> implements ITreeFinder<V, E> {
 	private Set<Integer> populateListsRecursively(Integer vertex) {
 		Set<Integer> leafEncoding = encodingSubsetsOfLeaves.get(vertex);
 		if (leafEncoding == null) {
-			if (leaves.contains(vertex)) {
+			if (sparseLeaves.contains(vertex)) {
 				encodingSubsetsOfLeaves.add(vertex, new HashSet<>(Arrays.asList(new Integer[]{vertex})));
 				ancestorSets.add(vertex, new ArrayList<>());
 			}

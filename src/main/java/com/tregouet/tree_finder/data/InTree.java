@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.TransitiveReduction;
 import org.jgrapht.graph.DirectedAcyclicGraph;
@@ -21,12 +22,12 @@ public class InTree<V, E> extends DirectedAcyclicGraph<V, E> {
 	private List<V> topologicalSortingOfVertices = null;
 
 	//Unsafe
-	public InTree(V root, List<V> leaves, DirectedAcyclicGraph<V, E> source, Set<E> edges) {
+	public InTree(V root, List<V> leaves, Graph<V, E> source, Set<E> edges) {
 		super(null, null, false);
 		this.root = root;
 		this.leaves = leaves;
 		Graphs.addAllEdges(this, source, edges);
-	}
+	}	
 	
 	//Safe if last argument is 'true'
 	public InTree(V root, List<V> leaves, DirectedAcyclicGraph<V, E> source, Set<E> edges, boolean validate) 
