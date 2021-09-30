@@ -29,7 +29,7 @@ public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
 	private final List<IntArrayList> vertexSetsForTrees;
 	private int treeIdx = 0;
 
-	//Unsafe. First parameter MUST be an upperSemiLattice, no check is proceeded. 
+	//Unsafe. First parameter MUST be an upperSemiLattice, otherwise behavior is undefined. 
 	public TreeFinderSparse(SparseIntDirectedGraph upperSemiLattice, IntArrayList leaves) {
 		this.upperSemiLattice = upperSemiLattice;
 		TopologicalOrderIterator<Integer, Integer> topoIte = new TopologicalOrderIterator<>(upperSemiLattice);
@@ -47,7 +47,8 @@ public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
 	private List<IntArrayList> buildTrees() {
 		if (nbOfVertices > 1) {
 			//no good reason why it should be otherwise
-			return continueTreeRecursively(1, new boolean[nbOfVertices], new IntArrayList(), new IntArraySet());
+			return continueTreeRecursively(1, new boolean[nbOfVertices], 
+					new IntArrayList(new int[] {reversedTopoList[0]}), new IntArraySet());
 		}
 		else return new ArrayList<>(Arrays.asList(new IntArrayList(reversedTopoList)));
 	}
