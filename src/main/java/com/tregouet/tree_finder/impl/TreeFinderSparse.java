@@ -1,7 +1,9 @@
 package com.tregouet.tree_finder.impl;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.jgrapht.Graphs;
 import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
@@ -17,16 +19,18 @@ import it.unimi.dsi.fastutil.ints.IntArraySet;
 
 public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
 
+	private final SparseIntDirectedGraph upperSemiLattice;
 	private final IntArrayList minimals;
 	private final boolean[] elements;
 	private final List<IntArrayList> coveredElements = new ArrayList<>();
 	private final List<IntArraySet> lowerSets = new ArrayList<>();
-	private final List<IntArraySet> supGeneratorSubsetsOfMinimals = new ArrayList<>();
-	private final List<List<IntArrayList>> treeForkGenerators = new ArrayList<>();
+	private final List<IntArraySet> minimalLowerBounds = new ArrayList<>();
+	private final List<List<IntArrayList>> forkingSubsets = new ArrayList<>();
 	private final List<IntArrayList> treeRestrictionsOfUSL;
 	private int treeIdx = 0;
 	
 	public TreeFinderSparse(SparseIntDirectedGraph upperSemiLattice, int root, IntArrayList minimals) {
+		this.upperSemiLattice = upperSemiLattice;
 		this.minimals = minimals;
 		//set elements and coveredElements
 		TopologicalOrderIterator<Integer, Integer> topoIte = new TopologicalOrderIterator<>(upperSemiLattice);
@@ -41,45 +45,45 @@ public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
 			List<Integer> covered = Graphs.predecessorListOf(upperSemiLattice, element);
 			coveredElements.add(unboxedElement, new IntArrayList(covered));
 		}
-		//set lowerSets and supGeneratorSubsetsOfMinimals
+		//set lowerSets and minimalLowerBounds
 		for (int i = 0 ; i <= root ; i++) {
 			if (elements[i]) {
 				if (minimals.contains(i)) {
 					IntArraySet wrappedMinimal = new IntArraySet(new int[] {i});
 					lowerSets.add(wrappedMinimal);
-					supGeneratorSubsetsOfMinimals.add(wrappedMinimal);
+					minimalLowerBounds.add(wrappedMinimal);
 				}
 				else {
 					IntArraySet iLowerSet = new IntArraySet(new int[] {i});
 					IntArraySet iSupGeneratorSubsetOfMinimals = new IntArraySet();
 					for (int iCoveredElmnt : coveredElements.get(i)) {
 						iLowerSet.addAll(lowerSets.get(iCoveredElmnt));
-						iSupGeneratorSubsetOfMinimals.addAll(supGeneratorSubsetsOfMinimals.get(iCoveredElmnt));
+						iSupGeneratorSubsetOfMinimals.addAll(minimalLowerBounds.get(iCoveredElmnt));
 					}
 					lowerSets.add(iLowerSet);
-					supGeneratorSubsetsOfMinimals.add(iSupGeneratorSubsetOfMinimals);
+					minimalLowerBounds.add(iSupGeneratorSubsetOfMinimals);
 				}
 			}
 			else {
 				lowerSets.add(null);
-				supGeneratorSubsetsOfMinimals.add(null);
+				minimalLowerBounds.add(null);
 			}
 		}
-		//set treeForkGenerators
+		//set forkingSubSets
 		boolean[] closed = new boolean[elements.length];
 		for (int i = 0 ; i < elements.length ; i++) {
 			closed[i] = !elements[i];
 		}
 		for (int i = 0 ; i < elements.length ; i++) {
 			if (!closed[i])
-				treeForkGenerators.add(getTreeForkGeneratorsOf(i, closed));
-			else treeForkGenerators.add(null);
+				forkingSubsets.add(getMinimalLowerBoundsOf(i, closed));
+			else forkingSubsets.add(null);
 		}
 		//set treeRestrictionsOfUSL
 		treeRestrictionsOfUSL = getSubTrees(root);
 	}
 	
-	public List<IntArrayList> getTrees() {
+	public List<IntArrayList> getSparseTreeVertexSets() {
 		return treeRestrictionsOfUSL;
 	}
 	
@@ -90,7 +94,7 @@ public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
 			return subTreesFromLocalRoot;
 		}
 		else {
-			List<IntArrayList> forkGenerators = treeForkGenerators.get(localRoot);
+			List<IntArrayList> forkGenerators = forkingSubsets.get(localRoot);
 			for (IntArrayList forkingLowerBounds : forkGenerators) {
 				List<List<IntArrayList>> subTreesFromLowerBounds = new ArrayList<>();
 				for (int lowerBound : forkingLowerBounds) {
@@ -108,11 +112,11 @@ public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
 		return subTreesFromLocalRoot;
 	}
 	
-	private List<IntArrayList> getTreeForkGeneratorsOf(int element, boolean[] closed) {
+	private List<IntArrayList> getMinimalLowerBoundsOf(int element, boolean[] closed) {
 		if (minimals.contains(element))
 			return new ArrayList<>();
 		return getTreeForkGeneratorsOf(
-				element, new IntArrayList(), supGeneratorSubsetsOfMinimals.get(element), closed);
+				element, new IntArrayList(), minimalLowerBounds.get(element), closed);
 	}
 	
 	private List<IntArrayList> getTreeForkGeneratorsOf(int element, IntArrayList lowerBounds, 
@@ -120,13 +124,13 @@ public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
 		List<IntArrayList> treeForkGenerators = new ArrayList<>();
 		for (int i = element - 1 ; i >= 0 ; i--) {
 			if (!closed[i]) {
-				IntArraySet iSupGeneratorMinimals = supGeneratorSubsetsOfMinimals.get(i);
+				IntArraySet iSupGeneratorMinimals = minimalLowerBounds.get(i);
 				if (Sets.intersection(coveredMinimals, iSupGeneratorMinimals).isEmpty()) {
 					IntArrayList nextLowerBounds = new IntArrayList(lowerBounds);
 					nextLowerBounds.add(i);
 					IntArraySet nextCoveredMinimals = 
 							new IntArraySet(Sets.union(coveredMinimals, iSupGeneratorMinimals));
-					if (nextCoveredMinimals.equals(supGeneratorSubsetsOfMinimals.get(element)))
+					if (nextCoveredMinimals.equals(minimalLowerBounds.get(element)))
 						treeForkGenerators.add(nextLowerBounds);
 					else {
 						boolean[] nextClosed = new boolean[elements.length];
@@ -151,7 +155,16 @@ public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
 
 	@Override
 	public InTree<Integer, Integer> next() {
-		
+		Integer root = elements.length - 1;
+		List<Integer> leaves = new ArrayList<>(minimals);
+		Set<Integer> edges = new HashSet<>();
+		IntArrayList treeVertices = treeRestrictionsOfUSL.get(treeIdx++);
+		for (Integer edge : upperSemiLattice.edgeSet()) {
+			if (treeVertices.contains((int) upperSemiLattice.getEdgeSource(edge))
+					&& treeVertices.contains((int) upperSemiLattice.getEdgeTarget(edge)))
+				edges.add(edge);
+		}
+		return new InTree<Integer, Integer>(root, leaves, upperSemiLattice, edges);
 	}
 
 	@Override

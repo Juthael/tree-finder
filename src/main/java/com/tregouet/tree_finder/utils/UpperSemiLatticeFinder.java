@@ -22,7 +22,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 public class UpperSemiLatticeFinder implements Iterator<SparseIntDirectedGraph> {
 	
 	private final SparseIntDirectedGraph rootedInvertedDAG;
-	private final List<Integer> verticesInTopologicalOrder = new ArrayList<>();
+	private final int nbOfVertices;
 	private final Set<Integer> leaves = new HashSet<>();
 	private final List<IntArrayList> minimalUpperBounds = new ArrayList<>();
 	private final int[] minimalUpperBoundsDimensions;
@@ -33,35 +33,33 @@ public class UpperSemiLatticeFinder implements Iterator<SparseIntDirectedGraph> 
 	//Unsafe. Parameter MUST be a rooted inverted Directed Acyclic Graph, otherwise behavior is undefined.
 	public UpperSemiLatticeFinder(SparseIntDirectedGraph rootedInvertedDAG) {
 		this.rootedInvertedDAG = rootedInvertedDAG;
-		TopologicalOrderIterator<Integer, Integer> topoIte = new TopologicalOrderIterator<>(rootedInvertedDAG);
-		List<Set<Integer>> subsetsOfLeavesCoveredByVertices = new ArrayList();
+		nbOfVertices = rootedInvertedDAG.vertexSet().size();
+		List<Set<Integer>> minimalLowerBounds = new ArrayList<>();
 		while (topoIte.hasNext()) {
 			Integer nextVertex = topoIte.next();
-			verticesInTopologicalOrder.add(nextVertex);
-			Set<Integer> lowerBoundLeaves = new HashSet<>();
+			Set<Integer> MinimalLowerBoundsForNext = new HashSet<>();
 			if (rootedInvertedDAG.inDegreeOf(nextVertex) == 0) {
 				leaves.add(nextVertex);
-				lowerBoundLeaves.add(nextVertex);
+				MinimalLowerBoundsForNext.add(nextVertex);
 			}
 			else {
 				for (Integer predecessor : Graphs.predecessorListOf(rootedInvertedDAG, nextVertex)) {
-					lowerBoundLeaves.addAll(
-							subsetsOfLeavesCoveredByVertices.get(
-									verticesInTopologicalOrder.indexOf(predecessor)));
+					MinimalLowerBoundsForNext.addAll(
+							minimalLowerBounds.get(predecessor));
 				}
 			}
-			subsetsOfLeavesCoveredByVertices.add(lowerBoundLeaves);
+			minimalLowerBounds.add(MinimalLowerBoundsForNext);
 		}
 		boolean[] skipInspection = new boolean[verticesInTopologicalOrder.size()]; 
 		for (int i = 0 ; i < verticesInTopologicalOrder.size() ; i++) {
 			if (!skipInspection[i]) {
-				Set<Integer> iSubsetOfLeaves = subsetsOfLeavesCoveredByVertices.get(i);
+				Set<Integer> iSubsetOfLeaves = minimalLowerBounds.get(i);
 				IntArrayList minimalUpperBound = new IntArrayList();
 				minimalUpperBound.add((int) verticesInTopologicalOrder.get(i));
 				for (int j = i + 1 ; j < verticesInTopologicalOrder.size() ; j++) {
 					if (!skipInspection[j] 
 							&& iSubsetOfLeaves.equals(
-									subsetsOfLeavesCoveredByVertices.get(j))) {
+									minimalLowerBounds.get(j))) {
 						minimalUpperBound.add((int) verticesInTopologicalOrder.get(j));
 						skipInspection[j] = true;
 					}
