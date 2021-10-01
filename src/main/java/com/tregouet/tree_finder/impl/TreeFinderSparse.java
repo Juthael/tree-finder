@@ -1,15 +1,13 @@
 package com.tregouet.tree_finder.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.jgrapht.Graphs;
 import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.tregouet.tree_finder.ITreeFinder;
 import com.tregouet.tree_finder.data.InTree;
@@ -18,132 +16,147 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 
 public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
-	
-	private final SparseIntDirectedGraph upperSemiLattice;
-	private final int nbOfVertices;
-	private final int[] reversedTopoList;
-	private final IntArrayList leaves;
-	private final int nbOfLeaves;
-	private final List<IntArraySet> ancestorSets = new ArrayList<>();
-	private final List<IntArraySet> encodingSubsetsOfLeaves = new ArrayList<>();
-	private final List<IntArrayList> vertexSetsForTrees;
-	private int treeIdx = 0;
 
-	//Unsafe. First parameter MUST be an upperSemiLattice, otherwise behavior is undefined. 
-	public TreeFinderSparse(SparseIntDirectedGraph upperSemiLattice, IntArrayList leaves) {
-		this.upperSemiLattice = upperSemiLattice;
+	private final IntArrayList minimals;
+	private final boolean[] elements;
+	private final List<IntArrayList> coveredElements = new ArrayList<>();
+	private final List<IntArraySet> lowerSets = new ArrayList<>();
+	private final List<IntArraySet> supGeneratorSubsetsOfMinimals = new ArrayList<>();
+	private final List<List<IntArrayList>> treeForkGenerators = new ArrayList<>();
+	private final List<IntArrayList> treeRestrictionsOfUSL;
+	private int treeIdx = 0;
+	
+	public TreeFinderSparse(SparseIntDirectedGraph upperSemiLattice, int root, IntArrayList minimals) {
+		this.minimals = minimals;
+		//set elements and coveredElements
 		TopologicalOrderIterator<Integer, Integer> topoIte = new TopologicalOrderIterator<>(upperSemiLattice);
-		nbOfVertices = upperSemiLattice.vertexSet().size();
-		reversedTopoList = new int[nbOfVertices];
-		int topoListIdx = nbOfVertices - 1;
-		while (topoIte.hasNext())
-			reversedTopoList[topoListIdx--] = ((int) topoIte.next());
-		this.leaves = leaves;
-		nbOfLeaves = leaves.size();
-		populateLists();
-		vertexSetsForTrees = buildTrees();
-	}
-	
-	private List<IntArrayList> buildTrees() {
-		if (nbOfVertices > 1) {
-			//no good reason why it should be otherwise
-			return continueTreeRecursively(1, new boolean[nbOfVertices], 
-					new IntArrayList(new int[] {reversedTopoList[0]}), new IntArraySet());
+		elements = new boolean[root];
+		for (int i = 0 ; i <= root ; i++) {
+			coveredElements.add(null);
 		}
-		else return new ArrayList<>(Arrays.asList(new IntArrayList(reversedTopoList)));
-	}
-	
-	private List<IntArrayList> continueTreeRecursively(int newElem, boolean[] closed, IntArrayList incompleteTree, 
-			IntArraySet coveredLeaves) {
-		List<IntArrayList> completeTrees = new ArrayList<>();
-		IntArrayList continuedTree = new IntArrayList(incompleteTree);
-		continuedTree.add(newElem);
-		IntArraySet coveredLeavesAfterAddition = new IntArraySet(coveredLeaves);
-		coveredLeavesAfterAddition.addAll(encodingSubsetsOfLeaves.get(newElem));
-		if (coveredLeavesAfterAddition.size() == nbOfLeaves) {
-			completeTrees.add(continuedTree);
+		while (topoIte.hasNext()) {
+			Integer element = topoIte.next();
+			int unboxedElement = (int) element;
+			elements[unboxedElement] = true;
+			List<Integer> covered = Graphs.predecessorListOf(upperSemiLattice, element);
+			coveredElements.add(unboxedElement, new IntArrayList(covered));
 		}
-		else {
-			boolean[] closedForNow = closed.clone();
-			for (int ancestor : ancestorSets.get(newElem)) {
-				closedForNow[ancestor] = true;
-			}
-			boolean[] closedForNext = closedForNow.clone();
-			for (int i = newElem + 1 ; i < nbOfVertices ; i++) {
-				if (!closedForNow[i] 
-						&& (Sets.intersection(coveredLeavesAfterAddition, encodingSubsetsOfLeaves.get(i))).isEmpty()) {
-					completeTrees.addAll(
-							continueTreeRecursively(i, closedForNext, continuedTree, coveredLeavesAfterAddition));
-					for (int iAncestor : ancestorSets.get(i))
-						closedForNow[iAncestor] = true;
+		//set lowerSets and supGeneratorSubsetsOfMinimals
+		for (int i = 0 ; i <= root ; i++) {
+			if (elements[i]) {
+				if (minimals.contains(i)) {
+					IntArraySet wrappedMinimal = new IntArraySet(new int[] {i});
+					lowerSets.add(wrappedMinimal);
+					supGeneratorSubsetsOfMinimals.add(wrappedMinimal);
 				}
-			}
-		}
-		return completeTrees;
-	}
-	
-	private void populateLists() {
-		for (int i = 0 ; i < nbOfVertices ; i++) {
-			encodingSubsetsOfLeaves.add(null);
-			ancestorSets.add(null);
-		}
-		populateListsRecursively(0);
-	}
-	
-	private IntArraySet populateListsRecursively(int vertex) {
-		IntArraySet leafEncoding = encodingSubsetsOfLeaves.get(vertex);
-		if (leafEncoding == null) {
-			if (leaves.contains(vertex)) {
-				encodingSubsetsOfLeaves.add(vertex, new IntArraySet(new int[] {vertex}));
-				ancestorSets.add(vertex, new IntArraySet());
+				else {
+					IntArraySet iLowerSet = new IntArraySet(new int[] {i});
+					IntArraySet iSupGeneratorSubsetOfMinimals = new IntArraySet();
+					for (int iCoveredElmnt : coveredElements.get(i)) {
+						iLowerSet.addAll(lowerSets.get(iCoveredElmnt));
+						iSupGeneratorSubsetOfMinimals.addAll(supGeneratorSubsetsOfMinimals.get(iCoveredElmnt));
+					}
+					lowerSets.add(iLowerSet);
+					supGeneratorSubsetsOfMinimals.add(iSupGeneratorSubsetOfMinimals);
+				}
 			}
 			else {
-				leafEncoding = new IntArraySet();
-				IntArraySet ancestors = ancestorSets.get(vertex);
-				boolean buildAncestors = (ancestors == null);
-				for (Integer predecessor : Graphs.predecessorListOf(upperSemiLattice, vertex)) {
-					int unboxedPrec = (int) predecessor;
-					leafEncoding.addAll(populateListsRecursively(unboxedPrec));
-					if (buildAncestors) {
-						ancestors.add(unboxedPrec);
-						ancestors.addAll(ancestorSets.get(unboxedPrec));
-					}
-				}
-				encodingSubsetsOfLeaves.add(vertex, leafEncoding);
-				if (buildAncestors)
-					ancestorSets.add(vertex, ancestors);
+				lowerSets.add(null);
+				supGeneratorSubsetsOfMinimals.add(null);
 			}
 		}
-		return leafEncoding;
+		//set treeForkGenerators
+		boolean[] closed = new boolean[elements.length];
+		for (int i = 0 ; i < elements.length ; i++) {
+			closed[i] = !elements[i];
+		}
+		for (int i = 0 ; i < elements.length ; i++) {
+			if (!closed[i])
+				treeForkGenerators.add(getTreeForkGeneratorsOf(i, closed));
+			else treeForkGenerators.add(null);
+		}
+		//set treeRestrictionsOfUSL
+		treeRestrictionsOfUSL = getSubTrees(root);
+	}
+	
+	public List<IntArrayList> getTrees() {
+		return treeRestrictionsOfUSL;
+	}
+	
+	private List<IntArrayList> getSubTrees(int localRoot) {
+		List<IntArrayList> subTreesFromLocalRoot = new ArrayList<>();
+		if (minimals.contains(localRoot)) {
+			subTreesFromLocalRoot.add(new IntArrayList(new int[] {localRoot}));
+			return subTreesFromLocalRoot;
+		}
+		else {
+			List<IntArrayList> forkGenerators = treeForkGenerators.get(localRoot);
+			for (IntArrayList forkingLowerBounds : forkGenerators) {
+				List<List<IntArrayList>> subTreesFromLowerBounds = new ArrayList<>();
+				for (int lowerBound : forkingLowerBounds) {
+					subTreesFromLowerBounds.add(getSubTrees(lowerBound));
+				}
+				for (List<IntArrayList> oneSubtreeForEachLB : Lists.cartesianProduct(subTreesFromLowerBounds)) {
+					IntArrayList subTreeFromLocalRoot = new IntArrayList(new int[] {localRoot});
+					for (IntArrayList lowerBoundSubTree : oneSubtreeForEachLB) {
+						subTreeFromLocalRoot.addAll(lowerBoundSubTree);
+					}
+					subTreesFromLocalRoot.add(subTreeFromLocalRoot);
+				}
+			}
+		}
+		return subTreesFromLocalRoot;
+	}
+	
+	private List<IntArrayList> getTreeForkGeneratorsOf(int element, boolean[] closed) {
+		if (minimals.contains(element))
+			return new ArrayList<>();
+		return getTreeForkGeneratorsOf(
+				element, new IntArrayList(), supGeneratorSubsetsOfMinimals.get(element), closed);
+	}
+	
+	private List<IntArrayList> getTreeForkGeneratorsOf(int element, IntArrayList lowerBounds, 
+			IntArraySet coveredMinimals, boolean[] closed) {
+		List<IntArrayList> treeForkGenerators = new ArrayList<>();
+		for (int i = element - 1 ; i >= 0 ; i--) {
+			if (!closed[i]) {
+				IntArraySet iSupGeneratorMinimals = supGeneratorSubsetsOfMinimals.get(i);
+				if (Sets.intersection(coveredMinimals, iSupGeneratorMinimals).isEmpty()) {
+					IntArrayList nextLowerBounds = new IntArrayList(lowerBounds);
+					nextLowerBounds.add(i);
+					IntArraySet nextCoveredMinimals = 
+							new IntArraySet(Sets.union(coveredMinimals, iSupGeneratorMinimals));
+					if (nextCoveredMinimals.equals(supGeneratorSubsetsOfMinimals.get(element)))
+						treeForkGenerators.add(nextLowerBounds);
+					else {
+						boolean[] nextClosed = new boolean[elements.length];
+						System.arraycopy(closed, 0, nextClosed, 0, elements.length);
+						for (int iLowerBound : lowerSets.get(i)) {
+							nextClosed[iLowerBound] = true;
+						}
+						treeForkGenerators.addAll(
+								getTreeForkGeneratorsOf(element, nextLowerBounds, nextCoveredMinimals, 
+										nextClosed));
+					}
+				}
+			}
+		}
+		return treeForkGenerators;
 	}
 
 	@Override
 	public boolean hasNext() {
-		return treeIdx < vertexSetsForTrees.size() - 1;
+		return treeIdx < treeRestrictionsOfUSL.size() - 1;
 	}
 
 	@Override
 	public InTree<Integer, Integer> next() {
-		Set<Integer> treeEdgeSet = new HashSet<>();
-		List<Integer> treeVertexSet = vertexSetsForTrees.get(treeIdx);
-		List<Integer> leaveList = leaves;
-		for (Integer edge : upperSemiLattice.edgeSet()) {
-			if (treeVertexSet.contains((int) upperSemiLattice.getEdgeSource(edge)) 
-					&& treeVertexSet.contains((int) upperSemiLattice.getEdgeTarget(edge))){
-				treeEdgeSet.add(edge);
-			}
-		}
-		treeIdx++;
-		return new InTree<Integer, Integer>(reversedTopoList[0], leaveList, upperSemiLattice, treeEdgeSet);
+		
 	}
 
 	@Override
 	public int getNbOfTrees() {
-		return vertexSetsForTrees.size();
-	}
-	
-	public List<IntArrayList> getTreeVertexSets() {
-		return vertexSetsForTrees;
+		return treeRestrictionsOfUSL.size();
 	}
 
 }
