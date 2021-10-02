@@ -3,12 +3,14 @@ package com.tregouet.tree_finder.utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jgrapht.Graphs;
 import org.jgrapht.alg.util.Pair;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntArraySet;
 
 public class SparseGraphConverter<V, E> {
 
@@ -35,6 +37,10 @@ public class SparseGraphConverter<V, E> {
 		return sparseGraph;
 	}
 	
+	public V getVertex(int sparseVertex) {
+		return topoOrderedVertices.get(sparseVertex);
+	}
+	
 	public List<V> getVertexSet(IntArrayList sparseVertexSet){
 		List<V> vertexSet = new ArrayList<>();
 		for (int sparseVertex : sparseVertexSet) {
@@ -43,12 +49,26 @@ public class SparseGraphConverter<V, E> {
 		return vertexSet;
 	}
 	
+	public List<V> getVertexSet(IntArraySet sparseVertexSet){
+		List<V> vertexSet = new ArrayList<>();
+		for (int sparseVertex : sparseVertexSet) {
+			vertexSet.add(topoOrderedVertices.get(sparseVertex));
+		}
+		return vertexSet;
+	}	
+	
 	public List<E> getEdgeSet(IntArrayList sparseEdgeSet) {
 		List<E> edgeSet = new ArrayList<>();
 		for (int sparseEdge : sparseEdgeSet) {
 			edgeSet.add(edges.get(sparseEdge));
 		}
 		return edgeSet;
+	}
+	
+	public DirectedAcyclicGraph<Integer, Integer> asSparseDAG() {
+		DirectedAcyclicGraph<Integer, Integer> dAG = new DirectedAcyclicGraph<>(null,  null,  false);
+		Graphs.addAllEdges(dAG, sparseGraph, sparseGraph.edgeSet());
+		return dAG;
 	}
 
 }

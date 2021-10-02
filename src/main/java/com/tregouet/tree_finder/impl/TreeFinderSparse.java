@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jgrapht.Graphs;
+import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
@@ -20,7 +21,7 @@ import it.unimi.dsi.fastutil.ints.IntArraySet;
 public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
 
 	private final SparseIntDirectedGraph upperSemiLattice;
-	private final IntArrayList minimals;
+	private final IntArraySet minimals;
 	private final boolean[] elements;
 	private final List<IntArrayList> coveredElements = new ArrayList<>();
 	private final List<IntArraySet> lowerSets = new ArrayList<>();
@@ -29,7 +30,7 @@ public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
 	private final List<IntArrayList> treeRestrictionsOfUSL;
 	private int treeIdx = 0;
 	
-	public TreeFinderSparse(SparseIntDirectedGraph upperSemiLattice, int root, IntArrayList minimals) {
+	public TreeFinderSparse(SparseIntDirectedGraph upperSemiLattice, int root, IntArraySet minimals) {
 		this.upperSemiLattice = upperSemiLattice;
 		this.minimals = minimals;
 		//set elements and coveredElements
@@ -97,14 +98,12 @@ public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
 			List<IntArrayList> forkGenerators = forkingSubsets.get(localRoot);
 			for (IntArrayList forkingLowerBounds : forkGenerators) {
 				List<List<IntArrayList>> subTreesFromLowerBounds = new ArrayList<>();
-				for (int lowerBound : forkingLowerBounds) {
+				for (int lowerBound : forkingLowerBounds)
 					subTreesFromLowerBounds.add(getSubTrees(lowerBound));
-				}
 				for (List<IntArrayList> oneSubtreeForEachLB : Lists.cartesianProduct(subTreesFromLowerBounds)) {
 					IntArrayList subTreeFromLocalRoot = new IntArrayList(new int[] {localRoot});
-					for (IntArrayList lowerBoundSubTree : oneSubtreeForEachLB) {
+					for (IntArrayList lowerBoundSubTree : oneSubtreeForEachLB)
 						subTreeFromLocalRoot.addAll(lowerBoundSubTree);
-					}
 					subTreesFromLocalRoot.add(subTreeFromLocalRoot);
 				}
 			}
@@ -155,6 +154,8 @@ public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
 
 	@Override
 	public InTree<Integer, Integer> next() {
+		DirectedAcyclicGraph<Integer, Integer> dagUSL = new DirectedAcyclicGraph<>(null,  null,  false);
+		Graphs.addAllEdges(dagUSL, upperSemiLattice, upperSemiLattice.edgeSet());
 		Integer root = elements.length - 1;
 		List<Integer> leaves = new ArrayList<>(minimals);
 		Set<Integer> edges = new HashSet<>();
@@ -164,7 +165,7 @@ public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
 					&& treeVertices.contains((int) upperSemiLattice.getEdgeTarget(edge)))
 				edges.add(edge);
 		}
-		return new InTree<Integer, Integer>(root, leaves, upperSemiLattice, edges);
+		return new InTree<Integer, Integer>(root, leaves, dagUSL, edges);
 	}
 
 	@Override

@@ -9,6 +9,7 @@ import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.TransitiveReduction;
 import org.jgrapht.graph.DirectedAcyclicGraph;
+import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import com.tregouet.tree_finder.ITreeFinder;
@@ -22,7 +23,7 @@ public class InTree<V, E> extends DirectedAcyclicGraph<V, E> {
 	private List<V> topologicalSortingOfVertices = null;
 
 	//Unsafe
-	public InTree(V root, List<V> leaves, Graph<V, E> source, Set<E> edges) {
+	public InTree(V root, List<V> leaves, DirectedAcyclicGraph<V, E> source, Set<E> edges) {
 		super(null, null, false);
 		this.root = root;
 		this.leaves = leaves;
@@ -51,8 +52,23 @@ public class InTree<V, E> extends DirectedAcyclicGraph<V, E> {
 						&& treeVertices.contains(unreducedLattice.getEdgeTarget(e)))
 				.collect(Collectors.toSet());
 		Graphs.addAllEdges(this, unreducedLattice, edges);
-		TransitiveReduction.INSTANCE.reduce(this);
 	}
+	
+	/* 
+	 * No transitive reduction must have been operated on first parameter. 
+	 * Safe if last argument is 'true'
+	 */
+	public InTree(DirectedAcyclicGraph<V, E> unreducedLattice, List<V> treeVertices, V root, List<V> leaves, 
+			boolean validate) {
+		super(null, null, false);
+		this.root = root;
+		this.leaves = leaves;
+		Set<E> edges = unreducedLattice.edgeSet().stream()
+				.filter(e -> treeVertices.contains(unreducedLattice.getEdgeSource(e)) 
+						&& treeVertices.contains(unreducedLattice.getEdgeTarget(e)))
+				.collect(Collectors.toSet());
+		Graphs.addAllEdges(this, unreducedLattice, edges);
+	}	
 	
 	public List<V> getLeaves(){
 		return leaves;
