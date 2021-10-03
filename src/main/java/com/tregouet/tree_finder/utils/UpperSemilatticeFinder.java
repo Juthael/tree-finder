@@ -11,7 +11,7 @@ import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 
-public class USLFinder implements Iterator<SparseIntDirectedGraph> {
+public class UpperSemilatticeFinder implements Iterator<SparseIntDirectedGraph> {
 
 	private final SparseIntDirectedGraph rootedInvertedDAG;
 	private final int setCardinal;
@@ -26,7 +26,7 @@ public class USLFinder implements Iterator<SparseIntDirectedGraph> {
 	 * Unsafe. Parameter MUST be a rooted inverted directed acyclic graph, and ascending order 
 	 * over vertices MUST be topological.  
 	 */
-	public USLFinder(SparseIntDirectedGraph rootedInvertedDAG, IntArraySet minimals) {
+	public UpperSemilatticeFinder(SparseIntDirectedGraph rootedInvertedDAG, IntArraySet minimals) {
 		this.rootedInvertedDAG = rootedInvertedDAG;
 		setCardinal = rootedInvertedDAG.vertexSet().size();
 		List<IntArraySet> minimalLowerBounds = new ArrayList<>();

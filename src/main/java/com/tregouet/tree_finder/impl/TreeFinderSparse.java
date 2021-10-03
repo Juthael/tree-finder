@@ -13,7 +13,7 @@ import org.jgrapht.traverse.TopologicalOrderIterator;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.tregouet.tree_finder.ITreeFinder;
-import com.tregouet.tree_finder.data.InTree;
+import com.tregouet.tree_finder.data.ClassificationTree;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
@@ -153,7 +153,7 @@ public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
 	}
 
 	@Override
-	public InTree<Integer, Integer> next() {
+	public ClassificationTree<Integer, Integer> next() {
 		DirectedAcyclicGraph<Integer, Integer> dagUSL = new DirectedAcyclicGraph<>(null,  null,  false);
 		Graphs.addAllEdges(dagUSL, upperSemiLattice, upperSemiLattice.edgeSet());
 		Integer root = elements.length - 1;
@@ -165,7 +165,7 @@ public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
 					&& treeVertices.contains((int) upperSemiLattice.getEdgeTarget(edge)))
 				edges.add(edge);
 		}
-		return new InTree<Integer, Integer>(root, leaves, dagUSL, edges);
+		return new ClassificationTree<Integer, Integer>(root, leaves, dagUSL, edges);
 	}
 
 	@Override

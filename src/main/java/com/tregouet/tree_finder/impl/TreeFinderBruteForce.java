@@ -13,7 +13,7 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 
 import com.google.common.collect.Sets;
 import com.tregouet.tree_finder.ITreeFinder;
-import com.tregouet.tree_finder.data.InTree;
+import com.tregouet.tree_finder.data.ClassificationTree;
 import com.tregouet.tree_finder.error.InvalidSemiLatticeException;
 
 public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
@@ -65,8 +65,8 @@ public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
 	}
 
 	@Override
-	public InTree<V, E> next() {
-		return new InTree<V, E>(upperSemilattice, treeIte.next(), root, minimals, false);
+	public ClassificationTree<V, E> next() {
+		return new ClassificationTree<V, E>(upperSemilattice, treeIte.next(), root, minimals, false);
 	}
 
 	@Override

@@ -57,8 +57,8 @@ public class InTreeTest {
 		smallerTreeArg.addEdge(b, ab);
 		smallerTreeArg.addEdge(a, ac);
 		List<String> smallerTreeLeaves = new ArrayList<>(Arrays.asList(new String[] {a, b}));
-		InTree<String, Edge> smallerTree = 
-				new InTree<String, Edge>(abc, smallerTreeLeaves, smallerTreeArg, smallerTreeArg.edgeSet(), true);
+		ClassificationTree<String, Edge> smallerTree = 
+				new ClassificationTree<String, Edge>(abc, smallerTreeLeaves, smallerTreeArg, smallerTreeArg.edgeSet(), true);
 		assertFalse(properTreeArg.equals(smallerTree));
 	}
 	
@@ -70,29 +70,29 @@ public class InTreeTest {
 		boolean exceptionIfManyPaths = false;
 		boolean exceptionIfProperTree = false;
 		try {
-			InTree<String, Edge> notConnected = 
-					new InTree<>(abc, leaves, notConnectedArg, notConnectedArg.edgeSet(), true);
+			ClassificationTree<String, Edge> notConnected = 
+					new ClassificationTree<>(abc, leaves, notConnectedArg, notConnectedArg.edgeSet(), true);
 		}
 		catch (InvalidTreeException e) {
 			exceptionIfNotConnected = true;
 		}
 		try {
-			InTree<String, Edge> noRoot = 
-					new InTree<>(abc, leaves, noRootArg, noRootArg.edgeSet(), true);
+			ClassificationTree<String, Edge> noRoot = 
+					new ClassificationTree<>(abc, leaves, noRootArg, noRootArg.edgeSet(), true);
 		}
 		catch (InvalidTreeException e) {
 			exceptionIfNoRoot = true;
 		}
 		try {
-			InTree<String, Edge> manyPaths = 
-					new InTree<>(abc, leaves, manyPathsArg, manyPathsArg.edgeSet(), true);
+			ClassificationTree<String, Edge> manyPaths = 
+					new ClassificationTree<>(abc, leaves, manyPathsArg, manyPathsArg.edgeSet(), true);
 		}
 		catch (InvalidTreeException e) {
 			exceptionIfManyPaths = true;
 		}
 		try {
-			InTree<String, Edge> properTree = 
-					new InTree<String, Edge>(abc, leaves, properTreeArg, properTreeArg.edgeSet(), true);
+			ClassificationTree<String, Edge> properTree = 
+					new ClassificationTree<String, Edge>(abc, leaves, properTreeArg, properTreeArg.edgeSet(), true);
 		}
 		catch (InvalidTreeException e) {
 			exceptionIfProperTree = true;
@@ -109,16 +109,16 @@ public class InTreeTest {
 		differentTreeArg.addEdge(a, ab);
 		differentTreeArg.addEdge(b, bc);
 		differentTreeArg.addEdge(c, bc);
-		InTree<String, Edge> differentTree = 
-				new InTree<String, Edge>(abc, leaves, differentTreeArg, differentTreeArg.edgeSet(), true);
+		ClassificationTree<String, Edge> differentTree = 
+				new ClassificationTree<String, Edge>(abc, leaves, differentTreeArg, differentTreeArg.edgeSet(), true);
 		assertFalse(differentTree.equals(properTreeArg));
 	}
 	
 	//provided edge class overrides hashCode() and equals()
 	@Test
 	public void whenSameVerticesAndSameEdgesThenEqual() throws InvalidTreeException {
-		InTree<String, Edge> propertTree = 
-				new InTree<String, Edge>(abc, leaves, properTreeArg, properTreeArg.edgeSet(), true);
+		ClassificationTree<String, Edge> propertTree = 
+				new ClassificationTree<String, Edge>(abc, leaves, properTreeArg, properTreeArg.edgeSet(), true);
 		DirectedAcyclicGraph<String, Edge> sameTreeArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
 		Graphs.addAllVertices(sameTreeArg, properTreeArg.vertexSet());
 		sameTreeArg.addEdge(ab, abc);
@@ -126,8 +126,8 @@ public class InTreeTest {
 		sameTreeArg.addEdge(a, ab);
 		sameTreeArg.addEdge(b, ab);
 		sameTreeArg.addEdge(c, bc);
-		InTree<String, Edge> sameTree = 
-				new InTree<String, Edge>(abc, leaves, sameTreeArg, sameTreeArg.edgeSet(), true);
+		ClassificationTree<String, Edge> sameTree = 
+				new ClassificationTree<String, Edge>(abc, leaves, sameTreeArg, sameTreeArg.edgeSet(), true);
 		assertTrue(sameTree.equals(propertTree));
 	}
 	

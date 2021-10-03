@@ -8,9 +8,9 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 
 import com.tregouet.tree_finder.ITreeFinder;
-import com.tregouet.tree_finder.data.InTree;
+import com.tregouet.tree_finder.data.ClassificationTree;
 import com.tregouet.tree_finder.utils.SparseGraphConverter;
-import com.tregouet.tree_finder.utils.USLFinder;
+import com.tregouet.tree_finder.utils.UpperSemilatticeFinder;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
@@ -51,8 +51,8 @@ public class TreeFinderOpt<V, E> implements ITreeFinder<V, E> {
 			sparseUpperSemilattices.add(sparseInput);
 		}
 		else {
-			USLFinder uSLFinder = new USLFinder(sparseInput, sparseMinimals);
-			uSLFinder.forEachRemaining(l -> sparseUpperSemilattices.add(l));
+			UpperSemilatticeFinder upperSemilatticeFinder = new UpperSemilatticeFinder(sparseInput, sparseMinimals);
+			upperSemilatticeFinder.forEachRemaining(l -> sparseUpperSemilattices.add(l));
 		}
 		for (SparseIntDirectedGraph uSL : sparseUpperSemilattices) {
 			TreeFinderSparse sparseTF = new TreeFinderSparse(uSL, sparseRoot, sparseMinimals);
@@ -66,8 +66,8 @@ public class TreeFinderOpt<V, E> implements ITreeFinder<V, E> {
 	}
 
 	@Override
-	public InTree<V, E> next() {
-		return new InTree<V, E>(input, sparseConverter.getVertexSet(sparseTreeVertexSets.get(treeIdx++)), 
+	public ClassificationTree<V, E> next() {
+		return new ClassificationTree<V, E>(input, sparseConverter.getVertexSet(sparseTreeVertexSets.get(treeIdx++)), 
 				root, minimals, false);
 	}
 

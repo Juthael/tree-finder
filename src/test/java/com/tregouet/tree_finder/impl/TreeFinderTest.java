@@ -27,7 +27,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.tregouet.tree_finder.ITreeFinder;
-import com.tregouet.tree_finder.data.InTree;
+import com.tregouet.tree_finder.data.ClassificationTree;
 import com.tregouet.tree_finder.error.InvalidSemiLatticeException;
 import com.tregouet.tree_finder.error.InvalidTreeException;
 
@@ -149,7 +149,7 @@ public class TreeFinderTest {
 		boolean allTreesReturnedAreValid = true;
 		ITreeFinder<String, Edge> finder = new TreeFinder<>(upperSemiLatticeABC, true);
 		while (finder.hasNext()) {
-			InTree<String, Edge> currTree = finder.next();
+			ClassificationTree<String, Edge> currTree = finder.next();
 			try {
 				currTree.validate();
 			}
@@ -172,7 +172,7 @@ public class TreeFinderTest {
 			throws InvalidTreeException, InvalidSemiLatticeException {
 		ITreeFinder<String, Edge> finder = new TreeFinder<>(upperSemiLatticeABC, true);
 		boolean asExpected = true;
-		Set<InTree<String, Edge>> expected = new HashSet<>();
+		Set<ClassificationTree<String, Edge>> expected = new HashSet<>();
 		expected.add(setN1());
 		expected.add(setN2());
 		expected.add(setN3());
@@ -222,7 +222,7 @@ public class TreeFinderTest {
 			.render(Format.PNG).toFile(new File(graphPath + fileName));
 	}
 	
-	private InTree<String, Edge> setN1() throws InvalidTreeException {
+	private ClassificationTree<String, Edge> setN1() throws InvalidTreeException {
 		DirectedAcyclicGraph<String, Edge> nArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
 		Graphs.addAllVertices(nArg, verticesABC);
 		nArg.removeVertex(bc);
@@ -231,10 +231,10 @@ public class TreeFinderTest {
 		nArg.addEdge(c, ac);
 		nArg.addEdge(ab, abc);
 		nArg.addEdge(ac, abc);
-		return new InTree<String, Edge>(abc, leavesABC, nArg, nArg.edgeSet(), true);
+		return new ClassificationTree<String, Edge>(abc, leavesABC, nArg, nArg.edgeSet(), true);
 	}
 	
-	private InTree<String, Edge> setN2() throws InvalidTreeException {
+	private ClassificationTree<String, Edge> setN2() throws InvalidTreeException {
 		DirectedAcyclicGraph<String, Edge> nArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
 		Graphs.addAllVertices(nArg, verticesABC);
 		nArg.removeVertex(ac);
@@ -243,12 +243,12 @@ public class TreeFinderTest {
 		nArg.addEdge(c, bc);
 		nArg.addEdge(ab, abc);
 		nArg.addEdge(bc, abc);
-		return new InTree<String, Edge>(abc, leavesABC, nArg, nArg.edgeSet(), true);
+		return new ClassificationTree<String, Edge>(abc, leavesABC, nArg, nArg.edgeSet(), true);
 	}
 	
 	
 	
-	private InTree<String, Edge> setN3() throws InvalidTreeException {
+	private ClassificationTree<String, Edge> setN3() throws InvalidTreeException {
 		DirectedAcyclicGraph<String, Edge> nArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
 		Graphs.addAllVertices(nArg, verticesABC);
 		nArg.addEdge(a, ab);
@@ -257,10 +257,10 @@ public class TreeFinderTest {
 		nArg.addEdge(ab, abc);
 		nArg.addEdge(ac, abc);
 		nArg.addEdge(bc, abc);
-		return new InTree<String, Edge>(abc, leavesABC, nArg, nArg.edgeSet(), true);
+		return new ClassificationTree<String, Edge>(abc, leavesABC, nArg, nArg.edgeSet(), true);
 	}
 	
-	private InTree<String, Edge> setN4() throws InvalidTreeException {
+	private ClassificationTree<String, Edge> setN4() throws InvalidTreeException {
 		DirectedAcyclicGraph<String, Edge> nArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
 		Graphs.addAllVertices(nArg, verticesABC);
 		nArg.removeVertex(ac);
@@ -269,10 +269,10 @@ public class TreeFinderTest {
 		nArg.addEdge(c, bc);
 		nArg.addEdge(ab, abc);
 		nArg.addEdge(bc, abc);
-		return new InTree<String, Edge>(abc, leavesABC, nArg, nArg.edgeSet(), true);
+		return new ClassificationTree<String, Edge>(abc, leavesABC, nArg, nArg.edgeSet(), true);
 	}
 	
-	private InTree<String, Edge> setN5() throws InvalidTreeException {
+	private ClassificationTree<String, Edge> setN5() throws InvalidTreeException {
 		DirectedAcyclicGraph<String, Edge> nArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
 		Graphs.addAllVertices(nArg, verticesABC);
 		nArg.removeVertex(bc);
@@ -281,10 +281,10 @@ public class TreeFinderTest {
 		nArg.addEdge(c, ac);
 		nArg.addEdge(ab, abc);
 		nArg.addEdge(ac, abc);
-		return new InTree<String, Edge>(abc, leavesABC, nArg, nArg.edgeSet(), true);
+		return new ClassificationTree<String, Edge>(abc, leavesABC, nArg, nArg.edgeSet(), true);
 	}	
 	
-	private InTree<String, Edge> setN6() throws InvalidTreeException {
+	private ClassificationTree<String, Edge> setN6() throws InvalidTreeException {
 		DirectedAcyclicGraph<String, Edge> nArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
 		Graphs.addAllVertices(nArg, verticesABC);
 		nArg.addEdge(a, ac);
@@ -293,10 +293,10 @@ public class TreeFinderTest {
 		nArg.addEdge(ab, abc);
 		nArg.addEdge(ac, abc);
 		nArg.addEdge(bc, abc);
-		return new InTree<String, Edge>(abc, leavesABC, nArg, nArg.edgeSet(), true);
+		return new ClassificationTree<String, Edge>(abc, leavesABC, nArg, nArg.edgeSet(), true);
 	}
 	
-	private InTree<String, Edge> setN7() throws InvalidTreeException {
+	private ClassificationTree<String, Edge> setN7() throws InvalidTreeException {
 		DirectedAcyclicGraph<String, Edge> nArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
 		Graphs.addAllVertices(nArg, verticesABC);
 		nArg.removeVertex(ab);
@@ -305,10 +305,10 @@ public class TreeFinderTest {
 		nArg.addEdge(c, ac);
 		nArg.addEdge(ac, abc);
 		nArg.addEdge(bc, abc);
-		return new InTree<String, Edge>(abc, leavesABC, nArg, nArg.edgeSet(), true);
+		return new ClassificationTree<String, Edge>(abc, leavesABC, nArg, nArg.edgeSet(), true);
 	}
 	
-	private InTree<String, Edge> setN8() throws InvalidTreeException {
+	private ClassificationTree<String, Edge> setN8() throws InvalidTreeException {
 		DirectedAcyclicGraph<String, Edge> nArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
 		Graphs.addAllVertices(nArg, verticesABC);
 		nArg.removeVertex(ab);
@@ -317,7 +317,7 @@ public class TreeFinderTest {
 		nArg.addEdge(c, bc);
 		nArg.addEdge(ac, abc);
 		nArg.addEdge(bc, abc);
-		return new InTree<String, Edge>(abc, leavesABC, nArg, nArg.edgeSet(), true);
+		return new ClassificationTree<String, Edge>(abc, leavesABC, nArg, nArg.edgeSet(), true);
 	}
 	
 	private static void setUpperSemiLatticeABC() {

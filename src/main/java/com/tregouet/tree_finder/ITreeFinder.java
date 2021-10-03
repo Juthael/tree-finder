@@ -13,9 +13,9 @@ import org.jgrapht.alg.shortestpath.AllDirectedPaths;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
-import com.tregouet.tree_finder.data.InTree;
+import com.tregouet.tree_finder.data.ClassificationTree;
 
-public interface ITreeFinder<V,E> extends Iterator<InTree<V,E>> {
+public interface ITreeFinder<V,E> extends Iterator<ClassificationTree<V,E>> {
 	
 	public static <V, E> boolean isARootedInvertedDirectedAcyclicGraph(DirectedAcyclicGraph<V, E> dag) {
 		//directed and acyclic : guaranteed by the argument type
