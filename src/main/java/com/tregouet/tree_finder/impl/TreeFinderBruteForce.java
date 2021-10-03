@@ -3,6 +3,7 @@ package com.tregouet.tree_finder.impl;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,16 +18,28 @@ import com.tregouet.tree_finder.error.InvalidSemiLatticeException;
 
 public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
 
+	private final DirectedAcyclicGraph<V, E> upperSemilattice;
+	private final V root;
 	private final Set<V> minimals;
 	private final Map<Set<V>, V> closedSubsetsOfMinimalsToTheirSupremum = new HashMap<>();
 	private final Set<Set<Set<V>>> powerSetOfClosedSubsetsOfMinimals;
 	private final Set<Set<Set<V>>> maximalHierarchiesOfMinimals;
 	private final Set<Set<V>> treeVertexSets = new HashSet<>();
+	private Iterator<Set<V>> treeIte;
 	
 	public TreeFinderBruteForce(DirectedAcyclicGraph<V, E> upperSemilattice, boolean validate) 
 			throws InvalidSemiLatticeException {
 		if (validate && !ITreeFinder.isAnUpperSemiLattice(upperSemilattice))
 			throw new InvalidSemiLatticeException();
+		this.upperSemilattice = upperSemilattice;
+		V maximum = null;
+		Iterator<V> vIte = upperSemilattice.vertexSet().iterator();
+		while (maximum == null & vIte.hasNext()) {
+			V v = vIte.next();
+			if (upperSemilattice.outDegreeOf(v) == 0)
+				maximum = v;
+		}
+		root = maximum;
 		minimals = upperSemilattice.vertexSet().stream()
 				.filter(v -> upperSemilattice.inDegreeOf(v) == 0)
 				.collect(Collectors.toSet());
@@ -43,24 +56,22 @@ public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
 					.collect(Collectors.toSet());
 			treeVertexSets.add(treeVertexSet);
 		}
+		treeIte = treeVertexSets.iterator();
 	}
 
 	@Override
 	public boolean hasNext() {
-		// TODO Auto-generated method stub
-		return false;
+		return treeIte.hasNext();
 	}
 
 	@Override
 	public InTree<V, E> next() {
-		// TODO Auto-generated method stub
-		return null;
+		return new InTree<V, E>(upperSemilattice, treeIte.next(), root, minimals, false);
 	}
 
 	@Override
 	public int getNbOfTrees() {
-		// TODO Auto-generated method stub
-		return 0;
+		return treeVertexSets.size();
 	}
 	
 	private Set<V> minimalLowerBounds(V element, DirectedAcyclicGraph<V, E> upperSemilattice) {
