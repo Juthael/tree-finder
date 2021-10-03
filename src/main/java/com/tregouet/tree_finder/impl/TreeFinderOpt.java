@@ -28,11 +28,12 @@ public class TreeFinderOpt<V, E> implements ITreeFinder<V, E> {
 	private final List<IntArrayList> sparseTreeVertexSets = new ArrayList<>();
 	private int treeIdx = 0;
 	
-	public TreeFinderOpt(DirectedAcyclicGraph<V, E> rootedInvertedDAG, boolean isClosed, boolean isAnUpperSemilattice) {
-		if (!isClosed) 
+	public TreeFinderOpt(DirectedAcyclicGraph<V, E> rootedInvertedDAG, boolean relationIsTransitive, 
+			boolean isAnUpperSemilattice) {
+		if (!relationIsTransitive) 
 			TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(rootedInvertedDAG);
 		input = rootedInvertedDAG;
-		sparseConverter = new SparseGraphConverter<>(input);
+		sparseConverter = new SparseGraphConverter<>(input, true);
 		SparseIntDirectedGraph sparseInput = sparseConverter.getSparseGraph();
 		this.sparseInput = sparseConverter.asSparseDAG();
 		int sRoot = -1;
@@ -61,6 +62,11 @@ public class TreeFinderOpt<V, E> implements ITreeFinder<V, E> {
 	}
 
 	@Override
+	public int getNbOfTrees() {
+		return sparseTreeVertexSets.size();
+	}
+
+	@Override
 	public boolean hasNext() {
 		return treeIdx < sparseTreeVertexSets.size() - 1;
 	}
@@ -69,11 +75,6 @@ public class TreeFinderOpt<V, E> implements ITreeFinder<V, E> {
 	public ClassificationTree<V, E> next() {
 		return new ClassificationTree<V, E>(input, sparseConverter.getVertexSet(sparseTreeVertexSets.get(treeIdx++)), 
 				root, minimals, false);
-	}
-
-	@Override
-	public int getNbOfTrees() {
-		return sparseTreeVertexSets.size();
 	}
 
 }

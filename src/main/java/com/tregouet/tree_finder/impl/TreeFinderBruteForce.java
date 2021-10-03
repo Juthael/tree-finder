@@ -15,6 +15,7 @@ import com.google.common.collect.Sets;
 import com.tregouet.tree_finder.ITreeFinder;
 import com.tregouet.tree_finder.data.ClassificationTree;
 import com.tregouet.tree_finder.error.InvalidSemiLatticeException;
+import com.tregouet.tree_finder.utils.StructureInspector;
 
 public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
 
@@ -29,7 +30,7 @@ public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
 	
 	public TreeFinderBruteForce(DirectedAcyclicGraph<V, E> upperSemilattice, boolean validate) 
 			throws InvalidSemiLatticeException {
-		if (validate && !ITreeFinder.isAnUpperSemiLattice(upperSemilattice))
+		if (validate && !StructureInspector.isAnUpperSemiLattice(upperSemilattice))
 			throw new InvalidSemiLatticeException();
 		this.upperSemilattice = upperSemilattice;
 		V maximum = null;
@@ -60,6 +61,11 @@ public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
 	}
 
 	@Override
+	public int getNbOfTrees() {
+		return treeVertexSets.size();
+	}
+
+	@Override
 	public boolean hasNext() {
 		return treeIte.hasNext();
 	}
@@ -67,37 +73,6 @@ public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
 	@Override
 	public ClassificationTree<V, E> next() {
 		return new ClassificationTree<V, E>(upperSemilattice, treeIte.next(), root, minimals, false);
-	}
-
-	@Override
-	public int getNbOfTrees() {
-		return treeVertexSets.size();
-	}
-	
-	private Set<V> minimalLowerBounds(V element, DirectedAcyclicGraph<V, E> upperSemilattice) {
-		return Sets.intersection(minimals, upperSemilattice.getAncestors(element));
-	}
-	
-	private Set<Set<Set<V>>> powerSet(Set<Set<V>> subsets) {
-		List<Set<V>> subsetList = new ArrayList<>(subsets);
-		int listSize = subsetList.size();
-		Set<Set<Set<V>>> powerSetOfSubsets = new HashSet<>();
-		for (int i = 0 ; i < (1 << listSize) ; i++) {
-			Set<Set<V>> setOfSubsets = new HashSet<>(listSize);
-			for (int j = 0 ; j < listSize ; j++) {
-				if(((1 << j) & i) > 0) {
-					setOfSubsets.add(subsetList.get(j));
-				}
-			}
-			powerSetOfSubsets.add(setOfSubsets);
-		}
-		return powerSetOfSubsets;
-	}
-	
-	private boolean isAMaximalHierarchy(Set<Set<V>> setOfMinimalSubsets) {
-		return (coversEveryMinimal(setOfMinimalSubsets) 
-				&& isAHierarchy(setOfMinimalSubsets) 
-				&& isMaximal(setOfMinimalSubsets));
 	}
 	
 	private boolean coversEveryMinimal(Set<Set<V>> setOfMinimalSubsets) {
@@ -123,6 +98,12 @@ public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
 		return true;
 	}
 	
+	private boolean isAMaximalHierarchy(Set<Set<V>> setOfMinimalSubsets) {
+		return (coversEveryMinimal(setOfMinimalSubsets) 
+				&& isAHierarchy(setOfMinimalSubsets) 
+				&& isMaximal(setOfMinimalSubsets));
+	}
+	
 	private boolean isMaximal(Set<Set<V>> setOfMinimalSubsets) {
 		boolean isMaximal = true;
 		Set<Set<Set<V>>> nonMaximalAfterAll = new HashSet<>(); 
@@ -134,6 +115,26 @@ public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
 		}
 		maximalHierarchiesOfMinimals.removeAll(nonMaximalAfterAll);
 		return isMaximal;
+	}
+	
+	private Set<V> minimalLowerBounds(V element, DirectedAcyclicGraph<V, E> upperSemilattice) {
+		return Sets.intersection(minimals, upperSemilattice.getAncestors(element));
+	}
+	
+	private Set<Set<Set<V>>> powerSet(Set<Set<V>> subsets) {
+		List<Set<V>> subsetList = new ArrayList<>(subsets);
+		int listSize = subsetList.size();
+		Set<Set<Set<V>>> powerSetOfSubsets = new HashSet<>();
+		for (int i = 0 ; i < (1 << listSize) ; i++) {
+			Set<Set<V>> setOfSubsets = new HashSet<>(listSize);
+			for (int j = 0 ; j < listSize ; j++) {
+				if(((1 << j) & i) > 0) {
+					setOfSubsets.add(subsetList.get(j));
+				}
+			}
+			powerSetOfSubsets.add(setOfSubsets);
+		}
+		return powerSetOfSubsets;
 	}
 
 }

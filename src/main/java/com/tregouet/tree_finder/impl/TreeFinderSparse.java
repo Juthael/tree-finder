@@ -27,6 +27,7 @@ public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
 	private final List<IntArraySet> lowerSets = new ArrayList<>();
 	private final List<IntArraySet> minimalLowerBounds = new ArrayList<>();
 	private final List<List<IntArrayList>> forkingSubsets = new ArrayList<>();
+	private final List<List<IntArrayList>> subTrees = new ArrayList<>();
 	private final List<IntArrayList> treeRestrictionsOfUSL;
 	private int treeIdx = 0;
 	
@@ -41,7 +42,7 @@ public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
 		}
 		while (topoIte.hasNext()) {
 			Integer element = topoIte.next();
-			int unboxedElement = (int) element;
+			int unboxedElement = element;
 			elements[unboxedElement] = true;
 			List<Integer> covered = Graphs.predecessorListOf(upperSemiLattice, element);
 			coveredElements.add(unboxedElement, new IntArrayList(covered));
@@ -70,7 +71,7 @@ public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
 				minimalLowerBounds.add(null);
 			}
 		}
-		//set forkingSubSets
+		//set forkingSubSets and subTrees
 		boolean[] closed = new boolean[elements.length];
 		for (int i = 0 ; i < elements.length ; i++) {
 			closed[i] = !elements[i];
@@ -79,79 +80,26 @@ public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
 			if (!closed[i])
 				forkingSubsets.add(getMinimalLowerBoundsOf(i, closed));
 			else forkingSubsets.add(null);
+			subTrees.add(null);
 		}
 		//set treeRestrictionsOfUSL
 		treeRestrictionsOfUSL = getSubTrees(root);
+	}
+	
+	@Override
+	public int getNbOfTrees() {
+		return treeRestrictionsOfUSL.size();
 	}
 	
 	public List<IntArrayList> getSparseTreeVertexSets() {
 		return treeRestrictionsOfUSL;
 	}
 	
-	private List<IntArrayList> getSubTrees(int localRoot) {
-		List<IntArrayList> subTreesFromLocalRoot = new ArrayList<>();
-		if (minimals.contains(localRoot)) {
-			subTreesFromLocalRoot.add(new IntArrayList(new int[] {localRoot}));
-			return subTreesFromLocalRoot;
-		}
-		else {
-			List<IntArrayList> forkGenerators = forkingSubsets.get(localRoot);
-			for (IntArrayList forkingLowerBounds : forkGenerators) {
-				List<List<IntArrayList>> subTreesFromLowerBounds = new ArrayList<>();
-				for (int lowerBound : forkingLowerBounds)
-					subTreesFromLowerBounds.add(getSubTrees(lowerBound));
-				for (List<IntArrayList> oneSubtreeForEachLB : Lists.cartesianProduct(subTreesFromLowerBounds)) {
-					IntArrayList subTreeFromLocalRoot = new IntArrayList(new int[] {localRoot});
-					for (IntArrayList lowerBoundSubTree : oneSubtreeForEachLB)
-						subTreeFromLocalRoot.addAll(lowerBoundSubTree);
-					subTreesFromLocalRoot.add(subTreeFromLocalRoot);
-				}
-			}
-		}
-		return subTreesFromLocalRoot;
-	}
-	
-	private List<IntArrayList> getMinimalLowerBoundsOf(int element, boolean[] closed) {
-		if (minimals.contains(element))
-			return new ArrayList<>();
-		return getTreeForkGeneratorsOf(
-				element, new IntArrayList(), minimalLowerBounds.get(element), closed);
-	}
-	
-	private List<IntArrayList> getTreeForkGeneratorsOf(int element, IntArrayList lowerBounds, 
-			IntArraySet coveredMinimals, boolean[] closed) {
-		List<IntArrayList> treeForkGenerators = new ArrayList<>();
-		for (int i = element - 1 ; i >= 0 ; i--) {
-			if (!closed[i]) {
-				IntArraySet iSupGeneratorMinimals = minimalLowerBounds.get(i);
-				if (Sets.intersection(coveredMinimals, iSupGeneratorMinimals).isEmpty()) {
-					IntArrayList nextLowerBounds = new IntArrayList(lowerBounds);
-					nextLowerBounds.add(i);
-					IntArraySet nextCoveredMinimals = 
-							new IntArraySet(Sets.union(coveredMinimals, iSupGeneratorMinimals));
-					if (nextCoveredMinimals.equals(minimalLowerBounds.get(element)))
-						treeForkGenerators.add(nextLowerBounds);
-					else {
-						boolean[] nextClosed = new boolean[elements.length];
-						System.arraycopy(closed, 0, nextClosed, 0, elements.length);
-						for (int iLowerBound : lowerSets.get(i)) {
-							nextClosed[iLowerBound] = true;
-						}
-						treeForkGenerators.addAll(
-								getTreeForkGeneratorsOf(element, nextLowerBounds, nextCoveredMinimals, 
-										nextClosed));
-					}
-				}
-			}
-		}
-		return treeForkGenerators;
-	}
-
 	@Override
 	public boolean hasNext() {
 		return treeIdx < treeRestrictionsOfUSL.size() - 1;
 	}
-
+	
 	@Override
 	public ClassificationTree<Integer, Integer> next() {
 		DirectedAcyclicGraph<Integer, Integer> dagUSL = new DirectedAcyclicGraph<>(null,  null,  false);
@@ -168,9 +116,68 @@ public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
 		return new ClassificationTree<Integer, Integer>(root, leaves, dagUSL, edges);
 	}
 
-	@Override
-	public int getNbOfTrees() {
-		return treeRestrictionsOfUSL.size();
+	private List<IntArrayList> getForkingSubsetOfLowerBounds(int element, IntArrayList uncompleteLowerBoundSubset, 
+			IntArraySet reachableMinimalsSoFar, boolean[] closed) {
+		List<IntArrayList> forkingLowerBoundSubsets = new ArrayList<>();
+		for (int i = element - 1 ; i >= 0 ; i--) {
+			if (!closed[i]) {
+				IntArraySet iReachableMinimals = minimalLowerBounds.get(i);
+				if (Sets.intersection(reachableMinimalsSoFar, iReachableMinimals).isEmpty()) {
+					IntArrayList nextLowerBounds = new IntArrayList(uncompleteLowerBoundSubset);
+					nextLowerBounds.add(i);
+					IntArraySet nextCoveredMinimals = 
+							new IntArraySet(Sets.union(reachableMinimalsSoFar, iReachableMinimals));
+					if (nextCoveredMinimals.equals(minimalLowerBounds.get(element)))
+						forkingLowerBoundSubsets.add(nextLowerBounds);
+					else {
+						boolean[] nextClosed = new boolean[elements.length];
+						System.arraycopy(closed, 0, nextClosed, 0, elements.length);
+						for (int iLowerBound : lowerSets.get(i)) {
+							nextClosed[iLowerBound] = true;
+						}
+						forkingLowerBoundSubsets.addAll(
+								getForkingSubsetOfLowerBounds(element, nextLowerBounds, nextCoveredMinimals, 
+										nextClosed));
+					}
+				}
+			}
+		}
+		return forkingLowerBoundSubsets;
+	}
+
+	private List<IntArrayList> getMinimalLowerBoundsOf(int element, boolean[] closed) {
+		if (minimals.contains(element))
+			return new ArrayList<>();
+		return getForkingSubsetOfLowerBounds(
+				element, new IntArrayList(), minimalLowerBounds.get(element), closed);
+	}
+
+	private List<IntArrayList> getSubTrees(int localRoot) {
+		List<IntArrayList> subTreesFromLocalRoot = new ArrayList<>();
+		if (minimals.contains(localRoot)) {
+			subTreesFromLocalRoot.add(new IntArrayList(new int[] {localRoot}));
+			return subTreesFromLocalRoot;
+		}
+		else {
+			List<IntArrayList> forkGenerators = forkingSubsets.get(localRoot);
+			for (IntArrayList forkingLowerBounds : forkGenerators) {
+				List<List<IntArrayList>> subTreesFromLowerBounds = new ArrayList<>();
+				for (int lowerBound : forkingLowerBounds) {
+					List<IntArrayList> subTreesFromLowerBound = subTrees.get(lowerBound);
+					if (subTreesFromLowerBound == null)
+						subTreesFromLowerBounds.add(getSubTrees(lowerBound));
+					else subTreesFromLowerBounds.add(subTreesFromLowerBound);
+				}
+				for (List<IntArrayList> oneSubtreeForEachLB : Lists.cartesianProduct(subTreesFromLowerBounds)) {
+					IntArrayList subTreeFromLocalRoot = new IntArrayList(new int[] {localRoot});
+					for (IntArrayList lowerBoundSubTree : oneSubtreeForEachLB)
+						subTreeFromLocalRoot.addAll(lowerBoundSubTree);
+					subTreesFromLocalRoot.add(subTreeFromLocalRoot);
+				}
+			}
+		}
+		subTrees.add(localRoot, subTreesFromLocalRoot);
+		return subTreesFromLocalRoot;
 	}
 
 }

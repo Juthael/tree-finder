@@ -9,6 +9,8 @@ import org.jgrapht.Graphs;
 import org.jgrapht.alg.util.Pair;
 import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 
+import com.tregouet.tree_finder.error.InvalidSemiLatticeException;
+
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 
 public class UpperSemilatticeFinder implements Iterator<SparseIntDirectedGraph> {
@@ -36,7 +38,7 @@ public class UpperSemilatticeFinder implements Iterator<SparseIntDirectedGraph> 
 			else {
 				IntArraySet iMinimalLowerBounds = new IntArraySet();
 				for (Integer predecessor : Graphs.predecessorListOf(rootedInvertedDAG, i))
-					iMinimalLowerBounds.addAll(minimalLowerBounds.get((int) predecessor));
+					iMinimalLowerBounds.addAll(minimalLowerBounds.get(predecessor));
 				minimalLowerBounds.add(iMinimalLowerBounds);
 			}
 		}
@@ -65,11 +67,30 @@ public class UpperSemilatticeFinder implements Iterator<SparseIntDirectedGraph> 
 		Arrays.fill(coordinates, 0);
 	}
 
+	//For test use. Same as advance(), with free parameters. 
+	public boolean advance(int[] coordinates, int[]arrayDimensions, int coordinateIdx) {
+		if (coordinates[coordinateIdx] < arrayDimensions[coordinateIdx] - 1) {
+			coordinates[coordinateIdx]++;
+			coordinateIdx = 0;
+			return true;
+		}
+		if (coordinateIdx == coordinates.length - 1)
+			return false;
+		coordinateIdx++;
+		Arrays.fill(coordinates,  0, coordinateIdx, 0);
+		return advance();
+	}
+
 	@Override
 	public boolean hasNext() {
 		return hasNext;
 	}
-
+		
+	public void initialize() {
+		Arrays.fill(coordinates, 0);
+		coordinateIdx = 0;
+	}
+	
 	@Override
 	public SparseIntDirectedGraph next() {
 		SparseIntDirectedGraph nextUSL = new SparseIntDirectedGraph(0, new ArrayList<Pair<Integer, Integer>>());
@@ -85,23 +106,14 @@ public class UpperSemilatticeFinder implements Iterator<SparseIntDirectedGraph> 
 		hasNext = advance();
 		return nextUSL;
 	}
-		
-	private boolean advance() {
-		if (coordinates[coordinateIdx] < uSLSupremaArrayDimensions[coordinateIdx] - 1) {
-			coordinates[coordinateIdx]++;
-			coordinateIdx = 0;
-			return true;
-		}
-		if (coordinateIdx == coordinates.length - 1)
-			return false;
-		coordinateIdx++;
-		Arrays.fill(coordinates,  0, coordinateIdx, 0);
-		return advance();
+	
+	public void validateNext() throws InvalidSemiLatticeException {
+		if (StructureInspector.isAnUpperSemiLattice(next()))
+			throw new InvalidSemiLatticeException();
 	}
 	
-	//For test use. Same as above, with free parameters. 
-	public boolean advance(int[] coordinates, int[]arrayDimensions, int coordinateIdx) {
-		if (coordinates[coordinateIdx] < arrayDimensions[coordinateIdx] - 1) {
+	private boolean advance() {
+		if (coordinates[coordinateIdx] < uSLSupremaArrayDimensions[coordinateIdx] - 1) {
 			coordinates[coordinateIdx]++;
 			coordinateIdx = 0;
 			return true;

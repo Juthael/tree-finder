@@ -14,10 +14,6 @@ public class InvalidRootedInvertedDAGException extends Exception {
 		super(message);
 	}
 
-	public InvalidRootedInvertedDAGException(Throwable cause) {
-		super(cause);
-	}
-
 	public InvalidRootedInvertedDAGException(String message, Throwable cause) {
 		super(message, cause);
 	}
@@ -25,6 +21,10 @@ public class InvalidRootedInvertedDAGException extends Exception {
 	public InvalidRootedInvertedDAGException(String message, Throwable cause, boolean enableSuppression,
 			boolean writableStackTrace) {
 		super(message, cause, enableSuppression, writableStackTrace);
+	}
+
+	public InvalidRootedInvertedDAGException(Throwable cause) {
+		super(cause);
 	}
 
 }
