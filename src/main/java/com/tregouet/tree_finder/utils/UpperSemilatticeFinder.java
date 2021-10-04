@@ -9,7 +9,7 @@ import org.jgrapht.Graphs;
 import org.jgrapht.alg.util.Pair;
 import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 
-import com.tregouet.tree_finder.error.InvalidSemiLatticeException;
+import com.tregouet.tree_finder.error.InvalidSemilatticeException;
 
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 
@@ -107,9 +107,9 @@ public class UpperSemilatticeFinder implements Iterator<SparseIntDirectedGraph> 
 		return nextUSL;
 	}
 	
-	public void validateNext() throws InvalidSemiLatticeException {
-		if (StructureInspector.isAnUpperSemiLattice(next()))
-			throw new InvalidSemiLatticeException();
+	public void validateNext() throws InvalidSemilatticeException {
+		if (StructureInspector.isAnUpperSemilattice(next()))
+			throw new InvalidSemilatticeException();
 	}
 	
 	private boolean advance() {

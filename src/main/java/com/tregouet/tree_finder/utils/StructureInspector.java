@@ -23,7 +23,7 @@ public class StructureInspector {
 	}
 	
 	public static <V, E> boolean isAClassificationTree(DirectedAcyclicGraph<V, E> dag) {
-		if (!isAnUpperSemiLattice(dag))
+		if (!isAnUpperSemilattice(dag))
 			return false;
 		List<Set<V>> closedSupGeneratorSubsetsOfMinimals = new ArrayList<>();
 		Set<V> minimals = dag.vertexSet().stream()
@@ -47,7 +47,7 @@ public class StructureInspector {
 		return true;
 	}
 	
-	public static <V, E> boolean isAnUpperSemiLattice(DirectedAcyclicGraph<V, E> dag) {
+	public static <V, E> boolean isAnUpperSemilattice(DirectedAcyclicGraph<V, E> dag) {
 		if (dag.vertexSet().isEmpty())
 			return true;
 		List<V> topoListOfVertices = new ArrayList<>();
@@ -81,7 +81,7 @@ public class StructureInspector {
 		return true;
 	}
 	
-	public static boolean isAnUpperSemiLattice(SparseIntDirectedGraph directedGraph) {
+	public static boolean isAnUpperSemilattice(SparseIntDirectedGraph directedGraph) {
 		if (directedGraph.vertexSet().isEmpty())
 			return true;
 		if (!isTransitive(directedGraph))
@@ -162,6 +162,16 @@ public class StructureInspector {
 			}
 		}
 		return true;
-	}	
+	}
+	
+	public static boolean isRooted(SparseIntDirectedGraph directedGraph) {
+		List<Integer> outDegree0Vertices = directedGraph.edgeSet().stream()
+				.filter(v -> directedGraph.outDegreeOf(v) == 0)
+				.collect(Collectors.toList());
+		if (outDegree0Vertices.size() != 1)
+			return false;
+		List<Integer> lowerBounds = Graphs.predecessorListOf(directedGraph, outDegree0Vertices.get(0));
+		return (lowerBounds.size() == directedGraph.vertexSet().size() - 1);
+	}
 
 }

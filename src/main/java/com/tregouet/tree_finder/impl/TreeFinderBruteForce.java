@@ -14,7 +14,7 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 import com.google.common.collect.Sets;
 import com.tregouet.tree_finder.ITreeFinder;
 import com.tregouet.tree_finder.data.ClassificationTree;
-import com.tregouet.tree_finder.error.InvalidSemiLatticeException;
+import com.tregouet.tree_finder.error.InvalidSemilatticeException;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
 public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
@@ -29,9 +29,9 @@ public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
 	private Iterator<Set<V>> treeIte;
 	
 	public TreeFinderBruteForce(DirectedAcyclicGraph<V, E> upperSemilattice, boolean validate) 
-			throws InvalidSemiLatticeException {
-		if (validate && !StructureInspector.isAnUpperSemiLattice(upperSemilattice))
-			throw new InvalidSemiLatticeException();
+			throws InvalidSemilatticeException {
+		if (validate && !StructureInspector.isAnUpperSemilattice(upperSemilattice))
+			throw new InvalidSemilatticeException();
 		this.upperSemilattice = upperSemilattice;
 		V maximum = null;
 		Iterator<V> vIte = upperSemilattice.vertexSet().iterator();

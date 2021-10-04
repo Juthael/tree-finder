@@ -28,7 +28,7 @@ import org.junit.Test;
 
 import com.tregouet.tree_finder.ITreeFinder;
 import com.tregouet.tree_finder.data.ClassificationTree;
-import com.tregouet.tree_finder.error.InvalidSemiLatticeException;
+import com.tregouet.tree_finder.error.InvalidSemilatticeException;
 import com.tregouet.tree_finder.error.InvalidTreeException;
 
 import guru.nidi.graphviz.engine.Format;
@@ -76,7 +76,7 @@ public class TreeFinderTest {
 	
 	//Can last up to 300 sec.
 	@Test
-	public void whenLargeInputThenTreesStillReturned() throws InvalidSemiLatticeException, IOException {
+	public void whenLargeInputThenTreesStillReturned() throws InvalidSemilatticeException, IOException {
 		@SuppressWarnings("unused")
 		int nbOfTreesReturned = 0;
 		int nbOfAtomsInPowerSet = 5;
@@ -116,25 +116,25 @@ public class TreeFinderTest {
 		try {
 			treeFinderNotRooted = new TreeFinder<>(notRootedDAG, true);
 		}
-		catch (InvalidSemiLatticeException e) {
+		catch (InvalidSemilatticeException e) {
 			exceptionThrownWithNotRootedDAG = true;
 		}
 		try {
 			treeFinderNotInverted = new TreeFinder<>(notInvertedDAG, true);
 		}
-		catch (InvalidSemiLatticeException e) {
+		catch (InvalidSemilatticeException e) {
 			exceptionThrownWithNotInvertedDAG = true;
 		}
 		try {
 			treeFinderABC = new TreeFinder<>(upperSemiLatticeABC, true);
 		}
-		catch (InvalidSemiLatticeException e) {
+		catch (InvalidSemilatticeException e) {
 			exceptionThrownWithABC = true;
 		}
 		try {
 			treeFinderPowerSet = new TreeFinder<>(upperSemiLatticePowerSet, true);
 		}
-		catch (InvalidSemiLatticeException e) {
+		catch (InvalidSemilatticeException e) {
 			exceptionThrownWithPowerSet = true;
 		}
 		assertTrue(exceptionThrownWithNotConnectedDAG 
@@ -145,7 +145,7 @@ public class TreeFinderTest {
 	}
 	
 	@Test
-	public void whenTreesRequestedThenAllTreesReturnedAreValid() throws InvalidSemiLatticeException {
+	public void whenTreesRequestedThenAllTreesReturnedAreValid() throws InvalidSemilatticeException {
 		boolean allTreesReturnedAreValid = true;
 		ITreeFinder<String, Edge> finder = new TreeFinder<>(upperSemiLatticeABC, true);
 		while (finder.hasNext()) {
@@ -161,7 +161,7 @@ public class TreeFinderTest {
 	}
 	
 	@Test
-	public void whenTreesRequestedThenExpectedNbOfTreesReturned() throws InvalidSemiLatticeException {
+	public void whenTreesRequestedThenExpectedNbOfTreesReturned() throws InvalidSemilatticeException {
 		int nbOfTreesExpected = 8;
 		ITreeFinder<String, Edge> finder = new TreeFinder<>(upperSemiLatticeABC, true);
 		assertTrue(nbOfTreesExpected == finder.getNbOfTrees());
@@ -169,7 +169,7 @@ public class TreeFinderTest {
 	
 	@Test
 	public void whenTreesRequestedThenExpectedTreesReturned() 
-			throws InvalidTreeException, InvalidSemiLatticeException {
+			throws InvalidTreeException, InvalidSemilatticeException {
 		ITreeFinder<String, Edge> finder = new TreeFinder<>(upperSemiLatticeABC, true);
 		boolean asExpected = true;
 		Set<ClassificationTree<String, Edge>> expected = new HashSet<>();
@@ -370,7 +370,6 @@ public class TreeFinderTest {
 					upperSemiLatticePowerSet.addEdge(powerSet.get(j), powerSet.get(i));
 			}
 		}
-		TransitiveReduction.INSTANCE.reduce(upperSemiLatticePowerSet);
 		//print graph
 		//printGraph(upperSemiLatticePowerSet);
 	}
