@@ -437,22 +437,4 @@ public class TreeFinderTest {
 @SuppressWarnings("serial")
 class Edge extends DefaultEdge {
 
-	@Override
-	public boolean equals(Object o) {
-		if (getClass() != o.getClass())
-			return false;
-		Edge other = (Edge) o;
-		return (getSource().equals(other.getSource()) && getTarget().equals(other.getTarget()));
-	}
-	
-	@Override
-	public String getSource() {
-		return super.getSource().toString();
-	}
-	
-	@Override
-	public int hashCode() {
-		return getSource().hashCode() + getTarget().hashCode();
-	}
-	
 }

@@ -2,11 +2,21 @@ package com.tregouet.tree_finder.utils;
 
 import static org.junit.Assert.*;
 
+import org.jgrapht.graph.DirectedAcyclicGraph;
+import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.tregouet.tree_finder.EdgeForTests;
+
 public class StructureInspectorTest {
+	
+	private DirectedAcyclicGraph<String, EdgeForTests> classificationTree;
+	private DirectedAcyclicGraph<String, EdgeForTests> powerSetMinusEmptySet;
+	private SparseIntDirectedGraph powerSetMinusEmptySetSparse;
+	private DirectedAcyclicGraph<String, EdgeForTests> unrootedDAG;
+	private SparseIntDirectedGraph unrootedDAGSparse;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
