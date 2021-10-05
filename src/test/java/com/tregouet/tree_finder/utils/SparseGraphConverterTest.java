@@ -20,5 +20,10 @@ public class SparseGraphConverterTest {
 	public void whenGraphIsConvertedThenCanBeRebuiltInItsOriginalForm() {
 		fail("Not yet implemented");
 	}
+	
+	@Test
+	public void whenGraphIsConvertedThenAscendingOrderOverVerticesIsTopological() {
+		fail("Not yet implemented");
+	}
 
 }

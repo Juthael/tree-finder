@@ -3,7 +3,7 @@ package com.tregouet.tree_finder.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jgrapht.alg.TransitiveClosure;
+import org.jgrapht.alg.TransitiveReduction;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 
@@ -17,8 +17,7 @@ import it.unimi.dsi.fastutil.ints.IntArraySet;
 
 public class TreeFinderOpt<V, E> implements ITreeFinder<V, E> {
 
-	DirectedAcyclicGraph<V, E> input;
-	DirectedAcyclicGraph<Integer, Integer> sparseInput;
+	private final DirectedAcyclicGraph<V, E> input;
 	private final SparseGraphConverter<V, E> sparseConverter;
 	private final V root;
 	private final int sparseRoot;
@@ -28,14 +27,11 @@ public class TreeFinderOpt<V, E> implements ITreeFinder<V, E> {
 	private final List<IntArrayList> sparseTreeVertexSets = new ArrayList<>();
 	private int treeIdx = 0;
 	
-	public TreeFinderOpt(DirectedAcyclicGraph<V, E> rootedInvertedDAG, boolean relationIsTransitive, 
-			boolean isAnUpperSemilattice) {
-		if (!relationIsTransitive) 
-			TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(rootedInvertedDAG);
+	public TreeFinderOpt(DirectedAcyclicGraph<V, E> rootedInvertedDAG, boolean isAnUpperSemilattice) {
+		TransitiveReduction.INSTANCE.reduce(rootedInvertedDAG);
 		input = rootedInvertedDAG;
 		sparseConverter = new SparseGraphConverter<>(input, true);
 		SparseIntDirectedGraph sparseInput = sparseConverter.getSparseGraph();
-		this.sparseInput = sparseConverter.asSparseDAG();
 		int sRoot = -1;
 		for (Integer vertex : sparseInput.vertexSet()) {
 			if (sparseInput.inDegreeOf(vertex) == 0) {

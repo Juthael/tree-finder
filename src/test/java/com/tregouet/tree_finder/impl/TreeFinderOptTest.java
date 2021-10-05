@@ -24,6 +24,11 @@ public class TreeFinderOptTest {
 	@Test
 	public void whenTreesReturnedThenValid() {
 		fail("Not yet implemented");
-	}	
+	}
+	
+	@Test
+	public void whenTreesRequestedThenExpectedReturned() {
+		fail("Not yet implemented");
+	}
 
 }

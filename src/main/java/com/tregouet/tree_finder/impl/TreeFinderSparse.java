@@ -31,11 +31,14 @@ public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
 	private final List<IntArrayList> treeRestrictionsOfUSL;
 	private int treeIdx = 0;
 	
-	public TreeFinderSparse(SparseIntDirectedGraph upperSemiLattice, int root, IntArraySet minimals) {
-		this.upperSemiLattice = upperSemiLattice;
+	/*
+	 * UNSAFE. Parameter MUST be the transitive reduction of an upper semilattice. 
+	 */
+	public TreeFinderSparse(SparseIntDirectedGraph reducedUSL, int root, IntArraySet minimals) {
+		this.upperSemiLattice = reducedUSL;
 		this.minimals = minimals;
 		//set elements and coveredElements
-		TopologicalOrderIterator<Integer, Integer> topoIte = new TopologicalOrderIterator<>(upperSemiLattice);
+		TopologicalOrderIterator<Integer, Integer> topoIte = new TopologicalOrderIterator<>(reducedUSL);
 		elements = new boolean[root];
 		for (int i = 0 ; i <= root ; i++) {
 			coveredElements.add(null);
@@ -44,16 +47,17 @@ public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
 			Integer element = topoIte.next();
 			int unboxedElement = element;
 			elements[unboxedElement] = true;
-			List<Integer> covered = Graphs.predecessorListOf(upperSemiLattice, element);
+			List<Integer> covered = Graphs.predecessorListOf(reducedUSL, element);
 			coveredElements.add(unboxedElement, new IntArrayList(covered));
 		}
 		//set lowerSets and minimalLowerBounds
 		for (int i = 0 ; i <= root ; i++) {
 			if (elements[i]) {
 				if (minimals.contains(i)) {
-					IntArraySet wrappedMinimal = new IntArraySet(new int[] {i});
-					lowerSets.add(wrappedMinimal);
-					minimalLowerBounds.add(wrappedMinimal);
+					IntArraySet singleton = new IntArraySet();
+					singleton.add(i);
+					lowerSets.add(singleton);
+					minimalLowerBounds.add(singleton);
 				}
 				else {
 					IntArraySet iLowerSet = new IntArraySet(new int[] {i});

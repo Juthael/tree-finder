@@ -25,16 +25,19 @@ public class UpperSemilatticeFinder implements Iterator<SparseIntDirectedGraph> 
 	private int coordinateIdx = 0;
 	
 	/*
-	 * Unsafe. Parameter MUST be a rooted inverted directed acyclic graph, and ascending order 
-	 * over vertices MUST be topological.  
+	 * Unsafe. Parameter MUST be the transitive reduction of a rooted inverted directed acyclic graph, 
+	 * and ascending order over vertices MUST be topological.  
 	 */
 	public UpperSemilatticeFinder(SparseIntDirectedGraph rootedInvertedDAG, IntArraySet minimals) {
 		this.rootedInvertedDAG = rootedInvertedDAG;
 		setCardinal = rootedInvertedDAG.vertexSet().size();
 		List<IntArraySet> minimalLowerBounds = new ArrayList<>();
 		for (int i = 0 ; i < setCardinal ; i++) {
-			if (minimals.contains(i))
-				minimalLowerBounds.add(new IntArraySet(new int[] {i}));
+			if (minimals.contains(i)) {
+				IntArraySet singleton = new IntArraySet();
+				singleton.add(i);
+				minimalLowerBounds.add(singleton);
+			}
 			else {
 				IntArraySet iMinimalLowerBounds = new IntArraySet();
 				for (Integer predecessor : Graphs.predecessorListOf(rootedInvertedDAG, i))
@@ -42,7 +45,7 @@ public class UpperSemilatticeFinder implements Iterator<SparseIntDirectedGraph> 
 				minimalLowerBounds.add(iMinimalLowerBounds);
 			}
 		}
-		int[] uSLSupremaArrayDimensionsOversized = new int[minimalLowerBounds.size()];
+		int[] uSLSupremaOversizedDimensionArray = new int[minimalLowerBounds.size()];
 		int subsetIndex;
 		for (IntArraySet minimalSubset : minimalLowerBounds) {
 			subsetIndex = uSLSupGeneratorMinimals.indexOf(minimalSubset);
@@ -50,10 +53,10 @@ public class UpperSemilatticeFinder implements Iterator<SparseIntDirectedGraph> 
 				uSLSupGeneratorMinimals.add(minimalSubset);
 				subsetIndex = uSLSupGeneratorMinimals.size() - 1;
 			}
-			uSLSupremaArrayDimensionsOversized[subsetIndex]++;
+			uSLSupremaOversizedDimensionArray[subsetIndex]++;
 		}
 		uSLSupremaArrayDimensions =
-				Arrays.copyOfRange(uSLSupremaArrayDimensionsOversized, 0, uSLSupGeneratorMinimals.size());
+				Arrays.copyOfRange(uSLSupremaOversizedDimensionArray, 0, uSLSupGeneratorMinimals.size());
 		coordinates = new int[uSLSupGeneratorMinimals.size()]; 
 		uSLSuprema = new int[uSLSupGeneratorMinimals.size()][];
 		for (int i = 0 ; i < uSLSuprema.length ; i++) {
@@ -108,7 +111,7 @@ public class UpperSemilatticeFinder implements Iterator<SparseIntDirectedGraph> 
 	}
 	
 	public void validateNext() throws InvalidSemilatticeException {
-		if (StructureInspector.isAnUpperSemilattice(next()))
+		if (!StructureInspector.isAnUpperSemilattice(next()))
 			throw new InvalidSemilatticeException();
 	}
 	

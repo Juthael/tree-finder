@@ -45,5 +45,17 @@ public class StructureInspectorTest {
 	public void whenChecksIfSparseParameterIsRootedThenReturnsTrueOnlyWhenExpected() {
 		fail("Not yet implemented");
 	}
+	
+	@Test
+	public void whenTransitiveClosureRequestedThenReturned() {
+		fail("Not yet implemented");
+	}
+	
+	@Test
+	public void theCallOfAnyMethodReturnsTheSameValueWetherTheParameterIsAGivenGraphOrItsTransitiveReduction() {
+		//except isTransitive(), oviously...
+		fail("Not yet implemented");
+	}
+	
 
 }
