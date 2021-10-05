@@ -1,14 +1,15 @@
 package com.tregouet.tree_finder.utils;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.jgrapht.Graphs;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
+import org.jgrapht.traverse.TopologicalOrderIterator;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -79,7 +80,34 @@ public class SparseGraphConverterTest {
 	
 	@Test
 	public void whenGraphIsConvertedThenAscendingOrderOverVerticesIsTopological() {
-		fail("Not yet implemented");
+		boolean ascendinfOrderIsTopological = true;
+		int nbOfChecks = 0;
+		List<String> dAGVerticesInTopologicalOrder = new ArrayList<>();
+		new TopologicalOrderIterator<String, EdgeForTests>(anyDAG).forEachRemaining(
+				v -> dAGVerticesInTopologicalOrder.add(v));
+		SparseGraphConverter<String, EdgeForTests> converter = new SparseGraphConverter<>(anyDAG, false);
+		SparseIntDirectedGraph sparseDAG = converter.getSparseGraph();
+		List<Integer> sparseVertexSet = new ArrayList<>(sparseDAG.vertexSet());
+		for (int i = 0 ; i < sparseVertexSet.size() - 1 ; i++) {
+			Integer iSparseVertex = sparseVertexSet.get(i);
+			String iRecoveredVertex = converter.getVertex(iSparseVertex);
+			for (int j = i + 1 ; j < sparseVertexSet.size() ; j++) {
+				Integer jSparseVertex = sparseVertexSet.get(j);
+				String jRecoveredVertex = converter.getVertex(jSparseVertex);
+				if (iSparseVertex < jSparseVertex 
+						&& dAGVerticesInTopologicalOrder.indexOf(iRecoveredVertex) 
+						>= dAGVerticesInTopologicalOrder.indexOf(jRecoveredVertex)) {
+					ascendinfOrderIsTopological = false;
+				}
+				else if (iSparseVertex > jSparseVertex 
+						&& dAGVerticesInTopologicalOrder.indexOf(iRecoveredVertex)
+						<= dAGVerticesInTopologicalOrder.indexOf(jRecoveredVertex)) {
+					ascendinfOrderIsTopological = false;
+				}
+				nbOfChecks++;
+			}
+		}
+		assertTrue(ascendinfOrderIsTopological && nbOfChecks > 0);
 	}
 
 }
