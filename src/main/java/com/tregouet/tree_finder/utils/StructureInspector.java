@@ -95,6 +95,7 @@ public class StructureInspector {
 			for (int j = i + 1 ; j < topoListOfVertices.size() ; j++) {
 				Integer jVertex = topoListOfVertices.get(j);
 				Set<Integer> jUpperSet = new HashSet<>(Graphs.successorListOf(transitiveDirectedGraph, jVertex));
+				jUpperSet.add(jVertex);
 				Set<Integer> ijUpperSet = new HashSet<>(Sets.intersection(iUpperSet, jUpperSet));
 				if (ijUpperSet.isEmpty())
 					//then {i,j} admits no upper bound, and dag is not an upper semilattice
@@ -148,10 +149,12 @@ public class StructureInspector {
 	}
 	
 	public static boolean isRooted(SparseIntDirectedGraph directedGraph) {
-		List<Integer> outDegree0Vertices = directedGraph.edgeSet().stream()
-				.filter(v -> directedGraph.outDegreeOf(v) == 0)
-				.collect(Collectors.toList());
-		return (outDegree0Vertices.size() == 1);
+		int nbOfMaximalElements = 0;
+		for (Integer vertex : directedGraph.vertexSet()) {
+			if (directedGraph.outDegreeOf(vertex) == 0)
+				nbOfMaximalElements++;
+		}
+		return nbOfMaximalElements == 1;
 	}
 	
 	//public for test use
@@ -171,7 +174,7 @@ public class StructureInspector {
 			for (Integer iSuccessor : iSuccessors) {
 				iVertexStrictUpperBounds.addAll(strictUpperSets.get(topoListOfVertices.indexOf(iSuccessor)));
 			}
-			strictUpperSets.add(i, iVertexStrictUpperBounds);
+			strictUpperSets.set(i, iVertexStrictUpperBounds);
 		}
 		List<Pair<Integer, Integer>> edgesInTransitiveGraph = new ArrayList<>();
 		for (int i = 0 ; i < nbOfVertices ; i++) {

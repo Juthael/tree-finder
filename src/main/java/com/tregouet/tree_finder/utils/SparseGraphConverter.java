@@ -20,8 +20,8 @@ public class SparseGraphConverter<V, E> {
 	private final List<Pair<Integer, Integer>> sparseEdges = new ArrayList<>();
 	private final SparseIntDirectedGraph sparseGraph;
 	
-	public SparseGraphConverter(DirectedAcyclicGraph<V, E> dag, boolean relationIsTransitive) {
-		if (!relationIsTransitive)
+	public SparseGraphConverter(DirectedAcyclicGraph<V, E> dag, boolean skipClosure) {
+		if (!skipClosure)
 			TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(dag);
 		topoOrderedVertices = new ArrayList<>();
 		TopologicalOrderIterator<V, E> topoIte = new TopologicalOrderIterator<>(dag);
