@@ -2,52 +2,59 @@ package com.tregouet.tree_finder.utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.jgrapht.Graphs;
-import org.jgrapht.alg.util.Pair;
-import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
+import org.jgrapht.alg.TransitiveClosure;
+import org.jgrapht.graph.DirectedAcyclicGraph;
+import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import com.tregouet.tree_finder.error.InvalidSemilatticeException;
 
-import it.unimi.dsi.fastutil.ints.IntArraySet;
+public class UpperSemilatticeFinder<V, E> implements Iterator<DirectedAcyclicGraph<V, E>> {
 
-public class UpperSemilatticeFinder implements Iterator<SparseIntDirectedGraph> {
-
-	private final SparseIntDirectedGraph rootedInvertedDAG;
+	private final DirectedAcyclicGraph<V, E> rootedInvertedDAG;
+	private final List<V> vertexSet;
 	private final int setCardinal;
-	private final List<IntArraySet> uSLSupGeneratorMinimals = new ArrayList<>();
-	private final int[][] uSLSuprema;
+	private final List<Set<V>> uSLSupGeneratorMinimals = new ArrayList<>();
+	private final int[][] uSLSupremaCoords;
 	private final int[] uSLSupremaArrayDimensions;
 	private final int[] coordinates;
 	private boolean hasNext = true;
 	private int coordinateIdx = 0;
+	private boolean dAGisReduced = true;
 	
 	/*
 	 * Unsafe. Parameter MUST be the transitive reduction of a rooted inverted directed acyclic graph, 
 	 * and ascending order over vertices MUST be topological.  
 	 */
-	public UpperSemilatticeFinder(SparseIntDirectedGraph rootedInvertedDAG, IntArraySet minimals) {
-		this.rootedInvertedDAG = rootedInvertedDAG;
-		setCardinal = rootedInvertedDAG.vertexSet().size();
-		List<IntArraySet> minimalLowerBounds = new ArrayList<>();
-		for (int i = 0 ; i < setCardinal ; i++) {
-			if (minimals.contains(i)) {
-				IntArraySet singleton = new IntArraySet();
-				singleton.add(i);
-				minimalLowerBounds.add(singleton);
+	public UpperSemilatticeFinder(DirectedAcyclicGraph<V, E> rootedInvertedDAGReduced, Set<V> minimals) {
+		this.rootedInvertedDAG = rootedInvertedDAGReduced;
+		vertexSet = new ArrayList<>();
+		new TopologicalOrderIterator<V, E>(rootedInvertedDAGReduced).forEachRemaining(v -> vertexSet.add(v));
+		setCardinal = rootedInvertedDAGReduced.vertexSet().size();
+		Map<V, Set<V>> elmtToMinimalLowerBounds = new HashMap<>();
+		for (V element : vertexSet) {
+			if (minimals.contains(element)) {
+				Set<V> singleton = new HashSet<>();
+				singleton.add(element);
+				elmtToMinimalLowerBounds.put(element, singleton);
 			}
 			else {
-				IntArraySet iMinimalLowerBounds = new IntArraySet();
-				for (Integer predecessor : Graphs.predecessorListOf(rootedInvertedDAG, i))
-					iMinimalLowerBounds.addAll(minimalLowerBounds.get(predecessor));
-				minimalLowerBounds.add(iMinimalLowerBounds);
+				Set<V> iMinimalLowerBounds = new HashSet<>();
+				for (V predecessor : Graphs.predecessorListOf(rootedInvertedDAGReduced, element))
+					iMinimalLowerBounds.addAll(elmtToMinimalLowerBounds.get(predecessor));
+				elmtToMinimalLowerBounds.put(element, iMinimalLowerBounds);
 			}
 		}
-		int[] uSLSupremaOversizedDimensionArray = new int[minimalLowerBounds.size()];
+		int[] uSLSupremaOversizedDimensionArray = new int[elmtToMinimalLowerBounds.size()];
 		int subsetIndex;
-		for (IntArraySet minimalSubset : minimalLowerBounds) {
+		for (Set<V> minimalSubset : elmtToMinimalLowerBounds.values()) {
 			subsetIndex = uSLSupGeneratorMinimals.indexOf(minimalSubset);
 			if (subsetIndex == -1) {
 				uSLSupGeneratorMinimals.add(minimalSubset);
@@ -58,20 +65,20 @@ public class UpperSemilatticeFinder implements Iterator<SparseIntDirectedGraph> 
 		uSLSupremaArrayDimensions =
 				Arrays.copyOfRange(uSLSupremaOversizedDimensionArray, 0, uSLSupGeneratorMinimals.size());
 		coordinates = new int[uSLSupGeneratorMinimals.size()]; 
-		uSLSuprema = new int[uSLSupGeneratorMinimals.size()][];
-		for (int i = 0 ; i < uSLSuprema.length ; i++) {
-			uSLSuprema[i] = new int[uSLSupremaArrayDimensions[i]];
+		uSLSupremaCoords = new int[uSLSupGeneratorMinimals.size()][];
+		for (int i = 0 ; i < uSLSupremaCoords.length ; i++) {
+			uSLSupremaCoords[i] = new int[uSLSupremaArrayDimensions[i]];
 		}
 		for (int i = 0 ; i < setCardinal ; i++) {
-			int uSLSupremumIndex = uSLSupGeneratorMinimals.indexOf(minimalLowerBounds.get(i));
-			uSLSuprema[uSLSupremumIndex][coordinates[uSLSupremumIndex]] = i;
-			coordinates[uSLSupremumIndex]++;
+			int uSLSupremumCoord = uSLSupGeneratorMinimals.indexOf(elmtToMinimalLowerBounds.get(i));
+			uSLSupremaCoords[uSLSupremumCoord][coordinates[uSLSupremumCoord]] = i;
+			coordinates[uSLSupremumCoord]++;
 		}
 		Arrays.fill(coordinates, 0);
 	}
 
 	//For test use. Same as advance(), with free parameters. 
-	public boolean advance(int[] coordinates, int[]arrayDimensions, int coordinateIdx) {
+	public static boolean advance(int[] coordinates, int[]arrayDimensions, int coordinateIdx) {
 		if (coordinates[coordinateIdx] < arrayDimensions[coordinateIdx] - 1) {
 			coordinates[coordinateIdx]++;
 			coordinateIdx = 0;
@@ -81,7 +88,7 @@ public class UpperSemilatticeFinder implements Iterator<SparseIntDirectedGraph> 
 			return false;
 		coordinateIdx++;
 		Arrays.fill(coordinates,  0, coordinateIdx, 0);
-		return advance();
+		return advance(coordinates, arrayDimensions, coordinateIdx);
 	}
 
 	@Override
@@ -94,18 +101,24 @@ public class UpperSemilatticeFinder implements Iterator<SparseIntDirectedGraph> 
 		coordinateIdx = 0;
 	}
 	
+	/*
+	 * Returns a closed USL
+	 */
 	@Override
-	public SparseIntDirectedGraph next() {
-		SparseIntDirectedGraph nextUSL = new SparseIntDirectedGraph(0, new ArrayList<Pair<Integer, Integer>>());
+	public DirectedAcyclicGraph<V, E> next() {
+		if (dAGisReduced)
+			closeDAG();
+		DirectedAcyclicGraph<V, E> nextUSL = new DirectedAcyclicGraph<>(null, null, false);
+		List<V> nextUSLVertices = new ArrayList<>();
+		List<E> nextUSLEdges = new ArrayList<>();
 		for (int i = 0 ; i < coordinates.length ; i++)
-			nextUSL.addVertex(uSLSuprema[i][coordinates[i]]);
-		for (Integer edge : rootedInvertedDAG.edgeSet()) {
-			Integer edgeSource = rootedInvertedDAG.getEdgeSource(edge);
-			Integer edgeTarget = rootedInvertedDAG.getEdgeTarget(edge);
-			if (nextUSL.containsVertex(edgeSource) 
-					&& nextUSL.containsVertex(edgeTarget))
-				nextUSL.addEdge(edgeSource, edgeSource, edge);
+			nextUSLVertices.add(vertexSet.get(uSLSupremaCoords[i][coordinates[i]]));
+		for (E edge : rootedInvertedDAG.edgeSet()) {
+			if (nextUSLVertices.contains(rootedInvertedDAG.getEdgeSource(edge)) 
+					&& nextUSLVertices.contains(rootedInvertedDAG.getEdgeTarget(edge)))
+				nextUSLEdges.add(edge);
 		}
+		Graphs.addAllEdges(nextUSL, rootedInvertedDAG, nextUSLEdges);
 		hasNext = advance();
 		return nextUSL;
 	}
@@ -126,6 +139,11 @@ public class UpperSemilatticeFinder implements Iterator<SparseIntDirectedGraph> 
 		coordinateIdx++;
 		Arrays.fill(coordinates,  0, coordinateIdx, 0);
 		return advance();
+	}
+	
+	private void closeDAG() {
+		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(rootedInvertedDAG);
+		dAGisReduced = false;
 	}
 
 }

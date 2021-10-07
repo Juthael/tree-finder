@@ -18,7 +18,7 @@ import com.tregouet.tree_finder.data.ClassificationTree;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 
-public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
+public class TreeFinderUSLSparse implements ITreeFinder<Integer, Integer> {
 
 	private final SparseIntDirectedGraph upperSemiLattice;
 	private final IntArraySet minimals;
@@ -34,7 +34,7 @@ public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
 	/*
 	 * UNSAFE. Parameter MUST be the transitive reduction of an upper semilattice. 
 	 */
-	public TreeFinderSparse(SparseIntDirectedGraph reducedUSL, int root, IntArraySet minimals) {
+	public TreeFinderUSLSparse(SparseIntDirectedGraph reducedUSL, int root, IntArraySet minimals) {
 		this.upperSemiLattice = reducedUSL;
 		this.minimals = minimals;
 		//set elements and coveredElements
@@ -90,7 +90,6 @@ public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
 		treeRestrictionsOfUSL = getSubTrees(root);
 	}
 	
-	@Override
 	public int getNbOfTrees() {
 		return treeRestrictionsOfUSL.size();
 	}
@@ -109,7 +108,6 @@ public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
 		DirectedAcyclicGraph<Integer, Integer> dagUSL = new DirectedAcyclicGraph<>(null,  null,  false);
 		Graphs.addAllEdges(dagUSL, upperSemiLattice, upperSemiLattice.edgeSet());
 		Integer root = elements.length - 1;
-		List<Integer> leaves = new ArrayList<>(minimals);
 		Set<Integer> edges = new HashSet<>();
 		IntArrayList treeVertices = treeRestrictionsOfUSL.get(treeIdx++);
 		for (Integer edge : upperSemiLattice.edgeSet()) {
@@ -117,7 +115,7 @@ public class TreeFinderSparse implements ITreeFinder<Integer, Integer> {
 					&& treeVertices.contains((int) upperSemiLattice.getEdgeTarget(edge)))
 				edges.add(edge);
 		}
-		return new ClassificationTree<Integer, Integer>(root, leaves, dagUSL, edges);
+		return new ClassificationTree<Integer, Integer>(root, minimals, dagUSL, edges);
 	}
 
 	private List<IntArrayList> getForkingSubsetOfLowerBounds(int element, IntArrayList uncompleteLowerBoundSubset, 

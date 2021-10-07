@@ -17,7 +17,7 @@ import com.tregouet.tree_finder.data.ClassificationTree;
 import com.tregouet.tree_finder.error.InvalidSemilatticeException;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
-public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
+public class TreeFinderUSLBruteForce<V, E> implements ITreeFinder<V, E> {
 
 	private final DirectedAcyclicGraph<V, E> upperSemilattice;
 	private final V root;
@@ -28,7 +28,7 @@ public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
 	private final Set<Set<V>> treeVertexSets = new HashSet<>();
 	private Iterator<Set<V>> treeIte;
 	
-	public TreeFinderBruteForce(DirectedAcyclicGraph<V, E> upperSemilattice, boolean validate) 
+	public TreeFinderUSLBruteForce(DirectedAcyclicGraph<V, E> upperSemilattice, boolean validate) 
 			throws InvalidSemilatticeException {
 		if (validate && !StructureInspector.isAnUpperSemilattice(upperSemilattice))
 			throw new InvalidSemilatticeException();
@@ -60,7 +60,6 @@ public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
 		treeIte = treeVertexSets.iterator();
 	}
 
-	@Override
 	public int getNbOfTrees() {
 		return treeVertexSets.size();
 	}

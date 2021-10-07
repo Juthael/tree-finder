@@ -1,3 +1,4 @@
+package com.tregouet.tree_finder.viz;
 
 
 import java.io.File;
@@ -8,9 +9,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.jgrapht.Graph;
+import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.DefaultAttribute;
 import org.jgrapht.nio.dot.DOTExporter;
+
+import com.tregouet.tree_finder.EdgeForTests;
 
 import guru.nidi.graphviz.engine.Format;
 import guru.nidi.graphviz.engine.Graphviz;
@@ -19,9 +23,9 @@ import guru.nidi.graphviz.parse.Parser;
 
 public class Visualizer {
 	
-	public static void visualize(Graph graph, String fileName) throws IOException {
+	public static void visualize(DirectedAcyclicGraph<String, EdgeForTests> graph, String fileName) throws IOException {
 		//convert in DOT format
-		DOTExporter<Integer, Integer> exporter = new DOTExporter<>();
+		DOTExporter<String, EdgeForTests> exporter = new DOTExporter<>();
 		exporter.setGraphAttributeProvider(() -> {
 			Map<String, Attribute> map = new LinkedHashMap<>();
 			map.put("rankdir", DefaultAttribute.createAttribute("BT"));

@@ -6,7 +6,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class TreeFinderOptTest {
+public class TreeFinderUSLBruteForceTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -17,17 +17,7 @@ public class TreeFinderOptTest {
 	}
 
 	@Test
-	public void whenInputIsLargeThenProceedsInReasonableTime() {
-		fail("Not yet implemented");
-	}
-	
-	@Test
 	public void whenTreesReturnedThenValid() {
-		fail("Not yet implemented");
-	}
-	
-	@Test
-	public void whenTreesRequestedThenExpectedReturned() {
 		fail("Not yet implemented");
 	}
 

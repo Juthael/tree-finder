@@ -1,6 +1,7 @@
 package com.tregouet.tree_finder.data;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -16,14 +17,14 @@ public class ClassificationTree<V, E> extends DirectedAcyclicGraph<V, E> {
 
 	private static final long serialVersionUID = 2206651329473240403L;
 	private V root;
-	private List<V> leaves;
+	private Set<V> leaves;
 	private List<V> topologicalSortingOfVertices = null;
 
 	/* 
 	 * No transitive reduction must have been operated on first parameter. 
 	 * Safe if last argument is 'true'
 	 */
-	public ClassificationTree(DirectedAcyclicGraph<V, E> upperSemilattice, List<V> treeVertices, V root, List<V> leaves, 
+	public ClassificationTree(DirectedAcyclicGraph<V, E> upperSemilattice, List<V> treeVertices, V root, Set<V> leaves, 
 			boolean validate) {
 		super(null, null, false);
 		this.root = root;
@@ -43,7 +44,7 @@ public class ClassificationTree<V, E> extends DirectedAcyclicGraph<V, E> {
 			boolean validate) {
 		super(null, null, false);
 		this.root = root;
-		this.leaves = new ArrayList<>(leaves);
+		this.leaves = leaves;
 		Set<E> edges = upperSemilattice.edgeSet().stream()
 				.filter(e -> treeVertices.contains(upperSemilattice.getEdgeSource(e)) 
 						&& treeVertices.contains(upperSemilattice.getEdgeTarget(e)))
@@ -52,7 +53,7 @@ public class ClassificationTree<V, E> extends DirectedAcyclicGraph<V, E> {
 	}
 	
 	//Unsafe
-	public ClassificationTree(V root, List<V> leaves, DirectedAcyclicGraph<V, E> source, Set<E> edges) {
+	public ClassificationTree(V root, Set<V> leaves, DirectedAcyclicGraph<V, E> source, Set<E> edges) {
 		super(null, null, false);
 		this.root = root;
 		this.leaves = leaves;
@@ -60,14 +61,14 @@ public class ClassificationTree<V, E> extends DirectedAcyclicGraph<V, E> {
 	}
 	
 	//Safe if last argument is 'true'
-	public ClassificationTree(V root, List<V> leaves, DirectedAcyclicGraph<V, E> source, Set<E> edges, boolean validate) 
+	public ClassificationTree(V root, Set<V> leaves, DirectedAcyclicGraph<V, E> source, Set<E> edges, boolean validate) 
 			throws InvalidTreeException {
 		this(root, leaves, source, edges);
 		if (validate)
 			validate();
 	}	
 	
-	public List<V> getLeaves(){
+	public Set<V> getLeaves(){
 		return leaves;
 	}
 	
