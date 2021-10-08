@@ -14,10 +14,8 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 import com.google.common.collect.Sets;
 import com.tregouet.tree_finder.ITreeFinder;
 import com.tregouet.tree_finder.data.ClassificationTree;
-import com.tregouet.tree_finder.error.InvalidSemilatticeException;
-import com.tregouet.tree_finder.utils.StructureInspector;
 
-public class TreeFinderUSLBruteForce<V, E> implements ITreeFinder<V, E> {
+public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
 
 	private final DirectedAcyclicGraph<V, E> upperSemilattice;
 	private final V root;
@@ -28,22 +26,20 @@ public class TreeFinderUSLBruteForce<V, E> implements ITreeFinder<V, E> {
 	private final Set<Set<V>> treeVertexSets = new HashSet<>();
 	private Iterator<Set<V>> treeIte;
 	
-	public TreeFinderUSLBruteForce(DirectedAcyclicGraph<V, E> upperSemilattice, boolean validate) 
-			throws InvalidSemilatticeException {
-		if (validate && !StructureInspector.isAnUpperSemilattice(upperSemilattice))
-			throw new InvalidSemilatticeException();
+	/*
+	 * UNSAFE. The parameter MUST be an upper an upper semilattice (reduced or not)
+	 */
+	protected TreeFinderBruteForce(DirectedAcyclicGraph<V, E> upperSemilattice, Set<V> minimals) {
 		this.upperSemilattice = upperSemilattice;
 		V maximum = null;
 		Iterator<V> vIte = upperSemilattice.vertexSet().iterator();
-		while (maximum == null & vIte.hasNext()) {
+		while (maximum == null) {
 			V v = vIte.next();
 			if (upperSemilattice.outDegreeOf(v) == 0)
 				maximum = v;
 		}
 		root = maximum;
-		minimals = upperSemilattice.vertexSet().stream()
-				.filter(v -> upperSemilattice.inDegreeOf(v) == 0)
-				.collect(Collectors.toSet());
+		this.minimals = minimals;
 		upperSemilattice.vertexSet().stream()
 			.forEach(v -> 
 				closedSubsetsOfMinimalsToTheirSupremum.put(minimalLowerBounds(v, upperSemilattice), v));

@@ -19,7 +19,7 @@ import com.tregouet.tree_finder.error.InvalidSemilatticeException;
 public class UpperSemilatticeFinder<V, E> implements Iterator<DirectedAcyclicGraph<V, E>> {
 
 	private final DirectedAcyclicGraph<V, E> rootedInvertedDAG;
-	private final List<V> vertexSet;
+	private final List<V> vertexTopoList;
 	private final int setCardinal;
 	private final List<Set<V>> uSLSupGeneratorMinimals = new ArrayList<>();
 	private final int[][] uSLSupremaCoords;
@@ -35,11 +35,12 @@ public class UpperSemilatticeFinder<V, E> implements Iterator<DirectedAcyclicGra
 	 */
 	public UpperSemilatticeFinder(DirectedAcyclicGraph<V, E> rootedInvertedDAGReduced, Set<V> minimals) {
 		this.rootedInvertedDAG = rootedInvertedDAGReduced;
-		vertexSet = new ArrayList<>();
-		new TopologicalOrderIterator<V, E>(rootedInvertedDAGReduced).forEachRemaining(v -> vertexSet.add(v));
+		removeTunnelVertices();
+		vertexTopoList = new ArrayList<>();
+		new TopologicalOrderIterator<V, E>(rootedInvertedDAGReduced).forEachRemaining(v -> vertexTopoList.add(v));
 		setCardinal = rootedInvertedDAGReduced.vertexSet().size();
 		Map<V, Set<V>> elmtToMinimalLowerBounds = new HashMap<>();
-		for (V element : vertexSet) {
+		for (V element : vertexTopoList) {
 			if (minimals.contains(element)) {
 				Set<V> singleton = new HashSet<>();
 				singleton.add(element);
@@ -70,7 +71,8 @@ public class UpperSemilatticeFinder<V, E> implements Iterator<DirectedAcyclicGra
 			uSLSupremaCoords[i] = new int[uSLSupremaArrayDimensions[i]];
 		}
 		for (int i = 0 ; i < setCardinal ; i++) {
-			int uSLSupremumCoord = uSLSupGeneratorMinimals.indexOf(elmtToMinimalLowerBounds.get(i));
+			int uSLSupremumCoord = 
+					uSLSupGeneratorMinimals.indexOf(elmtToMinimalLowerBounds.get(vertexTopoList.get(i)));
 			uSLSupremaCoords[uSLSupremumCoord][coordinates[uSLSupremumCoord]] = i;
 			coordinates[uSLSupremumCoord]++;
 		}
@@ -112,7 +114,7 @@ public class UpperSemilatticeFinder<V, E> implements Iterator<DirectedAcyclicGra
 		List<V> nextUSLVertices = new ArrayList<>();
 		List<E> nextUSLEdges = new ArrayList<>();
 		for (int i = 0 ; i < coordinates.length ; i++)
-			nextUSLVertices.add(vertexSet.get(uSLSupremaCoords[i][coordinates[i]]));
+			nextUSLVertices.add(vertexTopoList.get(uSLSupremaCoords[i][coordinates[i]]));
 		for (E edge : rootedInvertedDAG.edgeSet()) {
 			if (nextUSLVertices.contains(rootedInvertedDAG.getEdgeSource(edge)) 
 					&& nextUSLVertices.contains(rootedInvertedDAG.getEdgeTarget(edge)))
@@ -144,6 +146,15 @@ public class UpperSemilatticeFinder<V, E> implements Iterator<DirectedAcyclicGra
 	private void closeDAG() {
 		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(rootedInvertedDAG);
 		dAGisReduced = false;
+	}
+	
+	private void removeTunnelVertices() {
+		Set<V> tunnelVertices = new HashSet<>();
+		for (V vertex : rootedInvertedDAG.vertexSet()) {
+			if (rootedInvertedDAG.inDegreeOf(vertex) == 1 && rootedInvertedDAG.outDegreeOf(vertex) == 1)
+				tunnelVertices.add(vertex);
+		}
+		Graphs.removeVertexAndPreserveConnectivity(rootedInvertedDAG, tunnelVertices);
 	}
 
 }

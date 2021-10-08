@@ -1,26 +1,20 @@
 package com.tregouet.tree_finder.impl;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.jgrapht.Graphs;
-import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.tregouet.tree_finder.ITreeFinder;
-import com.tregouet.tree_finder.data.ClassificationTree;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 
-public class TreeFinderUSLSparse implements ITreeFinder<Integer, Integer> {
+public class SparseExtractor {
 
-	private final SparseIntDirectedGraph upperSemiLattice;
 	private final IntArraySet minimals;
 	private final boolean[] elements;
 	private final List<IntArrayList> coveredElements = new ArrayList<>();
@@ -29,13 +23,11 @@ public class TreeFinderUSLSparse implements ITreeFinder<Integer, Integer> {
 	private final List<List<IntArrayList>> forkingSubsets = new ArrayList<>();
 	private final List<List<IntArrayList>> subTrees = new ArrayList<>();
 	private final List<IntArrayList> treeRestrictionsOfUSL;
-	private int treeIdx = 0;
 	
 	/*
 	 * UNSAFE. Parameter MUST be the transitive reduction of an upper semilattice. 
 	 */
-	public TreeFinderUSLSparse(SparseIntDirectedGraph reducedUSL, int root, IntArraySet minimals) {
-		this.upperSemiLattice = reducedUSL;
+	public SparseExtractor(SparseIntDirectedGraph reducedUSL, int root, IntArraySet minimals) {
 		this.minimals = minimals;
 		//set elements and coveredElements
 		TopologicalOrderIterator<Integer, Integer> topoIte = new TopologicalOrderIterator<>(reducedUSL);
@@ -54,13 +46,13 @@ public class TreeFinderUSLSparse implements ITreeFinder<Integer, Integer> {
 		for (int i = 0 ; i <= root ; i++) {
 			if (elements[i]) {
 				if (minimals.contains(i)) {
-					IntArraySet singleton = new IntArraySet();
-					singleton.add(i);
+					IntArraySet singleton = new IntArraySet(new int[] {i});
 					lowerSets.add(singleton);
 					minimalLowerBounds.add(singleton);
 				}
 				else {
-					IntArraySet iLowerSet = new IntArraySet(new int[] {i});
+					IntArraySet iLowerSet = new IntArraySet();
+					iLowerSet.add(i);
 					IntArraySet iSupGeneratorSubsetOfMinimals = new IntArraySet();
 					for (int iCoveredElmnt : coveredElements.get(i)) {
 						iLowerSet.addAll(lowerSets.get(iCoveredElmnt));
@@ -96,26 +88,6 @@ public class TreeFinderUSLSparse implements ITreeFinder<Integer, Integer> {
 	
 	public List<IntArrayList> getSparseTreeVertexSets() {
 		return treeRestrictionsOfUSL;
-	}
-	
-	@Override
-	public boolean hasNext() {
-		return treeIdx < treeRestrictionsOfUSL.size() - 1;
-	}
-	
-	@Override
-	public ClassificationTree<Integer, Integer> next() {
-		DirectedAcyclicGraph<Integer, Integer> dagUSL = new DirectedAcyclicGraph<>(null,  null,  false);
-		Graphs.addAllEdges(dagUSL, upperSemiLattice, upperSemiLattice.edgeSet());
-		Integer root = elements.length - 1;
-		Set<Integer> edges = new HashSet<>();
-		IntArrayList treeVertices = treeRestrictionsOfUSL.get(treeIdx++);
-		for (Integer edge : upperSemiLattice.edgeSet()) {
-			if (treeVertices.contains((int) upperSemiLattice.getEdgeSource(edge))
-					&& treeVertices.contains((int) upperSemiLattice.getEdgeTarget(edge)))
-				edges.add(edge);
-		}
-		return new ClassificationTree<Integer, Integer>(root, minimals, dagUSL, edges);
 	}
 
 	private List<IntArrayList> getForkingSubsetOfLowerBounds(int element, IntArrayList uncompleteLowerBoundSubset, 

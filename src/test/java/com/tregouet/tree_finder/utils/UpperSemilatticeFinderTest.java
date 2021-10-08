@@ -3,28 +3,27 @@ package com.tregouet.tree_finder.utils;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
-import org.jgrapht.Graphs;
+import org.jgrapht.alg.TransitiveReduction;
 import org.jgrapht.graph.DirectedAcyclicGraph;
-import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.tregouet.tree_finder.EdgeForTests;
+import com.tregouet.tree_finder.error.InvalidSemilatticeException;
 import com.tregouet.tree_finder.viz.Visualizer;
-
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntArraySet;
 
 public class UpperSemilatticeFinderTest {
 
 	private DirectedAcyclicGraph<String, EdgeForTests> rootedNotLatticeDAG;
-	private SparseIntDirectedGraph rootedNotLatticeDAGSparse;
+	private UpperSemilatticeFinder<String, EdgeForTests> uSLFinder;
 	private List<DirectedAcyclicGraph<String, EdgeForTests>> semiLattices;
 	private String a = "A";
 	private String b = "B";
@@ -82,35 +81,9 @@ public class UpperSemilatticeFinderTest {
 		rootedNotLatticeDAG.addEdge(abc2, abcd);
 		rootedNotLatticeDAG.addEdge(bcd, bcdTunnel);
 		rootedNotLatticeDAG.addEdge(bcdTunnel, abcd);
-		
-		Visualizer.visualize(rootedNotLatticeDAG, "2110071318_rootedNotLatticeDAG");
-		
-		SparseGraphConverter<String, EdgeForTests> converter = new SparseGraphConverter<>(rootedNotLatticeDAG, true);
-		rootedNotLatticeDAGSparse = converter.getSparseGraph();
-		IntArraySet sparseMinimals = 
-				new IntArraySet(rootedNotLatticeDAGSparse.vertexSet().stream()
-						.filter(v -> rootedNotLatticeDAGSparse.inDegreeOf(v) == 0)
-						.collect(Collectors.toList()));
-		UpperSemilatticeFinder semiLattFinder = new UpperSemilatticeFinder(rootedNotLatticeDAGSparse, sparseMinimals);
-		List<SparseIntDirectedGraph> sparseSemiLattices = new ArrayList<>();
-		while (semiLattFinder.hasNext()) {
-			sparseSemiLattices.add(semiLattFinder.next());
-		}
+		Set<String> minimals = new HashSet<>(Arrays.asList(new String[] {a, b, c, d}));
+		uSLFinder = new UpperSemilatticeFinder<>(rootedNotLatticeDAG, minimals);
 		semiLattices = new ArrayList<>();
-		
-		int lattIdx = 0;
-		
-		for (SparseIntDirectedGraph sparseSemilatt : sparseSemiLattices) {
-			DirectedAcyclicGraph<String, EdgeForTests> semiLatt = 
-					new DirectedAcyclicGraph<>(null, EdgeForTests::new, false);
-			Graphs.addAllEdges(
-					semiLatt, rootedNotLatticeDAG, converter.getEdgeSet(new IntArrayList(sparseSemilatt.edgeSet())));
-			semiLattices.add(semiLatt);
-			
-			Visualizer.visualize(semiLatt, "2110071318_semilatt" + Integer.toString(lattIdx++));
-			
-		}
-		
 	}
 
 	@Test
@@ -130,18 +103,36 @@ public class UpperSemilatticeFinderTest {
 	}
 	
 	@Test
-	public void whenLatticesRequestedThenExpectedNumberReturned() {
-		fail("Not yet implemented");
+	public void whenLatticesRequestedThenExpectedNumberReturned() throws IOException {
+		uSLFinder.forEachRemaining(l -> semiLattices.add(l));
+		/*
+		int uSLIdx = 0;
+		for (DirectedAcyclicGraph<String, EdgeForTests> uSL : semiLattices) {
+			Visualizer.visualize(uSL, "2110081116_uSL" + Integer.toString(uSLIdx++));
+		}
+		*/
+		assertTrue(semiLattices.size() == 8);
 	}
 	
 	@Test
 	public void whenLatticesRequestedThenReturnedLatticesAreValid() {
-		fail("Not yet implemented");
+		boolean onlyValidLatticesReturned = true;
+		int nbOfChecks = 0;
+		while (uSLFinder.hasNext()) {
+			nbOfChecks++;
+			try {
+				uSLFinder.validateNext();
+			}
+			catch (InvalidSemilatticeException e) {
+				onlyValidLatticesReturned = false;
+			}
+		}
+		assertTrue(onlyValidLatticesReturned && nbOfChecks > 0);
 	}
 	
 	@Test
 	public void whenLatticeIsReturnedThenOnlyItsMinimalElementsAreSupIrreducible() {
-		
+		fail("Not yet implemented");
 	}
 	
 	private int[][] expectCoordinates() {

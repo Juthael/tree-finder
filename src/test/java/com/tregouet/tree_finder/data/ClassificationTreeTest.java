@@ -3,9 +3,9 @@ package com.tregouet.tree_finder.data;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.TransitiveClosure;
@@ -27,7 +27,7 @@ public class ClassificationTreeTest {
 	private String ac = "AC";
 	private String bc = "BC";
 	private String abc = "ABC";
-	private List<String> leaves = new ArrayList<>(Arrays.asList(new String[]{a, b, c}));
+	private Set<String> leaves = new HashSet<>(Arrays.asList(new String[]{a, b, c}));
 	DirectedAcyclicGraph<String, Edge> properTreeDAG;
 	DirectedAcyclicGraph<String, Edge> notRootedDAG;
 	DirectedAcyclicGraph<String, Edge> violatingHierarchyClauseDAG;
@@ -50,7 +50,7 @@ public class ClassificationTreeTest {
 		Graphs.addAllEdges(otherDAG, properTreeDAG, properTreeDAG.edgeSet());
 		otherDAG.addVertex(d);
 		otherDAG.addEdge(d, abc);
-		List<String> otherDAGLeaves = new ArrayList<>(leaves);
+		Set<String> otherDAGLeaves = new HashSet<>(leaves);
 		otherDAGLeaves.add(d);
 		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(otherDAG);
 		ClassificationTree<String, Edge> otherTree = 

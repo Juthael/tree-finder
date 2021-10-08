@@ -16,7 +16,7 @@ import com.tregouet.tree_finder.utils.SparseGraphConverter;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 
-public class TreeFinderUSLOpt<V, E> implements ITreeFinder<V, E> {
+public class TreeFinderOpt<V, E> implements ITreeFinder<V, E> {
 
 	private final DirectedAcyclicGraph<V, E> upperSemilattice;
 	private final List<V> vertexTopoList = new ArrayList<>();
@@ -30,12 +30,11 @@ public class TreeFinderUSLOpt<V, E> implements ITreeFinder<V, E> {
 	private int treeIdx = 0;
 	
 	/*
-	 * UNSAFE. The first parameter MUST be an upper semilattice
+	 * UNSAFE. The first parameter MUST be an upper semilattice (reduced or not)
 	 */
-	public TreeFinderUSLOpt(DirectedAcyclicGraph<V, E> upperSemilattice, boolean reduced, Set<V> minimals) {
+	protected TreeFinderOpt(DirectedAcyclicGraph<V, E> upperSemilattice, Set<V> minimals) {
 		this.upperSemilattice = upperSemilattice;
-		if (!reduced)
-			TransitiveReduction.INSTANCE.reduce(this.upperSemilattice);
+		TransitiveReduction.INSTANCE.reduce(upperSemilattice);
 		new TopologicalOrderIterator<>(upperSemilattice).forEachRemaining(v -> vertexTopoList.add(v));
 		this.root = vertexTopoList.get(vertexTopoList.size() - 1);
 		this.minimals = minimals;
@@ -44,8 +43,8 @@ public class TreeFinderUSLOpt<V, E> implements ITreeFinder<V, E> {
 			sparseMinimals.add(vertexTopoList.indexOf(minimal));
 		sparseConverter = new SparseGraphConverter<>(upperSemilattice, true);
 		sparseUpperSemilattice = sparseConverter.getSparseGraph();
-		TreeFinderUSLSparse sparseTF = new TreeFinderUSLSparse(sparseUpperSemilattice, sparseRoot, sparseMinimals);
-		sparseTreeVertexSets.addAll(sparseTF.getSparseTreeVertexSets());
+		SparseExtractor sparseExtractor = new SparseExtractor(sparseUpperSemilattice, sparseRoot, sparseMinimals);
+		sparseTreeVertexSets.addAll(sparseExtractor.getSparseTreeVertexSets());
 	}
 
 	public int getNbOfTrees() {
@@ -54,7 +53,7 @@ public class TreeFinderUSLOpt<V, E> implements ITreeFinder<V, E> {
 
 	@Override
 	public boolean hasNext() {
-		return treeIdx < sparseTreeVertexSets.size() - 1;
+		return treeIdx < sparseTreeVertexSets.size();
 	}
 
 	@Override
