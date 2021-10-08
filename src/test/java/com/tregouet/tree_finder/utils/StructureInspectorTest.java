@@ -2,6 +2,7 @@ package com.tregouet.tree_finder.utils;
 
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -25,6 +26,7 @@ public class StructureInspectorTest {
 	private DirectedAcyclicGraph<String, EdgeForTests> wronglyOrientedClassificationTree;
 	private DirectedAcyclicGraph<String, EdgeForTests> upperSemilatticeButNotTree;
 	private DirectedAcyclicGraph<String, EdgeForTests> doesNotHaveARoot;
+	private DirectedAcyclicGraph<String, EdgeForTests> isNotAtomistic;
 	private DirectedAcyclicGraph<String, EdgeForTests> classificationTreeReduced;
 	private DirectedAcyclicGraph<String, EdgeForTests> wronglyOrientedClassificationTreeReduced;
 	private DirectedAcyclicGraph<String, EdgeForTests> upperSemilatticeButNotTreeReduced;
@@ -46,14 +48,14 @@ public class StructureInspectorTest {
 
 	@Before
 	public void setUp() throws Exception {
-		setClassificationTree();
-		setLeafOrientedClassificationTree();
-		setPowerSetMinusEmptySet();
-		setUnrootedDAG();
+		setUpClassificationTree();
+		setUpLeafOrientedClassificationTree();
+		setUpPowerSetMinusEmptySet();
+		setUpUnrootedDAG();
 	}
 
 	@Test
-	public void whenChecksIfParameterIsClassificationTreeThenReturnsTrueOnlyWhenExpected() {
+	public void whenChecksIfParameterIsClassificationTreeThenReturnsAsExpected() {
 		assertTrue(
 				StructureInspector.isAClassificationTree(classificationTree)
 				&& !StructureInspector.isAClassificationTree(wronglyOrientedClassificationTree)
@@ -62,7 +64,7 @@ public class StructureInspectorTest {
 	}
 	
 	@Test
-	public void whenChecksIfDAGParameterIsAnUpperSemilatticeThenReturnsTrueOnlyWhenExpected() {
+	public void whenChecksIfDAGParameterIsAnUpperSemilatticeThenReturnsAsExpected() {
 		assertTrue(
 				StructureInspector.isAnUpperSemilattice(classificationTree)
 				&& !StructureInspector.isAnUpperSemilattice(wronglyOrientedClassificationTree)
@@ -71,7 +73,7 @@ public class StructureInspectorTest {
 	}
 	
 	@Test
-	public void whenChecksIfSparseParameterIsAnUpperSemilatticeThenReturnsTrueOnlyWhenExpected() {
+	public void whenChecksIfSparseParameterIsAnUpperSemilatticeThenReturnsAsExpected() {
 		SparseGraphConverter<String, EdgeForTests> classificationTreeConverter = 
 				new SparseGraphConverter<>(classificationTree, true);
 		SparseGraphConverter<String, EdgeForTests> wronglyOrientedConverter = 
@@ -91,11 +93,21 @@ public class StructureInspectorTest {
 	}
 	
 	@Test
-	public void whenChecksIfParameterIsRootedAndInvertedThenReturnsTrueOnlyWhenExpected() {
+	public void whenChecksIfParameterIsRootedAndInvertedThenReturnsAsExpected() {
 		assertTrue(StructureInspector.isARootedInvertedDirectedAcyclicGraph(classificationTree)
 				&& !StructureInspector.isARootedInvertedDirectedAcyclicGraph(wronglyOrientedClassificationTree)
 				&& StructureInspector.isARootedInvertedDirectedAcyclicGraph(upperSemilatticeButNotTree)
 				&& !StructureInspector.isARootedInvertedDirectedAcyclicGraph(doesNotHaveARoot));
+	}
+	
+	@Test 
+	public void whenCheckIfParameterIsAtomisticThenReturnsAsExpected() throws IOException {
+		setUpNotAtomisticDAG();
+		assertTrue(StructureInspector.isAtomistic(classificationTree)
+				&& !StructureInspector.isAtomistic(wronglyOrientedClassificationTree)
+				&& StructureInspector.isAtomistic(upperSemilatticeButNotTree)
+				&& StructureInspector.isAtomistic(doesNotHaveARoot)
+				&& !StructureInspector.isAtomistic(isNotAtomistic));
 	}
 	
 	@Test
@@ -213,7 +225,7 @@ public class StructureInspectorTest {
 				);
 	}
 	
-	private void setClassificationTree() {
+	private void setUpClassificationTree() {
 		classificationTree = new DirectedAcyclicGraph<>(null, EdgeForTests::new, false);
 		classificationTree.addVertex(a);
 		classificationTree.addVertex(b);
@@ -231,7 +243,7 @@ public class StructureInspectorTest {
 		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(classificationTree);
 	}
 	
-	private void setLeafOrientedClassificationTree() {
+	private void setUpLeafOrientedClassificationTree() {
 		wronglyOrientedClassificationTree = new DirectedAcyclicGraph<>(null, EdgeForTests::new, false);
 		wronglyOrientedClassificationTree.addVertex(a);
 		wronglyOrientedClassificationTree.addVertex(b);
@@ -249,7 +261,7 @@ public class StructureInspectorTest {
 		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(wronglyOrientedClassificationTree);
 	}
 	
-	private void setPowerSetMinusEmptySet() {
+	private void setUpPowerSetMinusEmptySet() {
 		upperSemilatticeButNotTree = new DirectedAcyclicGraph<>(null, EdgeForTests::new, false);
 		List<String> set = new ArrayList<>(Arrays.asList(new String[] {a, b, c, d, e}));
 		int setCardinal = set.size();
@@ -280,7 +292,7 @@ public class StructureInspectorTest {
 		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(upperSemilatticeButNotTree);
 	}
 	
-	private void setUnrootedDAG() {
+	private void setUpUnrootedDAG() {
 		doesNotHaveARoot = new DirectedAcyclicGraph<>(null, EdgeForTests::new, false);
 		doesNotHaveARoot.addVertex(a);
 		doesNotHaveARoot.addVertex(b);
@@ -316,6 +328,24 @@ public class StructureInspectorTest {
 		doesNotHaveARootReduced = new DirectedAcyclicGraph<>(null, EdgeForTests::new, false);
 		Graphs.addAllEdges(doesNotHaveARootReduced, doesNotHaveARoot, doesNotHaveARoot.edgeSet());
 		TransitiveReduction.INSTANCE.reduce(doesNotHaveARootReduced);
+	}
+	
+	private void setUpNotAtomisticDAG() {
+		isNotAtomistic = new DirectedAcyclicGraph<>(null, EdgeForTests::new, false);
+		String abBIS = "ABbis"; 
+		Graphs.addAllVertices(isNotAtomistic, Arrays.asList(new String[] {a, b, c, d, ab, bc, bcd, abcd, abBIS}));
+		isNotAtomistic.addEdge(a, abBIS);
+		isNotAtomistic.addEdge(a, ab);
+		isNotAtomistic.addEdge(b, abBIS);
+		isNotAtomistic.addEdge(b, ab);
+		isNotAtomistic.addEdge(b, bc);
+		isNotAtomistic.addEdge(c, bc);
+		isNotAtomistic.addEdge(d, bcd);
+		isNotAtomistic.addEdge(abBIS, abcd);
+		isNotAtomistic.addEdge(ab, abcd);
+		isNotAtomistic.addEdge(bc, bcd);
+		isNotAtomistic.addEdge(bcd, abcd);
+		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(isNotAtomistic);
 	}
 	
 

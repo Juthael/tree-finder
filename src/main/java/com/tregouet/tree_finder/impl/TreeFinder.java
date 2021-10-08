@@ -10,13 +10,13 @@ import com.tregouet.tree_finder.ITreeFinder;
 import com.tregouet.tree_finder.data.ClassificationTree;
 import com.tregouet.tree_finder.error.InvalidRootedInvertedDAGException;
 import com.tregouet.tree_finder.utils.StructureInspector;
-import com.tregouet.tree_finder.utils.UpperSemilatticeFinder;
+import com.tregouet.tree_finder.utils.MaxAtomisticRestrictionFinder;
 
 public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 
-	private final Set<V> minimals = new HashSet<>();
-	private final UpperSemilatticeFinder<V, E> uslFinder;
-	private ITreeFinder<V, E> treeFinderInUSL;
+	private final Set<V> atoms = new HashSet<>();
+	private final MaxAtomisticRestrictionFinder<V, E> atomisticRestrictionFinder;
+	private ITreeFinder<V, E> treeFinder;
 	private final boolean bruteForce;
 	
 	
@@ -27,10 +27,10 @@ public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 		TransitiveReduction.INSTANCE.reduce(rootedInvertedDAG);
 		for (V element : rootedInvertedDAG.vertexSet()) {
 			if (rootedInvertedDAG.inDegreeOf(element) == 0)
-				minimals.add(element);
+				atoms.add(element);
 		}
-		uslFinder = new UpperSemilatticeFinder<>(rootedInvertedDAG, minimals);
-		treeFinderInUSL = new TreeFinderOpt<V, E>(uslFinder.next(), minimals);
+		atomisticRestrictionFinder = new MaxAtomisticRestrictionFinder<>(rootedInvertedDAG, atoms);
+		treeFinder = new TreeFinderOpt<V, E>(atomisticRestrictionFinder.next(), atoms);
 	}
 	
 	public TreeFinder(DirectedAcyclicGraph<V, E> rootedInvertedDAG, boolean bruteForce) throws InvalidRootedInvertedDAGException {
@@ -40,27 +40,27 @@ public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 		TransitiveReduction.INSTANCE.reduce(rootedInvertedDAG);
 		for (V element : rootedInvertedDAG.vertexSet()) {
 			if (rootedInvertedDAG.inDegreeOf(element) == 0)
-				minimals.add(element);
+				atoms.add(element);
 		}
-		uslFinder = new UpperSemilatticeFinder<>(rootedInvertedDAG, minimals);
+		atomisticRestrictionFinder = new MaxAtomisticRestrictionFinder<>(rootedInvertedDAG, atoms);
 		if (bruteForce)
-			treeFinderInUSL = new TreeFinderBruteForce<>(uslFinder.next(), minimals);
-		treeFinderInUSL = new TreeFinderOpt<V, E>(uslFinder.next(), minimals);
+			treeFinder = new TreeFinderBruteForce<>(atomisticRestrictionFinder.next(), atoms);
+		treeFinder = new TreeFinderOpt<V, E>(atomisticRestrictionFinder.next(), atoms);
 	}	
 
 	@Override
 	public boolean hasNext() {
-		return (uslFinder.hasNext() || treeFinderInUSL.hasNext());
+		return (atomisticRestrictionFinder.hasNext() || treeFinder.hasNext());
 	}
 
 	@Override
 	public ClassificationTree<V, E> next() {
-		if (!treeFinderInUSL.hasNext()) {
+		if (!treeFinder.hasNext()) {
 			if (bruteForce)
-				treeFinderInUSL = new TreeFinderBruteForce<>(uslFinder.next(), minimals);
-			else treeFinderInUSL = new TreeFinderOpt<V, E>(uslFinder.next(), minimals);
+				treeFinder = new TreeFinderBruteForce<>(atomisticRestrictionFinder.next(), atoms);
+			else treeFinder = new TreeFinderOpt<V, E>(atomisticRestrictionFinder.next(), atoms);
 		}	
-		return treeFinderInUSL.next();
+		return treeFinder.next();
 	}
 
 }

@@ -18,49 +18,49 @@ import it.unimi.dsi.fastutil.ints.IntArraySet;
 
 public class TreeFinderOpt<V, E> implements ITreeFinder<V, E> {
 
-	private final DirectedAcyclicGraph<V, E> upperSemilattice;
-	private final List<V> vertexTopoList = new ArrayList<>();
+	private final DirectedAcyclicGraph<V, E> atomisticRIDAG;
+	private final List<V> topoOrderedSet = new ArrayList<>();
 	private final SparseGraphConverter<V, E> sparseConverter;
-	private final V root;	
-	private final Set<V> minimals;
-	private final SparseIntDirectedGraph sparseUpperSemilattice;
-	private final int sparseRoot;
-	private final IntArraySet sparseMinimals = new IntArraySet();
-	private final List<IntArrayList> sparseTreeVertexSets = new ArrayList<>();
+	private final V maximum;	
+	private final Set<V> atoms;
+	private final SparseIntDirectedGraph sparseAtomisticRIDAG;
+	private final int sparseMaximum;
+	private final IntArraySet sparseAtoms = new IntArraySet();
+	private final List<IntArrayList> sparseTreeRestrictions = new ArrayList<>();
 	private int treeIdx = 0;
 	
 	/*
-	 * UNSAFE. The first parameter MUST be an upper semilattice (reduced or not)
+	 * UNSAFE. The first parameter MUST be an atomistic rooted inverted DAG (reduced or not)
 	 */
-	protected TreeFinderOpt(DirectedAcyclicGraph<V, E> upperSemilattice, Set<V> minimals) {
-		this.upperSemilattice = upperSemilattice;
-		TransitiveReduction.INSTANCE.reduce(upperSemilattice);
-		new TopologicalOrderIterator<>(upperSemilattice).forEachRemaining(v -> vertexTopoList.add(v));
-		this.root = vertexTopoList.get(vertexTopoList.size() - 1);
-		this.minimals = minimals;
-		sparseRoot = vertexTopoList.size() - 1;
+	protected TreeFinderOpt(DirectedAcyclicGraph<V, E> atomisticRIDAG, Set<V> minimals) {
+		this.atomisticRIDAG = atomisticRIDAG;
+		TransitiveReduction.INSTANCE.reduce(atomisticRIDAG);
+		new TopologicalOrderIterator<>(atomisticRIDAG).forEachRemaining(v -> topoOrderedSet.add(v));
+		this.maximum = topoOrderedSet.get(topoOrderedSet.size() - 1);
+		this.atoms = minimals;
+		sparseMaximum = topoOrderedSet.size() - 1;
 		for (V minimal : minimals)
-			sparseMinimals.add(vertexTopoList.indexOf(minimal));
-		sparseConverter = new SparseGraphConverter<>(upperSemilattice, true);
-		sparseUpperSemilattice = sparseConverter.getSparseGraph();
-		SparseExtractor sparseExtractor = new SparseExtractor(sparseUpperSemilattice, sparseRoot, sparseMinimals);
-		sparseTreeVertexSets.addAll(sparseExtractor.getSparseTreeVertexSets());
+			sparseAtoms.add(topoOrderedSet.indexOf(minimal));
+		sparseConverter = new SparseGraphConverter<>(atomisticRIDAG, true);
+		sparseAtomisticRIDAG = sparseConverter.getSparseGraph();
+		TreeFinderSparse treeFinderSparse = new TreeFinderSparse(sparseAtomisticRIDAG, sparseMaximum, sparseAtoms);
+		sparseTreeRestrictions.addAll(treeFinderSparse.getSparseTreeVertexSets());
 	}
 
 	public int getNbOfTrees() {
-		return sparseTreeVertexSets.size();
+		return sparseTreeRestrictions.size();
 	}
 
 	@Override
 	public boolean hasNext() {
-		return treeIdx < sparseTreeVertexSets.size();
+		return treeIdx < sparseTreeRestrictions.size();
 	}
 
 	@Override
 	public ClassificationTree<V, E> next() {
 		return new ClassificationTree<V, E>(
-				upperSemilattice, sparseConverter.getVertexSet(sparseTreeVertexSets.get(treeIdx++)), 
-				root, minimals, false);
+				atomisticRIDAG, sparseConverter.getVertexSet(sparseTreeRestrictions.get(treeIdx++)), 
+				maximum, atoms, false);
 	}
 
 }

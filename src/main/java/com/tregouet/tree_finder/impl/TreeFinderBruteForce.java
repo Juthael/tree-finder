@@ -17,47 +17,47 @@ import com.tregouet.tree_finder.data.ClassificationTree;
 
 public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
 
-	private final DirectedAcyclicGraph<V, E> upperSemilattice;
-	private final V root;
-	private final Set<V> minimals;
-	private final Map<Set<V>, V> closedSubsetsOfMinimalsToTheirSupremum = new HashMap<>();
-	private final Set<Set<Set<V>>> powerSetOfClosedSubsetsOfMinimals;
-	private final Set<Set<Set<V>>> maximalHierarchiesOfMinimals;
-	private final Set<Set<V>> treeVertexSets = new HashSet<>();
+	private final DirectedAcyclicGraph<V, E> atomisticRIDAG;
+	private final V maximum;
+	private final Set<V> atoms;
+	private final Map<Set<V>, V> encodingSubsetsOfAtomsToTheirSupremum = new HashMap<>();
+	private final Set<Set<Set<V>>> powerSetOfEncodingSubsetsOfAtoms;
+	private final Set<Set<Set<V>>> maximalHierarchiesOfAtoms;
+	private final Set<Set<V>> treeRestrictions = new HashSet<>();
 	private Iterator<Set<V>> treeIte;
 	
 	/*
-	 * UNSAFE. The parameter MUST be an upper an upper semilattice (reduced or not)
+	 * UNSAFE. The parameter MUST be an atomistic rooted inverted DAG (reduced or not)
 	 */
-	protected TreeFinderBruteForce(DirectedAcyclicGraph<V, E> upperSemilattice, Set<V> minimals) {
-		this.upperSemilattice = upperSemilattice;
+	protected TreeFinderBruteForce(DirectedAcyclicGraph<V, E> atomisticRIDAG, Set<V> minimals) {
+		this.atomisticRIDAG = atomisticRIDAG;
 		V maximum = null;
-		Iterator<V> vIte = upperSemilattice.vertexSet().iterator();
+		Iterator<V> vIte = atomisticRIDAG.vertexSet().iterator();
 		while (maximum == null) {
 			V v = vIte.next();
-			if (upperSemilattice.outDegreeOf(v) == 0)
+			if (atomisticRIDAG.outDegreeOf(v) == 0)
 				maximum = v;
 		}
-		root = maximum;
-		this.minimals = minimals;
-		upperSemilattice.vertexSet().stream()
+		this.maximum = maximum;
+		this.atoms = minimals;
+		atomisticRIDAG.vertexSet().stream()
 			.forEach(v -> 
-				closedSubsetsOfMinimalsToTheirSupremum.put(minimalLowerBounds(v, upperSemilattice), v));
-		powerSetOfClosedSubsetsOfMinimals = powerSet(closedSubsetsOfMinimalsToTheirSupremum.keySet());
-		maximalHierarchiesOfMinimals = powerSetOfClosedSubsetsOfMinimals.stream()
+				encodingSubsetsOfAtomsToTheirSupremum.put(atomLowerBounds(v), v));
+		powerSetOfEncodingSubsetsOfAtoms = powerSet(encodingSubsetsOfAtomsToTheirSupremum.keySet());
+		maximalHierarchiesOfAtoms = powerSetOfEncodingSubsetsOfAtoms.stream()
 				.filter(s -> isAMaximalHierarchy(s))
 				.collect(Collectors.toSet());
-		for (Set<Set<V>> hierarchy : maximalHierarchiesOfMinimals) {
-			Set<V> treeVertexSet = hierarchy.stream()
-					.map(s -> closedSubsetsOfMinimalsToTheirSupremum.get(s))
+		for (Set<Set<V>> hierarchy : maximalHierarchiesOfAtoms) {
+			Set<V> treeRestriction = hierarchy.stream()
+					.map(s -> encodingSubsetsOfAtomsToTheirSupremum.get(s))
 					.collect(Collectors.toSet());
-			treeVertexSets.add(treeVertexSet);
+			treeRestrictions.add(treeRestriction);
 		}
-		treeIte = treeVertexSets.iterator();
+		treeIte = treeRestrictions.iterator();
 	}
 
 	public int getNbOfTrees() {
-		return treeVertexSets.size();
+		return treeRestrictions.size();
 	}
 
 	@Override
@@ -67,24 +67,23 @@ public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
 
 	@Override
 	public ClassificationTree<V, E> next() {
-		return new ClassificationTree<V, E>(upperSemilattice, treeIte.next(), root, minimals, false);
+		return new ClassificationTree<V, E>(atomisticRIDAG, treeIte.next(), maximum, atoms, false);
 	}
 	
-	private boolean coversEveryMinimal(Set<Set<V>> setOfMinimalSubsets) {
+	private boolean coversEveryMinimal(Set<Set<V>> subsetsOfAtoms) {
 		Set<V> covered = new HashSet<>();
-		for (Set<V> subset : setOfMinimalSubsets) {
-			for (V minimal : subset)
-				covered.add(minimal);
+		for (Set<V> subset : subsetsOfAtoms) {
+			covered.addAll(subset);
 		}
-		return covered.equals(minimals);
+		return covered.equals(atoms);
 	}
 	
 	private boolean isAHierarchy(Set<Set<V>> setOfMinimalSubsets) {
-		List<Set<V>> listOfMinimalSubsets = new ArrayList<>(setOfMinimalSubsets);
-		for (int i = 0 ; i < listOfMinimalSubsets.size() - 1 ; i++) {
-			Set<V> iSet = listOfMinimalSubsets.get(i);
-			for (int j = i + 1 ; j < listOfMinimalSubsets.size() ; i++) {
-				Set<V> jSet = listOfMinimalSubsets.get(j);
+		List<Set<V>> listOfAtomSubsets = new ArrayList<>(setOfMinimalSubsets);
+		for (int i = 0 ; i < listOfAtomSubsets.size() - 1 ; i++) {
+			Set<V> iSet = listOfAtomSubsets.get(i);
+			for (int j = i + 1 ; j < listOfAtomSubsets.size() ; j++) {
+				Set<V> jSet = listOfAtomSubsets.get(j);
 				Set<V> intersection = Sets.intersection(iSet, jSet);
 				if (!intersection.equals(iSet) && !intersection.equals(jSet) && !intersection.isEmpty())
 					return false;
@@ -93,27 +92,31 @@ public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
 		return true;
 	}
 	
-	private boolean isAMaximalHierarchy(Set<Set<V>> setOfMinimalSubsets) {
-		return (coversEveryMinimal(setOfMinimalSubsets) 
-				&& isAHierarchy(setOfMinimalSubsets) 
-				&& isMaximal(setOfMinimalSubsets));
+	private boolean isAMaximalHierarchy(Set<Set<V>> setOfAtomSubsets) {
+		return (coversEveryMinimal(setOfAtomSubsets) 
+				&& isAHierarchy(setOfAtomSubsets) 
+				&& isMaximal(setOfAtomSubsets));
 	}
 	
-	private boolean isMaximal(Set<Set<V>> setOfMinimalSubsets) {
+	private boolean isMaximal(Set<Set<V>> hierarchyOfAtoms) {
 		boolean isMaximal = true;
-		Set<Set<Set<V>>> nonMaximalAfterAll = new HashSet<>(); 
-		for (Set<Set<V>> alreadyFound : maximalHierarchiesOfMinimals) {
-			if (alreadyFound.containsAll(setOfMinimalSubsets))
+		Set<Set<Set<V>>> notMaximalAfterAll = new HashSet<>(); 
+		for (Set<Set<V>> alreadyFound : maximalHierarchiesOfAtoms) {
+			if (alreadyFound.containsAll(hierarchyOfAtoms))
 				isMaximal = false;
-			else if (setOfMinimalSubsets.containsAll(alreadyFound))
-				nonMaximalAfterAll.add(alreadyFound);
+			else if (hierarchyOfAtoms.containsAll(alreadyFound))
+				notMaximalAfterAll.add(alreadyFound);
 		}
-		maximalHierarchiesOfMinimals.removeAll(nonMaximalAfterAll);
+		maximalHierarchiesOfAtoms.removeAll(notMaximalAfterAll);
 		return isMaximal;
 	}
 	
-	private Set<V> minimalLowerBounds(V element, DirectedAcyclicGraph<V, E> upperSemilattice) {
-		return Sets.intersection(minimals, upperSemilattice.getAncestors(element));
+	private Set<V> atomLowerBounds(V element) {
+		Set<V> lowerBoundAtoms = new HashSet<>();
+		lowerBoundAtoms.add(element);
+		lowerBoundAtoms.addAll(atomisticRIDAG.getAncestors(element));
+		lowerBoundAtoms.retainAll(atoms);
+		return lowerBoundAtoms;
 	}
 	
 	private Set<Set<Set<V>>> powerSet(Set<Set<V>> subsets) {

@@ -28,7 +28,7 @@ import org.junit.Test;
 
 import com.tregouet.tree_finder.ITreeFinder;
 import com.tregouet.tree_finder.data.ClassificationTree;
-import com.tregouet.tree_finder.error.InvalidSemilatticeException;
+import com.tregouet.tree_finder.error.InvalidDAGException;
 import com.tregouet.tree_finder.error.InvalidTreeException;
 
 import guru.nidi.graphviz.engine.Format;
@@ -76,7 +76,7 @@ public class TreeFinderTest {
 	
 	//Can last up to 300 sec.
 	@Test
-	public void whenLargeInputThenTreesStillReturned() throws InvalidSemilatticeException, IOException {
+	public void whenLargeInputThenTreesStillReturned() throws InvalidDAGException, IOException {
 		@SuppressWarnings("unused")
 		int nbOfTreesReturned = 0;
 		int nbOfAtomsInPowerSet = 5;
@@ -116,25 +116,25 @@ public class TreeFinderTest {
 		try {
 			treeFinderNotRooted = new TreeFinder<>(notRootedDAG, true);
 		}
-		catch (InvalidSemilatticeException e) {
+		catch (InvalidDAGException e) {
 			exceptionThrownWithNotRootedDAG = true;
 		}
 		try {
 			treeFinderNotInverted = new TreeFinder<>(notInvertedDAG, true);
 		}
-		catch (InvalidSemilatticeException e) {
+		catch (InvalidDAGException e) {
 			exceptionThrownWithNotInvertedDAG = true;
 		}
 		try {
 			treeFinderABC = new TreeFinder<>(upperSemiLatticeABC, true);
 		}
-		catch (InvalidSemilatticeException e) {
+		catch (InvalidDAGException e) {
 			exceptionThrownWithABC = true;
 		}
 		try {
 			treeFinderPowerSet = new TreeFinder<>(upperSemiLatticePowerSet, true);
 		}
-		catch (InvalidSemilatticeException e) {
+		catch (InvalidDAGException e) {
 			exceptionThrownWithPowerSet = true;
 		}
 		assertTrue(exceptionThrownWithNotConnectedDAG 
@@ -145,7 +145,7 @@ public class TreeFinderTest {
 	}
 	
 	@Test
-	public void whenTreesRequestedThenAllTreesReturnedAreValid() throws InvalidSemilatticeException {
+	public void whenTreesRequestedThenAllTreesReturnedAreValid() throws InvalidDAGException {
 		boolean allTreesReturnedAreValid = true;
 		ITreeFinder<String, Edge> finder = new TreeFinder<>(upperSemiLatticeABC, true);
 		while (finder.hasNext()) {
@@ -161,7 +161,7 @@ public class TreeFinderTest {
 	}
 	
 	@Test
-	public void whenTreesRequestedThenExpectedNbOfTreesReturned() throws InvalidSemilatticeException {
+	public void whenTreesRequestedThenExpectedNbOfTreesReturned() throws InvalidDAGException {
 		int nbOfTreesExpected = 8;
 		ITreeFinder<String, Edge> finder = new TreeFinder<>(upperSemiLatticeABC, true);
 		assertTrue(nbOfTreesExpected == finder.getNbOfTrees());
@@ -169,7 +169,7 @@ public class TreeFinderTest {
 	
 	@Test
 	public void whenTreesRequestedThenExpectedTreesReturned() 
-			throws InvalidTreeException, InvalidSemilatticeException {
+			throws InvalidTreeException, InvalidDAGException {
 		ITreeFinder<String, Edge> finder = new TreeFinder<>(upperSemiLatticeABC, true);
 		boolean asExpected = true;
 		Set<ClassificationTree<String, Edge>> expected = new HashSet<>();

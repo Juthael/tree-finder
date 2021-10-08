@@ -1,6 +1,7 @@
 package com.tregouet.tree_finder.utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -127,6 +128,26 @@ public class StructureInspector {
 				if (root == null)
 					root = vertex;
 				else return false;
+			}
+		}
+		return true;
+	}
+	
+	public static <V, E> boolean isAtomistic(DirectedAcyclicGraph<V, E> dag) {
+		Set<V> atoms = new HashSet<>();
+		Set<Set<V>> encodingSubsetsOfAtoms = new HashSet<>();
+		TopologicalOrderIterator<V, E> topoIte = new TopologicalOrderIterator<>(dag);
+		while (topoIte.hasNext()) {
+			V nextElem = topoIte.next();
+			if (dag.inDegreeOf(nextElem) == 0) {
+				atoms.add(nextElem);
+				Set<V> singleton = new HashSet<>();
+				encodingSubsetsOfAtoms.add(singleton);
+			}
+			else {
+				Set<V> encodingSubsetOfAtoms = new HashSet<>(Sets.intersection(dag.getAncestors(nextElem), atoms));
+				if (!encodingSubsetsOfAtoms.add(encodingSubsetOfAtoms))
+					return false;	
 			}
 		}
 		return true;

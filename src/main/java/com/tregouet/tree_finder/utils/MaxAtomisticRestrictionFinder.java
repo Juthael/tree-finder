@@ -14,16 +14,16 @@ import org.jgrapht.alg.TransitiveClosure;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
-import com.tregouet.tree_finder.error.InvalidSemilatticeException;
+import com.tregouet.tree_finder.error.InvalidDAGException;
 
-public class UpperSemilatticeFinder<V, E> implements Iterator<DirectedAcyclicGraph<V, E>> {
+public class MaxAtomisticRestrictionFinder<V, E> implements Iterator<DirectedAcyclicGraph<V, E>> {
 
 	private final DirectedAcyclicGraph<V, E> rootedInvertedDAG;
-	private final List<V> vertexTopoList;
+	private final List<V> topoOrderedSet;
 	private final int setCardinal;
-	private final List<Set<V>> uSLSupGeneratorMinimals = new ArrayList<>();
-	private final int[][] uSLSupremaCoords;
-	private final int[] uSLSupremaArrayDimensions;
+	private final List<Set<V>> supEncodingSubsetsOfAtoms = new ArrayList<>();
+	private final int[][] rivalSupremaIdxes;
+	private final int[] rivalSupremaArrayDimensions;
 	private final int[] coordinates;
 	private boolean hasNext = true;
 	private int coordinateIdx = 0;
@@ -33,14 +33,14 @@ public class UpperSemilatticeFinder<V, E> implements Iterator<DirectedAcyclicGra
 	 * Unsafe. Parameter MUST be the transitive reduction of a rooted inverted directed acyclic graph, 
 	 * and ascending order over vertices MUST be topological.  
 	 */
-	public UpperSemilatticeFinder(DirectedAcyclicGraph<V, E> rootedInvertedDAGReduced, Set<V> minimals) {
+	public MaxAtomisticRestrictionFinder(DirectedAcyclicGraph<V, E> rootedInvertedDAGReduced, Set<V> minimals) {
 		this.rootedInvertedDAG = rootedInvertedDAGReduced;
 		removeTunnelVertices();
-		vertexTopoList = new ArrayList<>();
-		new TopologicalOrderIterator<V, E>(rootedInvertedDAGReduced).forEachRemaining(v -> vertexTopoList.add(v));
+		topoOrderedSet = new ArrayList<>();
+		new TopologicalOrderIterator<V, E>(rootedInvertedDAGReduced).forEachRemaining(v -> topoOrderedSet.add(v));
 		setCardinal = rootedInvertedDAGReduced.vertexSet().size();
 		Map<V, Set<V>> elmtToMinimalLowerBounds = new HashMap<>();
-		for (V element : vertexTopoList) {
+		for (V element : topoOrderedSet) {
 			if (minimals.contains(element)) {
 				Set<V> singleton = new HashSet<>();
 				singleton.add(element);
@@ -56,24 +56,24 @@ public class UpperSemilatticeFinder<V, E> implements Iterator<DirectedAcyclicGra
 		int[] uSLSupremaOversizedDimensionArray = new int[elmtToMinimalLowerBounds.size()];
 		int subsetIndex;
 		for (Set<V> minimalSubset : elmtToMinimalLowerBounds.values()) {
-			subsetIndex = uSLSupGeneratorMinimals.indexOf(minimalSubset);
+			subsetIndex = supEncodingSubsetsOfAtoms.indexOf(minimalSubset);
 			if (subsetIndex == -1) {
-				uSLSupGeneratorMinimals.add(minimalSubset);
-				subsetIndex = uSLSupGeneratorMinimals.size() - 1;
+				supEncodingSubsetsOfAtoms.add(minimalSubset);
+				subsetIndex = supEncodingSubsetsOfAtoms.size() - 1;
 			}
 			uSLSupremaOversizedDimensionArray[subsetIndex]++;
 		}
-		uSLSupremaArrayDimensions =
-				Arrays.copyOfRange(uSLSupremaOversizedDimensionArray, 0, uSLSupGeneratorMinimals.size());
-		coordinates = new int[uSLSupGeneratorMinimals.size()]; 
-		uSLSupremaCoords = new int[uSLSupGeneratorMinimals.size()][];
-		for (int i = 0 ; i < uSLSupremaCoords.length ; i++) {
-			uSLSupremaCoords[i] = new int[uSLSupremaArrayDimensions[i]];
+		rivalSupremaArrayDimensions =
+				Arrays.copyOfRange(uSLSupremaOversizedDimensionArray, 0, supEncodingSubsetsOfAtoms.size());
+		coordinates = new int[supEncodingSubsetsOfAtoms.size()]; 
+		rivalSupremaIdxes = new int[supEncodingSubsetsOfAtoms.size()][];
+		for (int i = 0 ; i < rivalSupremaIdxes.length ; i++) {
+			rivalSupremaIdxes[i] = new int[rivalSupremaArrayDimensions[i]];
 		}
 		for (int i = 0 ; i < setCardinal ; i++) {
 			int uSLSupremumCoord = 
-					uSLSupGeneratorMinimals.indexOf(elmtToMinimalLowerBounds.get(vertexTopoList.get(i)));
-			uSLSupremaCoords[uSLSupremumCoord][coordinates[uSLSupremumCoord]] = i;
+					supEncodingSubsetsOfAtoms.indexOf(elmtToMinimalLowerBounds.get(topoOrderedSet.get(i)));
+			rivalSupremaIdxes[uSLSupremumCoord][coordinates[uSLSupremumCoord]] = i;
 			coordinates[uSLSupremumCoord]++;
 		}
 		Arrays.fill(coordinates, 0);
@@ -114,7 +114,7 @@ public class UpperSemilatticeFinder<V, E> implements Iterator<DirectedAcyclicGra
 		List<V> nextUSLVertices = new ArrayList<>();
 		List<E> nextUSLEdges = new ArrayList<>();
 		for (int i = 0 ; i < coordinates.length ; i++)
-			nextUSLVertices.add(vertexTopoList.get(uSLSupremaCoords[i][coordinates[i]]));
+			nextUSLVertices.add(topoOrderedSet.get(rivalSupremaIdxes[i][coordinates[i]]));
 		for (E edge : rootedInvertedDAG.edgeSet()) {
 			if (nextUSLVertices.contains(rootedInvertedDAG.getEdgeSource(edge)) 
 					&& nextUSLVertices.contains(rootedInvertedDAG.getEdgeTarget(edge)))
@@ -125,13 +125,15 @@ public class UpperSemilatticeFinder<V, E> implements Iterator<DirectedAcyclicGra
 		return nextUSL;
 	}
 	
-	public void validateNext() throws InvalidSemilatticeException {
-		if (!StructureInspector.isAnUpperSemilattice(next()))
-			throw new InvalidSemilatticeException();
+	public void validateNext() throws InvalidDAGException {
+		DirectedAcyclicGraph<V, E> next = next();
+		if (!StructureInspector.isARootedInvertedDirectedAcyclicGraph(next)
+				|| !StructureInspector.isAtomistic(next))
+			throw new InvalidDAGException();
 	}
 	
 	private boolean advance() {
-		if (coordinates[coordinateIdx] < uSLSupremaArrayDimensions[coordinateIdx] - 1) {
+		if (coordinates[coordinateIdx] < rivalSupremaArrayDimensions[coordinateIdx] - 1) {
 			coordinates[coordinateIdx]++;
 			coordinateIdx = 0;
 			return true;

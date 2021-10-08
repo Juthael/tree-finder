@@ -1,7 +1,6 @@
 package com.tregouet.tree_finder.utils;
 
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -10,21 +9,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.jgrapht.alg.TransitiveReduction;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.tregouet.tree_finder.EdgeForTests;
-import com.tregouet.tree_finder.error.InvalidSemilatticeException;
-import com.tregouet.tree_finder.viz.Visualizer;
+import com.tregouet.tree_finder.error.InvalidDAGException;
 
-public class UpperSemilatticeFinderTest {
+public class MaxAtomisticRestrictionFinderTest {
 
 	private DirectedAcyclicGraph<String, EdgeForTests> rootedNotLatticeDAG;
-	private UpperSemilatticeFinder<String, EdgeForTests> uSLFinder;
-	private List<DirectedAcyclicGraph<String, EdgeForTests>> semiLattices;
+	private MaxAtomisticRestrictionFinder<String, EdgeForTests> atomisticRIDAGFinder;
+	private List<DirectedAcyclicGraph<String, EdgeForTests>> atomisticRIDAG;
 	private String a = "A";
 	private String b = "B";
 	private String c = "C";
@@ -82,8 +79,8 @@ public class UpperSemilatticeFinderTest {
 		rootedNotLatticeDAG.addEdge(bcd, bcdTunnel);
 		rootedNotLatticeDAG.addEdge(bcdTunnel, abcd);
 		Set<String> minimals = new HashSet<>(Arrays.asList(new String[] {a, b, c, d}));
-		uSLFinder = new UpperSemilatticeFinder<>(rootedNotLatticeDAG, minimals);
-		semiLattices = new ArrayList<>();
+		atomisticRIDAGFinder = new MaxAtomisticRestrictionFinder<>(rootedNotLatticeDAG, minimals);
+		atomisticRIDAG = new ArrayList<>();
 	}
 
 	@Test
@@ -94,45 +91,34 @@ public class UpperSemilatticeFinderTest {
 		int coordinateIdx = 0;
 		int[][] expected = expectCoordinates();
 		for (int i = 1 ; i < 24 ; i++) {
-			UpperSemilatticeFinder.advance(coordinates, arrayDimensions, coordinateIdx);
+			MaxAtomisticRestrictionFinder.advance(coordinates, arrayDimensions, coordinateIdx);
 			if (!Arrays.equals(coordinates, expected[i]))
 				asExpected = false;
 		}
-		boolean hasNext = UpperSemilatticeFinder.advance(coordinates, arrayDimensions, coordinateIdx);
+		boolean hasNext = MaxAtomisticRestrictionFinder.advance(coordinates, arrayDimensions, coordinateIdx);
 		assertTrue(asExpected && !hasNext);
 	}
 	
 	@Test
 	public void whenLatticesRequestedThenExpectedNumberReturned() throws IOException {
-		uSLFinder.forEachRemaining(l -> semiLattices.add(l));
-		/*
-		int uSLIdx = 0;
-		for (DirectedAcyclicGraph<String, EdgeForTests> uSL : semiLattices) {
-			Visualizer.visualize(uSL, "2110081116_uSL" + Integer.toString(uSLIdx++));
-		}
-		*/
-		assertTrue(semiLattices.size() == 8);
+		atomisticRIDAGFinder.forEachRemaining(l -> atomisticRIDAG.add(l));
+		assertTrue(atomisticRIDAG.size() == 8);
 	}
 	
 	@Test
-	public void whenLatticesRequestedThenReturnedLatticesAreValid() {
-		boolean onlyValidLatticesReturned = true;
+	public void whenAtomisticDAGRequestedThenReturnedAreValid() {
+		boolean onlyValidRIDAGSReturned = true;
 		int nbOfChecks = 0;
-		while (uSLFinder.hasNext()) {
+		while (atomisticRIDAGFinder.hasNext()) {
 			nbOfChecks++;
 			try {
-				uSLFinder.validateNext();
+				atomisticRIDAGFinder.validateNext();
 			}
-			catch (InvalidSemilatticeException e) {
-				onlyValidLatticesReturned = false;
+			catch (InvalidDAGException e) {
+				onlyValidRIDAGSReturned = false;
 			}
 		}
-		assertTrue(onlyValidLatticesReturned && nbOfChecks > 0);
-	}
-	
-	@Test
-	public void whenLatticeIsReturnedThenOnlyItsMinimalElementsAreSupIrreducible() {
-		fail("Not yet implemented");
+		assertTrue(onlyValidRIDAGSReturned && nbOfChecks > 0);
 	}
 	
 	private int[][] expectCoordinates() {
