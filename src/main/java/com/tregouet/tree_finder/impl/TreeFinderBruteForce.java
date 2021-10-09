@@ -14,6 +14,7 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 import com.google.common.collect.Sets;
 import com.tregouet.tree_finder.ITreeFinder;
 import com.tregouet.tree_finder.data.ClassificationTree;
+import com.tregouet.tree_finder.error.InvalidInputException;
 
 public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
 
@@ -22,14 +23,16 @@ public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
 	private final Set<V> atoms;
 	private final Map<Set<V>, V> encodingSubsetsOfAtomsToTheirSupremum = new HashMap<>();
 	private final Set<Set<Set<V>>> powerSetOfEncodingSubsetsOfAtoms;
-	private final Set<Set<Set<V>>> maximalHierarchiesOfAtoms;
+	private final Set<Set<Set<V>>> maximalHierarchiesOfAtoms = new HashSet<>();
 	private final Set<Set<V>> treeRestrictions = new HashSet<>();
 	private Iterator<Set<V>> treeIte;
 	
 	/*
-	 * UNSAFE. The parameter MUST be an atomistic rooted inverted DAG (reduced or not)
+	 * UNSAFE. The parameter MUST be an atomistic rooted inverted DAG (reduced or not). Since the 
+	 * generation of a power set is involved, large inputs will throw exceptions. 
 	 */
-	protected TreeFinderBruteForce(DirectedAcyclicGraph<V, E> atomisticRIDAG, Set<V> minimals) {
+	protected TreeFinderBruteForce(DirectedAcyclicGraph<V, E> atomisticRIDAG, Set<V> atoms) 
+			throws InvalidInputException {
 		this.atomisticRIDAG = atomisticRIDAG;
 		V maximum = null;
 		Iterator<V> vIte = atomisticRIDAG.vertexSet().iterator();
@@ -39,14 +42,15 @@ public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
 				maximum = v;
 		}
 		this.maximum = maximum;
-		this.atoms = minimals;
+		this.atoms = atoms;
 		atomisticRIDAG.vertexSet().stream()
 			.forEach(v -> 
 				encodingSubsetsOfAtomsToTheirSupremum.put(atomLowerBounds(v), v));
 		powerSetOfEncodingSubsetsOfAtoms = powerSet(encodingSubsetsOfAtomsToTheirSupremum.keySet());
-		maximalHierarchiesOfAtoms = powerSetOfEncodingSubsetsOfAtoms.stream()
-				.filter(s -> isAMaximalHierarchy(s))
-				.collect(Collectors.toSet());
+		for (Set<Set<V>> setOfSubsets : powerSetOfEncodingSubsetsOfAtoms) {
+			if (isAMaximalHierarchy(setOfSubsets))
+				maximalHierarchiesOfAtoms.add(setOfSubsets);
+		}
 		for (Set<Set<V>> hierarchy : maximalHierarchiesOfAtoms) {
 			Set<V> treeRestriction = hierarchy.stream()
 					.map(s -> encodingSubsetsOfAtomsToTheirSupremum.get(s))
@@ -119,9 +123,13 @@ public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
 		return lowerBoundAtoms;
 	}
 	
-	private Set<Set<Set<V>>> powerSet(Set<Set<V>> subsets) {
+	private Set<Set<Set<V>>> powerSet(Set<Set<V>> subsets) throws InvalidInputException {
 		List<Set<V>> subsetList = new ArrayList<>(subsets);
 		int listSize = subsetList.size();
+		if (listSize > 30) {
+			throw new InvalidInputException("TreeFinderBruteForce.powerSet() : the input size "
+					+ "is too large to be handled");
+		}
 		Set<Set<Set<V>>> powerSetOfSubsets = new HashSet<>();
 		for (int i = 0 ; i < (1 << listSize) ; i++) {
 			Set<Set<V>> setOfSubsets = new HashSet<>(listSize);

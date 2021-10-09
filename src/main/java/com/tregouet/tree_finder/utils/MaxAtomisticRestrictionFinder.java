@@ -14,8 +14,6 @@ import org.jgrapht.alg.TransitiveClosure;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
-import com.tregouet.tree_finder.error.InvalidDAGException;
-
 public class MaxAtomisticRestrictionFinder<V, E> implements Iterator<DirectedAcyclicGraph<V, E>> {
 
 	private final DirectedAcyclicGraph<V, E> rootedInvertedDAG;
@@ -123,13 +121,6 @@ public class MaxAtomisticRestrictionFinder<V, E> implements Iterator<DirectedAcy
 		Graphs.addAllEdges(nextUSL, rootedInvertedDAG, nextUSLEdges);
 		hasNext = advance();
 		return nextUSL;
-	}
-	
-	public void validateNext() throws InvalidDAGException {
-		DirectedAcyclicGraph<V, E> next = next();
-		if (!StructureInspector.isARootedInvertedDirectedAcyclicGraph(next)
-				|| !StructureInspector.isAtomistic(next))
-			throw new InvalidDAGException();
 	}
 	
 	private boolean advance() {

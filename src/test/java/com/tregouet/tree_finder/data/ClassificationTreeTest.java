@@ -15,7 +15,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.tregouet.tree_finder.error.InvalidTreeException;
+import com.tregouet.tree_finder.error.InvalidInputException;
 
 public class ClassificationTreeTest {
 
@@ -45,7 +45,7 @@ public class ClassificationTreeTest {
 	}
 
 	@Test
-	public void whenDifferentVerticesThenNotEqual() throws InvalidTreeException {
+	public void whenDifferentVerticesThenNotEqual() throws InvalidInputException {
 		DirectedAcyclicGraph<String, Edge> otherDAG = new DirectedAcyclicGraph<>(null, Edge::new, false);
 		Graphs.addAllEdges(otherDAG, properTreeDAG, properTreeDAG.edgeSet());
 		otherDAG.addVertex(d);
@@ -59,7 +59,7 @@ public class ClassificationTreeTest {
 	}
 	
 	@Test
-	public void whenSameVerticesAndDifferentEdgesThenNotEqual() throws InvalidTreeException {
+	public void whenSameVerticesAndDifferentEdgesThenNotEqual() throws InvalidInputException {
 		DirectedAcyclicGraph<String, Edge> differentTreeArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
 		Graphs.addAllVertices(differentTreeArg, properTreeDAG.vertexSet());
 		differentTreeArg.addEdge(a, ab);
@@ -74,7 +74,7 @@ public class ClassificationTreeTest {
 	
 	//provided edge class overrides hashCode() and equals()
 	@Test
-	public void whenSameVerticesAndSameEdgesThenEqual() throws InvalidTreeException {
+	public void whenSameVerticesAndSameEdgesThenEqual() throws InvalidInputException {
 		DirectedAcyclicGraph<String, Edge> sameTreeDAG = new DirectedAcyclicGraph<>(null, Edge::new, false);
 		sameTreeDAG.addVertex(a);
 		sameTreeDAG.addVertex(b);
@@ -101,19 +101,19 @@ public class ClassificationTreeTest {
 		try {
 			new ClassificationTree<>(abc, leaves, notRootedDAG, notRootedDAG.edgeSet(), true);
 		}
-		catch (InvalidTreeException e) {
+		catch (InvalidInputException e) {
 			exceptionIfNotRooted = true;
 		}
 		try {
 			new ClassificationTree<>(abc, leaves, violatingHierarchyClauseDAG, violatingHierarchyClauseDAG.edgeSet(), true);
 		}
-		catch (InvalidTreeException e) {
+		catch (InvalidInputException e) {
 			exceptionIfHierarchyClauseIsViolated = true;
 		}
 		try {
 			new ClassificationTree<>(abc, leaves, properTreeDAG, properTreeDAG.edgeSet(), true);
 		}
-		catch (InvalidTreeException e) {
+		catch (InvalidInputException e) {
 			exceptionIfProperTree = true;
 		}
 		assertTrue(exceptionIfNotRooted && exceptionIfHierarchyClauseIsViolated && !exceptionIfProperTree);

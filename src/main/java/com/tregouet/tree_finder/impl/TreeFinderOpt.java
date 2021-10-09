@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.jgrapht.Graphs;
 import org.jgrapht.alg.TransitiveReduction;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
@@ -30,17 +31,19 @@ public class TreeFinderOpt<V, E> implements ITreeFinder<V, E> {
 	private int treeIdx = 0;
 	
 	/*
-	 * UNSAFE. The first parameter MUST be an atomistic rooted inverted DAG (reduced or not)
+	 * UNSAFE. The first parameter MUST be an atomistic rooted inverted DAG. 
+	 * No transitive reduction must have been operated on it.
 	 */
-	protected TreeFinderOpt(DirectedAcyclicGraph<V, E> atomisticRIDAG, Set<V> minimals) {
-		this.atomisticRIDAG = atomisticRIDAG;
+	protected TreeFinderOpt(DirectedAcyclicGraph<V, E> atomisticRIDAG, Set<V> atoms) {
+		this.atomisticRIDAG = new DirectedAcyclicGraph<>(null, null, false);
+		Graphs.addAllEdges(this.atomisticRIDAG, atomisticRIDAG, atomisticRIDAG.edgeSet());
 		TransitiveReduction.INSTANCE.reduce(atomisticRIDAG);
 		new TopologicalOrderIterator<>(atomisticRIDAG).forEachRemaining(v -> topoOrderedSet.add(v));
 		this.maximum = topoOrderedSet.get(topoOrderedSet.size() - 1);
-		this.atoms = minimals;
+		this.atoms = atoms;
 		sparseMaximum = topoOrderedSet.size() - 1;
-		for (V minimal : minimals)
-			sparseAtoms.add(topoOrderedSet.indexOf(minimal));
+		for (V atom : atoms)
+			sparseAtoms.add(topoOrderedSet.indexOf(atom));
 		sparseConverter = new SparseGraphConverter<>(atomisticRIDAG, true);
 		sparseAtomisticRIDAG = sparseConverter.getSparseGraph();
 		TreeFinderSparse treeFinderSparse = new TreeFinderSparse(sparseAtomisticRIDAG, sparseMaximum, sparseAtoms);
@@ -58,9 +61,11 @@ public class TreeFinderOpt<V, E> implements ITreeFinder<V, E> {
 
 	@Override
 	public ClassificationTree<V, E> next() {
-		return new ClassificationTree<V, E>(
-				atomisticRIDAG, sparseConverter.getVertexSet(sparseTreeRestrictions.get(treeIdx++)), 
+		ClassificationTree<V, E> nextTree = new ClassificationTree<V, E>(
+				atomisticRIDAG, sparseConverter.getVertexSet(sparseTreeRestrictions.get(treeIdx)), 
 				maximum, atoms, false);
+		treeIdx++;
+		return nextTree;
 	}
 
 }

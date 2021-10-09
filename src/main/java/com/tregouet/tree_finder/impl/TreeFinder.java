@@ -8,7 +8,7 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 
 import com.tregouet.tree_finder.ITreeFinder;
 import com.tregouet.tree_finder.data.ClassificationTree;
-import com.tregouet.tree_finder.error.InvalidRootedInvertedDAGException;
+import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.StructureInspector;
 import com.tregouet.tree_finder.utils.MaxAtomisticRestrictionFinder;
 
@@ -17,13 +17,11 @@ public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 	private final Set<V> atoms = new HashSet<>();
 	private final MaxAtomisticRestrictionFinder<V, E> atomisticRestrictionFinder;
 	private ITreeFinder<V, E> treeFinder;
-	private final boolean bruteForce;
 	
 	
-	public TreeFinder(DirectedAcyclicGraph<V, E> rootedInvertedDAG) throws InvalidRootedInvertedDAGException {
+	public TreeFinder(DirectedAcyclicGraph<V, E> rootedInvertedDAG) throws InvalidInputException {
 		if (!StructureInspector.isARootedInvertedDirectedAcyclicGraph(rootedInvertedDAG))
-			throw new InvalidRootedInvertedDAGException();
-		bruteForce = false;
+			throw new InvalidInputException();
 		TransitiveReduction.INSTANCE.reduce(rootedInvertedDAG);
 		for (V element : rootedInvertedDAG.vertexSet()) {
 			if (rootedInvertedDAG.inDegreeOf(element) == 0)
@@ -32,21 +30,6 @@ public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 		atomisticRestrictionFinder = new MaxAtomisticRestrictionFinder<>(rootedInvertedDAG, atoms);
 		treeFinder = new TreeFinderOpt<V, E>(atomisticRestrictionFinder.next(), atoms);
 	}
-	
-	public TreeFinder(DirectedAcyclicGraph<V, E> rootedInvertedDAG, boolean bruteForce) throws InvalidRootedInvertedDAGException {
-		if (!StructureInspector.isARootedInvertedDirectedAcyclicGraph(rootedInvertedDAG))
-			throw new InvalidRootedInvertedDAGException();
-		this.bruteForce = bruteForce;
-		TransitiveReduction.INSTANCE.reduce(rootedInvertedDAG);
-		for (V element : rootedInvertedDAG.vertexSet()) {
-			if (rootedInvertedDAG.inDegreeOf(element) == 0)
-				atoms.add(element);
-		}
-		atomisticRestrictionFinder = new MaxAtomisticRestrictionFinder<>(rootedInvertedDAG, atoms);
-		if (bruteForce)
-			treeFinder = new TreeFinderBruteForce<>(atomisticRestrictionFinder.next(), atoms);
-		treeFinder = new TreeFinderOpt<V, E>(atomisticRestrictionFinder.next(), atoms);
-	}	
 
 	@Override
 	public boolean hasNext() {
@@ -55,11 +38,8 @@ public class TreeFinder<V, E> implements ITreeFinder<V, E> {
 
 	@Override
 	public ClassificationTree<V, E> next() {
-		if (!treeFinder.hasNext()) {
-			if (bruteForce)
-				treeFinder = new TreeFinderBruteForce<>(atomisticRestrictionFinder.next(), atoms);
-			else treeFinder = new TreeFinderOpt<V, E>(atomisticRestrictionFinder.next(), atoms);
-		}	
+		if (!treeFinder.hasNext())
+			treeFinder = new TreeFinderOpt<V, E>(atomisticRestrictionFinder.next(), atoms);
 		return treeFinder.next();
 	}
 

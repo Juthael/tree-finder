@@ -9,7 +9,7 @@ import org.jgrapht.Graphs;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
-import com.tregouet.tree_finder.error.InvalidTreeException;
+import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
 public class ClassificationTree<V, E> extends DirectedAcyclicGraph<V, E> {
@@ -61,7 +61,7 @@ public class ClassificationTree<V, E> extends DirectedAcyclicGraph<V, E> {
 	
 	//Safe if last argument is 'true'
 	public ClassificationTree(V root, Set<V> leaves, DirectedAcyclicGraph<V, E> source, Set<E> edges, boolean validate) 
-			throws InvalidTreeException {
+			throws InvalidInputException {
 		this(root, leaves, source, edges);
 		if (validate)
 			validate();
@@ -83,9 +83,35 @@ public class ClassificationTree<V, E> extends DirectedAcyclicGraph<V, E> {
 		return topologicalSortingOfVertices;
 	}
 	
-	public void validate() throws InvalidTreeException {
+	public void validate() throws InvalidInputException {
 		if (!StructureInspector.isAClassificationTree(this))
-			throw new InvalidTreeException();
+			throw new InvalidInputException("ClassificationTree() : parameters do not allow the instantiation "
+					+ "of a valid classification tree.");
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((topologicalSortingOfVertices == null) ? 0 : topologicalSortingOfVertices.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (getClass() != obj.getClass())
+			return false;
+		@SuppressWarnings("rawtypes")
+		ClassificationTree other = (ClassificationTree) obj;
+		if (topologicalSortingOfVertices == null) {
+			if (other.topologicalSortingOfVertices != null)
+				return false;
+		} else if (!topologicalSortingOfVertices.equals(other.topologicalSortingOfVertices))
+			return false;
+		return (this.edgeSet().equals(other.edgeSet()));
 	}
 
 }
