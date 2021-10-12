@@ -15,8 +15,9 @@ import it.unimi.dsi.fastutil.ints.IntArraySet;
 public class TreeFinderSparse {
 
 	private final IntArraySet atoms;
-	private final List<IntArrayList> coveredElements = new ArrayList<>();
+	private final List<IntArrayList> predecessors = new ArrayList<>();
 	private final List<IntArraySet> lowerSets = new ArrayList<>();
+	private final List<IntArraySet> upperSets = new ArrayList<>();
 	private final List<IntArraySet> supEncodingSubsetsOfAtoms = new ArrayList<>();
 	private final List<List<IntArrayList>> forkingSubsets = new ArrayList<>();
 	private final List<List<IntArrayList>> subTrees;
@@ -28,9 +29,9 @@ public class TreeFinderSparse {
 	 */
 	protected TreeFinderSparse(SparseIntDirectedGraph reducedRIDAG, int maximum, IntArraySet atoms) {
 		this.atoms = atoms;
-		//set covered elements, lower sets and sup-encoding subsets of minimals
+		//set predecessors, lower sets and sup-encoding subsets of minimals
 		for (int i = 0 ; i <= maximum ; i++) {
-			coveredElements.add(new IntArrayList(Graphs.predecessorListOf(reducedRIDAG, i)));
+			predecessors.add(new IntArrayList(Graphs.predecessorListOf(reducedRIDAG, i)));
 			if (atoms.contains(i)) {
 				IntArraySet singleton = new IntArraySet(new int[] {i});
 				lowerSets.add(singleton);
@@ -40,19 +41,29 @@ public class TreeFinderSparse {
 				IntArraySet iLowerSet = new IntArraySet();
 				iLowerSet.add(i);
 				IntArraySet iSupEncodingSubsetOfAtoms = new IntArraySet();
-				for (int iCoveredElmnt : coveredElements.get(i)) {
+				for (int iCoveredElmnt : predecessors.get(i)) {
 					iLowerSet.addAll(lowerSets.get(iCoveredElmnt));
 					iSupEncodingSubsetOfAtoms.addAll(supEncodingSubsetsOfAtoms.get(iCoveredElmnt));
 				}
 				lowerSets.add(iLowerSet);
 				supEncodingSubsetsOfAtoms.add(iSupEncodingSubsetOfAtoms);
 			}
+			//prepare for below
+			upperSets.add(null);
+		}
+		//set upper sets
+		for (int i = maximum ; i >= 0 ; i--) {
+			IntArraySet iUpperSet = new IntArraySet();
+			iUpperSet.add(i);
+			for (int successor : Graphs.successorListOf(reducedRIDAG, i)) {
+				iUpperSet.addAll(upperSets.get(successor));
+			}
+			upperSets.set(i, iUpperSet);
 		}
 		//set forkingSubSets and subTrees
-		boolean[] closed = new boolean[maximum + 1];
 		subTrees = new ArrayList<>(maximum + 1);
 		for (int i = 0 ; i <= maximum ; i++) {
-			forkingSubsets.add(getForkingSubsetsOfLowerBounds(i, closed));
+			forkingSubsets.add(getForkingSubsetsOfLowerBounds(i));
 			subTrees.add(null);
 		}
 		//set trees
@@ -67,34 +78,42 @@ public class TreeFinderSparse {
 		return trees;
 	}
 
+	//Side effects used on purpose on previouslyPicked param
 	private List<IntArrayList> completeForkingSubsetsOfLowerBounds(int element, IntArrayList uncompleteFork, 
-			IntArraySet atomsToCover, IntArraySet coveredAtomsSoFar, boolean[] closed) {
+			IntArraySet atomsToCover, IntArraySet coveredAtomsSoFar, boolean[] skipInspection, 
+			IntArrayList previouslyPicked) {
 		List<IntArrayList> forkingLowerBoundSubsets = new ArrayList<>();
-		int searchStart =	
-				(uncompleteFork.isEmpty() ? element - 1 : uncompleteFork.getInt(uncompleteFork.size() - 1) - 1);
-		boolean[] closedForNow = new boolean[closed.length];
-		System.arraycopy(closed, 0, closedForNow, 0, closed.length);
-		for (int i = searchStart ; i >= 0 ; i--) {
-			if (!closedForNow[i]) {
-				IntArraySet iCoveredAtoms = supEncodingSubsetsOfAtoms.get(i);
-				if (atomsToCover.containsAll(iCoveredAtoms) 
-						&& Sets.intersection(coveredAtomsSoFar, iCoveredAtoms).isEmpty()) {
-					IntArrayList continuedFork = new IntArrayList(uncompleteFork);
-					continuedFork.add(i);
+		int searchStartIdx =	
+				(uncompleteFork.isEmpty() ? element - 1 : (uncompleteFork.getInt(uncompleteFork.size() - 1)) - 1);
+		for (int i = searchStartIdx ; i >= 0 ; i--) {
+			if (!skipInspection[i]) {
+				IntArrayList continuedFork = new IntArrayList(uncompleteFork);
+				continuedFork.add(i);
+				boolean alreadyCoveredByPrevious = false;
+				IntArrayList continuedForkMinUpperBounds = getMinimalUpperBounds(continuedFork);
+				for (int picked : previouslyPicked) {
+					if (continuedForkMinUpperBounds.contains(picked)) {
+						alreadyCoveredByPrevious = true;
+						break;
+					}
+				}
+				if (!alreadyCoveredByPrevious) {
+					previouslyPicked.add(i);
 					IntArraySet nextCoveredAtoms = new IntArraySet(coveredAtomsSoFar);
-					nextCoveredAtoms.addAll(iCoveredAtoms);
+					nextCoveredAtoms.addAll(supEncodingSubsetsOfAtoms.get(i));
 					if (nextCoveredAtoms.equals(atomsToCover))
 						forkingLowerBoundSubsets.add(continuedFork);
 					else {
-						boolean[] nextClosed = new boolean[closed.length];
-						System.arraycopy(closed, 0, nextClosed, 0, closed.length);
-						for (int iLowerBound : lowerSets.get(i)) {
-							nextClosed[iLowerBound] = true;
-							closedForNow[iLowerBound] = true;
+						boolean[] nextSkipInspection = new boolean[i];
+						System.arraycopy(skipInspection, 0, nextSkipInspection, 0, i);
+						for (int j = i - 1 ; j >=0 ; j--) {
+							if (!nextSkipInspection[j] 
+									&& !Sets.intersection(nextCoveredAtoms, supEncodingSubsetsOfAtoms.get(j)).isEmpty())
+								nextSkipInspection[j] = true;
 						}
 						forkingLowerBoundSubsets.addAll(
 								completeForkingSubsetsOfLowerBounds(element, continuedFork, atomsToCover, 
-								nextCoveredAtoms, nextClosed));
+								nextCoveredAtoms, nextSkipInspection, previouslyPicked));
 					}
 				}
 			}
@@ -102,11 +121,17 @@ public class TreeFinderSparse {
 		return forkingLowerBoundSubsets;
 	}
 
-	private List<IntArrayList> getForkingSubsetsOfLowerBounds(int element, boolean[] closed) {
+	private List<IntArrayList> getForkingSubsetsOfLowerBounds(int element) {
 		if (atoms.contains(element))
 			return new ArrayList<>();
-		return completeForkingSubsetsOfLowerBounds(
-				element, new IntArrayList(), supEncodingSubsetsOfAtoms.get(element), new IntArraySet(), closed);
+		IntArraySet atomsToCover = supEncodingSubsetsOfAtoms.get(element);
+		boolean[] skipInspection = new boolean[element];
+		for (int i = 0 ; i < element ; i++) {
+			if (!atomsToCover.containsAll(supEncodingSubsetsOfAtoms.get(i)))
+				skipInspection[i] = true;
+		}
+		return completeForkingSubsetsOfLowerBounds(element, new IntArrayList(), atomsToCover, 
+				new IntArraySet(), skipInspection, new IntArrayList());
 	}
 
 	private List<IntArrayList> getSubTrees(int localRoot) {
@@ -136,6 +161,28 @@ public class TreeFinderSparse {
 		}
 		subTrees.set(localRoot, subTreesFromLocalRoot);
 		return subTreesFromLocalRoot;
+	}
+	
+	/*	returns a singleton with the least upper bound (supremum) if the constructor's first 
+	 *	parameter is the graph of an upper semilattice.
+	 */
+	private IntArrayList getMinimalUpperBounds(IntArrayList set) {
+		if (set.size() == 1)
+			return set;
+		IntArrayList minimalUpperBounds = new IntArrayList(upperSets.get(set.getInt(0)));
+		for (int i = 1 ; i < set.size() ; i++) {
+			minimalUpperBounds.retainAll(upperSets.get(set.getInt(i)));
+		}
+		minimalUpperBounds.sort(null);
+		int j = 0;
+		while (j < minimalUpperBounds.size()) {
+			int jElem = minimalUpperBounds.getInt(j);
+			IntArraySet jStrictUpperBounds = new IntArraySet(upperSets.get(jElem));
+			jStrictUpperBounds.remove(jElem);
+			minimalUpperBounds.removeAll(jStrictUpperBounds);
+			j++;
+		}
+		return minimalUpperBounds;
 	}
 
 }

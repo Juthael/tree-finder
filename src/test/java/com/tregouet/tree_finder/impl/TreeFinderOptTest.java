@@ -93,12 +93,11 @@ public class TreeFinderOptTest {
 				allReturnedTreesAreValid = false;
 			nbOfChecks++;
 		}
-		System.out.print(nbOfChecks);
 		assertTrue(allReturnedTreesAreValid && nbOfChecks > 0);
 	}
 	
 	@Test
-	public void whenTreesRequestedThenExpectedReturned() throws Exception {
+	public void whenTreesRequestedThenExpectedReturned1() throws Exception {
 		setUpSemilatticeForComparisonWithBruteForce();
 		Set<ClassificationTree<String, EdgeForTests>> returnedFromBruteForce = new HashSet<>();
 		Set<ClassificationTree<String, EdgeForTests>> returnedFromOpt = new HashSet<>();
@@ -115,6 +114,8 @@ public class TreeFinderOptTest {
 			Visualizer.visualize(nextBF, "2110091728bf_" + Integer.toString(bfIdx));
 			bfIdx++;
 		}
+		*/
+		/*
 		Iterator<ClassificationTree<String, EdgeForTests>> optIte = returnedFromOpt.iterator();
 		int optIdx = 0;
 		while (optIte.hasNext()) {
@@ -124,13 +125,19 @@ public class TreeFinderOptTest {
 			optIdx++;
 		}
 		*/
+		/*
 		Set<ClassificationTree<String, EdgeForTests>> difference = Sets.difference(returnedFromBruteForce, returnedFromOpt);
 		int idx = 0;
 		for (ClassificationTree<String, EdgeForTests> diffTree : difference) {
 			Visualizer.visualize(diffTree, "2110091728DIFF_" + Integer.toString(idx++));
 		}
-		
+		*/
 		assertTrue(returnedFromBruteForce.equals(returnedFromOpt));
+	}
+	
+	@Test
+	public void whenTreesRequestedThenExpectedReturned2() {
+		
 	}
 	
 	@Test

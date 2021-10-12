@@ -15,7 +15,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.tregouet.tree_finder.EdgeForTests;
-import com.tregouet.tree_finder.error.InvalidDAGException;
 
 public class MaxAtomisticRestrictionFinderTest {
 
@@ -111,12 +110,8 @@ public class MaxAtomisticRestrictionFinderTest {
 		int nbOfChecks = 0;
 		while (atomisticRIDAGFinder.hasNext()) {
 			nbOfChecks++;
-			try {
-				atomisticRIDAGFinder.validateNext();
-			}
-			catch (InvalidDAGException e) {
+			if (!StructureInspector.isAtomistic(atomisticRIDAGFinder.next()))
 				onlyValidRIDAGSReturned = false;
-			}
 		}
 		assertTrue(onlyValidRIDAGSReturned && nbOfChecks > 0);
 	}
