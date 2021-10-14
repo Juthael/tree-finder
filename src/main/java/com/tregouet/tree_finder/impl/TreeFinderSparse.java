@@ -18,24 +18,24 @@ public class TreeFinderSparse {
 	private final List<IntArrayList> predecessors = new ArrayList<>();
 	private final List<IntArraySet> lowerSets = new ArrayList<>();
 	private final List<IntArraySet> upperSets = new ArrayList<>();
-	private final List<IntArraySet> supEncodingSubsetsOfAtoms = new ArrayList<>();
+	private final List<IntArraySet> lowerBoundAtoms = new ArrayList<>();
 	private final List<List<IntArrayList>> forkingSubsets = new ArrayList<>();
 	private final List<List<IntArrayList>> subTrees;
 	private final List<IntArrayList> trees;
 	
 	/*
-	 * UNSAFE. Parameter MUST be the transitive reduction of an atomistic RIDAG, and the ascending 
+	 * UNSAFE. Parameter MUST be the transitive reduction of an rooted inverted DAG, and the ascending 
 	 * order on vertices must be topological. 
 	 */
-	protected TreeFinderSparse(SparseIntDirectedGraph reducedRIDAG, int maximum, IntArraySet atoms) {
+	protected TreeFinderSparse(SparseIntDirectedGraph rootedInverted, int maximum, IntArraySet atoms) {
 		this.atoms = atoms;
 		//set predecessors, lower sets and sup-encoding subsets of minimals
 		for (int i = 0 ; i <= maximum ; i++) {
-			predecessors.add(new IntArrayList(Graphs.predecessorListOf(reducedRIDAG, i)));
+			predecessors.add(new IntArrayList(Graphs.predecessorListOf(rootedInverted, i)));
 			if (atoms.contains(i)) {
 				IntArraySet singleton = new IntArraySet(new int[] {i});
 				lowerSets.add(singleton);
-				supEncodingSubsetsOfAtoms.add(singleton);
+				lowerBoundAtoms.add(singleton);
 			}
 			else {
 				IntArraySet iLowerSet = new IntArraySet();
@@ -43,10 +43,10 @@ public class TreeFinderSparse {
 				IntArraySet iSupEncodingSubsetOfAtoms = new IntArraySet();
 				for (int iCoveredElmnt : predecessors.get(i)) {
 					iLowerSet.addAll(lowerSets.get(iCoveredElmnt));
-					iSupEncodingSubsetOfAtoms.addAll(supEncodingSubsetsOfAtoms.get(iCoveredElmnt));
+					iSupEncodingSubsetOfAtoms.addAll(lowerBoundAtoms.get(iCoveredElmnt));
 				}
 				lowerSets.add(iLowerSet);
-				supEncodingSubsetsOfAtoms.add(iSupEncodingSubsetOfAtoms);
+				lowerBoundAtoms.add(iSupEncodingSubsetOfAtoms);
 			}
 			//prepare for below
 			upperSets.add(null);
@@ -55,7 +55,7 @@ public class TreeFinderSparse {
 		for (int i = maximum ; i >= 0 ; i--) {
 			IntArraySet iUpperSet = new IntArraySet();
 			iUpperSet.add(i);
-			for (int successor : Graphs.successorListOf(reducedRIDAG, i)) {
+			for (int successor : Graphs.successorListOf(rootedInverted, i)) {
 				iUpperSet.addAll(upperSets.get(successor));
 			}
 			upperSets.set(i, iUpperSet);
@@ -100,7 +100,7 @@ public class TreeFinderSparse {
 				if (!alreadyCoveredByPrevious) {
 					previouslyPicked.add(i);
 					IntArraySet nextCoveredAtoms = new IntArraySet(coveredAtomsSoFar);
-					nextCoveredAtoms.addAll(supEncodingSubsetsOfAtoms.get(i));
+					nextCoveredAtoms.addAll(lowerBoundAtoms.get(i));
 					if (nextCoveredAtoms.equals(atomsToCover))
 						forkingLowerBoundSubsets.add(continuedFork);
 					else {
@@ -108,7 +108,7 @@ public class TreeFinderSparse {
 						System.arraycopy(skipInspection, 0, nextSkipInspection, 0, i);
 						for (int j = i - 1 ; j >=0 ; j--) {
 							if (!nextSkipInspection[j] 
-									&& !Sets.intersection(nextCoveredAtoms, supEncodingSubsetsOfAtoms.get(j)).isEmpty())
+									&& !Sets.intersection(nextCoveredAtoms, lowerBoundAtoms.get(j)).isEmpty())
 								nextSkipInspection[j] = true;
 						}
 						forkingLowerBoundSubsets.addAll(
@@ -124,16 +124,39 @@ public class TreeFinderSparse {
 	private List<IntArrayList> getForkingSubsetsOfLowerBounds(int element) {
 		if (atoms.contains(element))
 			return new ArrayList<>();
-		IntArraySet atomsToCover = supEncodingSubsetsOfAtoms.get(element);
+		IntArraySet atomsToCover = lowerBoundAtoms.get(element);
 		boolean[] skipInspection = new boolean[element];
 		for (int i = 0 ; i < element ; i++) {
-			if (!atomsToCover.containsAll(supEncodingSubsetsOfAtoms.get(i)))
+			IntArraySet iLowerBoundAtoms = lowerBoundAtoms.get(i); 
+			if (iLowerBoundAtoms.size() >= atomsToCover.size() || !atomsToCover.containsAll(iLowerBoundAtoms))
 				skipInspection[i] = true;
 		}
 		return completeForkingSubsetsOfLowerBounds(element, new IntArrayList(), atomsToCover, 
 				new IntArraySet(), skipInspection, new IntArrayList());
 	}
 
+	/*	returns a singleton with the least upper bound (supremum) if the constructor's first 
+	 *	parameter is the graph of an upper semilattice.
+	 */
+	private IntArrayList getMinimalUpperBounds(IntArrayList set) {
+		if (set.size() == 1)
+			return set;
+		IntArrayList minimalUpperBounds = new IntArrayList(upperSets.get(set.getInt(0)));
+		for (int i = 1 ; i < set.size() ; i++) {
+			minimalUpperBounds.retainAll(upperSets.get(set.getInt(i)));
+		}
+		minimalUpperBounds.sort(null);
+		int j = 0;
+		while (j < minimalUpperBounds.size()) {
+			int jElem = minimalUpperBounds.getInt(j);
+			IntArraySet jStrictUpperBounds = new IntArraySet(upperSets.get(jElem));
+			jStrictUpperBounds.remove(jElem);
+			minimalUpperBounds.removeAll(jStrictUpperBounds);
+			j++;
+		}
+		return minimalUpperBounds;
+	}
+	
 	private List<IntArrayList> getSubTrees(int localRoot) {
 		List<IntArrayList> subTreesFromLocalRoot = new ArrayList<>();
 		if (atoms.contains(localRoot)) {
@@ -161,28 +184,6 @@ public class TreeFinderSparse {
 		}
 		subTrees.set(localRoot, subTreesFromLocalRoot);
 		return subTreesFromLocalRoot;
-	}
-	
-	/*	returns a singleton with the least upper bound (supremum) if the constructor's first 
-	 *	parameter is the graph of an upper semilattice.
-	 */
-	private IntArrayList getMinimalUpperBounds(IntArrayList set) {
-		if (set.size() == 1)
-			return set;
-		IntArrayList minimalUpperBounds = new IntArrayList(upperSets.get(set.getInt(0)));
-		for (int i = 1 ; i < set.size() ; i++) {
-			minimalUpperBounds.retainAll(upperSets.get(set.getInt(i)));
-		}
-		minimalUpperBounds.sort(null);
-		int j = 0;
-		while (j < minimalUpperBounds.size()) {
-			int jElem = minimalUpperBounds.getInt(j);
-			IntArraySet jStrictUpperBounds = new IntArraySet(upperSets.get(jElem));
-			jStrictUpperBounds.remove(jElem);
-			minimalUpperBounds.removeAll(jStrictUpperBounds);
-			j++;
-		}
-		return minimalUpperBounds;
 	}
 
 }

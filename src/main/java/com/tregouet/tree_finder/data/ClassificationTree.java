@@ -67,6 +67,22 @@ public class ClassificationTree<V, E> extends DirectedAcyclicGraph<V, E> {
 			validate();
 	}	
 	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (getClass() != obj.getClass())
+			return false;
+		@SuppressWarnings("rawtypes")
+		ClassificationTree other = (ClassificationTree) obj;
+		if (topologicalSortingOfVertices == null) {
+			if (other.topologicalSortingOfVertices != null)
+				return false;
+		} else if (!topologicalSortingOfVertices.equals(other.topologicalSortingOfVertices))
+			return false;
+		return (this.edgeSet().equals(other.edgeSet()));
+	}
+	
 	public Set<V> getLeaves(){
 		return leaves;
 	}
@@ -82,12 +98,6 @@ public class ClassificationTree<V, E> extends DirectedAcyclicGraph<V, E> {
 		}
 		return topologicalSortingOfVertices;
 	}
-	
-	public void validate() throws InvalidInputException {
-		if (!StructureInspector.isAClassificationTree(this))
-			throw new InvalidInputException("ClassificationTree() : parameters do not allow the instantiation "
-					+ "of a valid classification tree.");
-	}
 
 	@Override
 	public int hashCode() {
@@ -98,20 +108,10 @@ public class ClassificationTree<V, E> extends DirectedAcyclicGraph<V, E> {
 		return result;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (getClass() != obj.getClass())
-			return false;
-		@SuppressWarnings("rawtypes")
-		ClassificationTree other = (ClassificationTree) obj;
-		if (topologicalSortingOfVertices == null) {
-			if (other.topologicalSortingOfVertices != null)
-				return false;
-		} else if (!topologicalSortingOfVertices.equals(other.topologicalSortingOfVertices))
-			return false;
-		return (this.edgeSet().equals(other.edgeSet()));
+	public void validate() throws InvalidInputException {
+		if (!StructureInspector.isAClassificationTree(this))
+			throw new InvalidInputException("ClassificationTree() : parameters do not allow the instantiation "
+					+ "of a valid classification tree.");
 	}
 
 }

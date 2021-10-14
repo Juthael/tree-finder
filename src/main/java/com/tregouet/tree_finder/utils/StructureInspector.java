@@ -19,29 +19,63 @@ public class StructureInspector {
 	private StructureInspector() {
 	}
 	
-	public static <V, E> boolean isAClassificationTree(DirectedAcyclicGraph<V, E> dag) {
-		if (!isAnUpperSemilattice(dag))
-			return false;
-		List<Set<V>> closedSupGeneratorSubsetsOfMinimals = new ArrayList<>();
-		Set<V> minimals = dag.vertexSet().stream()
-				.filter(v -> dag.inDegreeOf(v) == 0)
-				.collect(Collectors.toSet());
-		for (V element : dag.vertexSet())
-			closedSupGeneratorSubsetsOfMinimals.add(
-					new HashSet<>(Sets.intersection(dag.getAncestors(element), minimals)));
-		for (int i = 0 ; i < closedSupGeneratorSubsetsOfMinimals.size() - 1 ; i++) {
-			Set<V> iMinimalLowerBounds = closedSupGeneratorSubsetsOfMinimals.get(i);
-			for (int j = i + 1 ; j < closedSupGeneratorSubsetsOfMinimals.size() ; j++) {
-				Set<V> jMinimalLowerBounds = closedSupGeneratorSubsetsOfMinimals.get(j);
-				Set<V> intersection = Sets.intersection(iMinimalLowerBounds, jMinimalLowerBounds);
-				//hierarchy clause
-				if (!intersection.equals(iMinimalLowerBounds) 
-						&& !intersection.equals(jMinimalLowerBounds) 
-						&& !intersection.isEmpty())
-					return false;
+	//public for test use
+	public static SparseIntDirectedGraph getTransitiveClosure(SparseIntDirectedGraph directedGraph) {
+		int nbOfVertices = directedGraph.vertexSet().size();
+		List<Set<Integer>> strictUpperSets = new ArrayList<>(nbOfVertices);
+		for (int i = 0 ; i < nbOfVertices ; i++) {
+			strictUpperSets.add(null);
+		}
+		List<Integer> topoListOfVertices = new ArrayList<>();
+		new TopologicalOrderIterator<Integer, Integer>(directedGraph).forEachRemaining(v -> topoListOfVertices.add(v));
+		for (int i = nbOfVertices - 1 ; i >= 0 ; i--) {
+			Integer iVertex = topoListOfVertices.get(i);
+			Set<Integer> iVertexStrictUpperBounds = new HashSet<>();
+			List<Integer> iSuccessors = Graphs.successorListOf(directedGraph, iVertex);
+			iVertexStrictUpperBounds.addAll(iSuccessors);
+			for (Integer iSuccessor : iSuccessors) {
+				iVertexStrictUpperBounds.addAll(strictUpperSets.get(topoListOfVertices.indexOf(iSuccessor)));
+			}
+			strictUpperSets.set(i, iVertexStrictUpperBounds);
+		}
+		List<Pair<Integer, Integer>> edgesInTransitiveGraph = new ArrayList<>();
+		for (int i = 0 ; i < nbOfVertices ; i++) {
+			Integer source = topoListOfVertices.get(i);
+			for (Integer target : strictUpperSets.get(i)) {
+				edgesInTransitiveGraph.add(new Pair<>(source, target));
 			}
 		}
-		return true;
+		return new SparseIntDirectedGraph(nbOfVertices, edgesInTransitiveGraph);
+	}
+	
+	public static <V, E> boolean isAClassificationTree(DirectedAcyclicGraph<V, E> dag) {
+		boolean isATree = true;
+		List<V> topoElements = new ArrayList<>();
+		new TopologicalOrderIterator<>(dag).forEachRemaining(e -> topoElements.add(e));
+		Set<V> outDegree0 = topoElements.stream().filter(e -> dag.outDegreeOf(e) == 0).collect(Collectors.toSet());
+		//hierarchy clause n°1
+		if (outDegree0.size() != 1)
+			isATree = false;
+		List<Set<V>> lowerSets = new ArrayList<>(topoElements.size());
+		for (V iElement : topoElements) {
+			Set<V> iLowerSet = new HashSet<>();
+			iLowerSet.add(iElement);
+			//more efficient if the graph is reduced, but still valid otherwise.
+			for (E incomingEdge : dag.incomingEdgesOf(iElement))
+				iLowerSet.addAll(lowerSets.get(topoElements.indexOf(dag.getEdgeSource(incomingEdge))));
+			lowerSets.add(iLowerSet);
+		}
+		for (int j = 0 ; j < topoElements.size() - 1 ; j++) {
+			Set<V> jLowerSet = lowerSets.get(j);
+			for (int k = j + 1 ; k < topoElements.size() ; k++) {
+				Set<V> kLowerSet = lowerSets.get(k);
+				Set<V> intersection = new HashSet<>(Sets.intersection(jLowerSet, kLowerSet));
+				//hierarchy clause n°2
+				if (!intersection.isEmpty() && !intersection.equals(jLowerSet) && !intersection.equals(kLowerSet))
+					isATree = false;
+			}
+		}
+		return isATree;
 	}
 	
 	public static <V, E> boolean isAnUpperSemilattice(DirectedAcyclicGraph<V, E> dag) {
@@ -152,22 +186,6 @@ public class StructureInspector {
 		return true;
 	}
 	
-	public static boolean isTransitive(SparseIntDirectedGraph directedGraph) {
-		Set<Integer> edges = directedGraph.edgeSet();
-		for (Integer edge : edges) {
-			Integer source = directedGraph.getEdgeSource(edge);
-			Integer target = directedGraph.getEdgeTarget(edge);
-			for (Integer other : edges) {
-				if (directedGraph.getEdgeSource(other).equals(target)) {
-					Integer otherTarget = directedGraph.getEdgeTarget(other);
-					if (!directedGraph.containsEdge(source, otherTarget))
-						return false;
-				}
-			}
-		}
-		return true;
-	}
-	
 	public static boolean isRooted(SparseIntDirectedGraph directedGraph) {
 		int nbOfMaximalElements = 0;
 		for (Integer vertex : directedGraph.vertexSet()) {
@@ -175,35 +193,38 @@ public class StructureInspector {
 				nbOfMaximalElements++;
 		}
 		return nbOfMaximalElements == 1;
+	}	
+	
+	public static <V, E> boolean isTransitive(DirectedAcyclicGraph<V, E> directedGraph) {
+		Set<E> edges = directedGraph.edgeSet();
+		for (E edge : edges) {
+			V a = directedGraph.getEdgeSource(edge);
+			V b = directedGraph.getEdgeTarget(edge);
+			for (E other : edges) {
+				if (directedGraph.getEdgeSource(other).equals(b)) {
+					V c = directedGraph.getEdgeTarget(other);
+					if (!directedGraph.containsEdge(a, c))
+						return false;
+				}
+			}
+		}
+		return true;
 	}
 	
-	//public for test use
-	public static SparseIntDirectedGraph getTransitiveClosure(SparseIntDirectedGraph directedGraph) {
-		int nbOfVertices = directedGraph.vertexSet().size();
-		List<Set<Integer>> strictUpperSets = new ArrayList<>(nbOfVertices);
-		for (int i = 0 ; i < nbOfVertices ; i++) {
-			strictUpperSets.add(null);
-		}
-		List<Integer> topoListOfVertices = new ArrayList<>();
-		new TopologicalOrderIterator<Integer, Integer>(directedGraph).forEachRemaining(v -> topoListOfVertices.add(v));
-		for (int i = nbOfVertices - 1 ; i >= 0 ; i--) {
-			Integer iVertex = topoListOfVertices.get(i);
-			Set<Integer> iVertexStrictUpperBounds = new HashSet<>();
-			List<Integer> iSuccessors = Graphs.successorListOf(directedGraph, iVertex);
-			iVertexStrictUpperBounds.addAll(iSuccessors);
-			for (Integer iSuccessor : iSuccessors) {
-				iVertexStrictUpperBounds.addAll(strictUpperSets.get(topoListOfVertices.indexOf(iSuccessor)));
-			}
-			strictUpperSets.set(i, iVertexStrictUpperBounds);
-		}
-		List<Pair<Integer, Integer>> edgesInTransitiveGraph = new ArrayList<>();
-		for (int i = 0 ; i < nbOfVertices ; i++) {
-			Integer source = topoListOfVertices.get(i);
-			for (Integer target : strictUpperSets.get(i)) {
-				edgesInTransitiveGraph.add(new Pair<>(source, target));
+	public static boolean isTransitive(SparseIntDirectedGraph directedGraph) {
+		Set<Integer> edges = directedGraph.edgeSet();
+		for (Integer edge : edges) {
+			Integer a = directedGraph.getEdgeSource(edge);
+			Integer b = directedGraph.getEdgeTarget(edge);
+			for (Integer other : edges) {
+				if (directedGraph.getEdgeSource(other).equals(b)) {
+					Integer c = directedGraph.getEdgeTarget(other);
+					if (!directedGraph.containsEdge(a, c))
+						return false;
+				}
 			}
 		}
-		return new SparseIntDirectedGraph(nbOfVertices, edgesInTransitiveGraph);
+		return true;
 	}
 
 }

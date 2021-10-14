@@ -1,61 +1,62 @@
 package com.tregouet.tree_finder.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
+import org.jgrapht.Graphs;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 
 import com.google.common.collect.Sets;
 import com.tregouet.tree_finder.ITreeFinder;
 import com.tregouet.tree_finder.data.ClassificationTree;
 import com.tregouet.tree_finder.error.InvalidInputException;
+import com.tregouet.tree_finder.utils.StructureInspector;
 
 public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
 
-	private final DirectedAcyclicGraph<V, E> atomisticRIDAG;
+	private final DirectedAcyclicGraph<V, E> rootedInverted;
 	private final V maximum;
-	private final Set<V> atoms;
-	private final Map<Set<V>, V> encodingSubsetsOfAtomsToTheirSupremum = new HashMap<>();
-	private final Set<Set<Set<V>>> powerSetOfEncodingSubsetsOfAtoms;
-	private final Set<Set<Set<V>>> maximalHierarchiesOfAtoms = new HashSet<>();
+	private final Set<V> atoms = new HashSet<>();
+	private final Set<V> others = new HashSet<>();
 	private final Set<Set<V>> treeRestrictions = new HashSet<>();
 	private Iterator<Set<V>> treeIte;
 	
 	/*
-	 * UNSAFE. The parameter MUST be an atomistic rooted inverted DAG (reduced or not). Since the 
+	 * The parameter MUST be a rooted inverted DAG (reduced or not). Since the 
 	 * generation of a power set is involved, large inputs will throw exceptions. 
 	 */
-	protected TreeFinderBruteForce(DirectedAcyclicGraph<V, E> atomisticRIDAG, Set<V> atoms) 
+	protected TreeFinderBruteForce(DirectedAcyclicGraph<V, E> rootedInverted) 
 			throws InvalidInputException {
-		this.atomisticRIDAG = atomisticRIDAG;
+		if (!StructureInspector.isARootedInvertedDirectedAcyclicGraph(rootedInverted))
+			throw new InvalidInputException("The parameter is not a rooted inverted directed acyclic graph.");
+		this.rootedInverted = rootedInverted;
 		V maximum = null;
-		Iterator<V> vIte = atomisticRIDAG.vertexSet().iterator();
-		while (maximum == null) {
-			V v = vIte.next();
-			if (atomisticRIDAG.outDegreeOf(v) == 0)
-				maximum = v;
+		Iterator<V> vIte = rootedInverted.vertexSet().iterator();
+		while (vIte.hasNext()) {
+			V e = vIte.next();
+			if (maximum == null && rootedInverted.outDegreeOf(e) == 0)
+				maximum = e;
+			else if (rootedInverted.inDegreeOf(e) == 0)
+				atoms.add(e);
 		}
 		this.maximum = maximum;
-		this.atoms = atoms;
-		atomisticRIDAG.vertexSet().stream()
-			.forEach(v -> 
-				encodingSubsetsOfAtomsToTheirSupremum.put(atomLowerBounds(v), v));
-		powerSetOfEncodingSubsetsOfAtoms = powerSet(encodingSubsetsOfAtomsToTheirSupremum.keySet());
-		for (Set<Set<V>> setOfSubsets : powerSetOfEncodingSubsetsOfAtoms) {
-			if (isAMaximalHierarchy(setOfSubsets))
-				maximalHierarchiesOfAtoms.add(setOfSubsets);
+		for (V element : rootedInverted.vertexSet()) {
+			if (!element.equals(maximum) && !atoms.contains(element))
+				others.add(element);
 		}
-		for (Set<Set<V>> hierarchy : maximalHierarchiesOfAtoms) {
-			Set<V> treeRestriction = hierarchy.stream()
-					.map(s -> encodingSubsetsOfAtomsToTheirSupremum.get(s))
-					.collect(Collectors.toSet());
-			treeRestrictions.add(treeRestriction);
+		Set<Set<V>> powerSetOfOthers = new HashSet<>(Sets.powerSet(others));
+		powerSetOfOthers.remove(new HashSet<>());
+		Set<Set<V>> candidates = new HashSet<>();
+		for (Set<V> subsetOfOthers : powerSetOfOthers) {
+			Set<V> candidate = new HashSet<>(subsetOfOthers);
+			candidate.add(maximum);
+			candidate.addAll(atoms);
+			candidates.add(candidate);
+		}
+		for (Set<V> candidate : candidates) {
+			if (isATree(candidate) && isMaximal(candidate))
+				treeRestrictions.add(candidate);
 		}
 		treeIte = treeRestrictions.iterator();
 	}
@@ -71,76 +72,33 @@ public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
 
 	@Override
 	public ClassificationTree<V, E> next() {
-		return new ClassificationTree<V, E>(atomisticRIDAG, treeIte.next(), maximum, atoms, false);
+		return new ClassificationTree<V, E>(rootedInverted, treeIte.next(), maximum, atoms, false);
 	}
 	
-	private boolean coversEveryMinimal(Set<Set<V>> subsetsOfAtoms) {
-		Set<V> covered = new HashSet<>();
-		for (Set<V> subset : subsetsOfAtoms) {
-			covered.addAll(subset);
+	private boolean isATree(Set<V> candidateRestriction) {
+		DirectedAcyclicGraph<V, E> candidateGraph = new DirectedAcyclicGraph<>(null, null, false);
+		Graphs.addAllVertices(candidateGraph, candidateRestriction);
+		Set<E> edges = new HashSet<>();
+		for (E edge : rootedInverted.edgeSet()) {
+			if (candidateRestriction.contains(rootedInverted.getEdgeSource(edge))
+					&& candidateRestriction.contains(rootedInverted.getEdgeTarget(edge)))
+				edges.add(edge);
 		}
-		return covered.equals(atoms);
+		Graphs.addAllEdges(candidateGraph, rootedInverted, edges);
+		return StructureInspector.isAClassificationTree(candidateGraph);
 	}
 	
-	private boolean isAHierarchy(Set<Set<V>> setOfMinimalSubsets) {
-		List<Set<V>> listOfAtomSubsets = new ArrayList<>(setOfMinimalSubsets);
-		for (int i = 0 ; i < listOfAtomSubsets.size() - 1 ; i++) {
-			Set<V> iSet = listOfAtomSubsets.get(i);
-			for (int j = i + 1 ; j < listOfAtomSubsets.size() ; j++) {
-				Set<V> jSet = listOfAtomSubsets.get(j);
-				Set<V> intersection = Sets.intersection(iSet, jSet);
-				if (!intersection.equals(iSet) && !intersection.equals(jSet) && !intersection.isEmpty())
-					return false;
-			}
-		}
-		return true;
-	}
-	
-	private boolean isAMaximalHierarchy(Set<Set<V>> setOfAtomSubsets) {
-		return (coversEveryMinimal(setOfAtomSubsets) 
-				&& isAHierarchy(setOfAtomSubsets) 
-				&& isMaximal(setOfAtomSubsets));
-	}
-	
-	private boolean isMaximal(Set<Set<V>> hierarchyOfAtoms) {
+	private boolean isMaximal(Set<V> thisTree) {
 		boolean isMaximal = true;
-		Set<Set<Set<V>>> notMaximalAfterAll = new HashSet<>(); 
-		for (Set<Set<V>> alreadyFound : maximalHierarchiesOfAtoms) {
-			if (alreadyFound.containsAll(hierarchyOfAtoms))
+		Set<Set<V>> notMaximalAfterAll = new HashSet<>(); 
+		for (Set<V> alreadyFound : treeRestrictions) {
+			if (alreadyFound.containsAll(thisTree))
 				isMaximal = false;
-			else if (hierarchyOfAtoms.containsAll(alreadyFound))
+			else if (thisTree.containsAll(alreadyFound))
 				notMaximalAfterAll.add(alreadyFound);
 		}
-		maximalHierarchiesOfAtoms.removeAll(notMaximalAfterAll);
+		treeRestrictions.removeAll(notMaximalAfterAll);
 		return isMaximal;
-	}
-	
-	private Set<V> atomLowerBounds(V element) {
-		Set<V> lowerBoundAtoms = new HashSet<>();
-		lowerBoundAtoms.add(element);
-		lowerBoundAtoms.addAll(atomisticRIDAG.getAncestors(element));
-		lowerBoundAtoms.retainAll(atoms);
-		return lowerBoundAtoms;
-	}
-	
-	private Set<Set<Set<V>>> powerSet(Set<Set<V>> subsets) throws InvalidInputException {
-		List<Set<V>> subsetList = new ArrayList<>(subsets);
-		int listSize = subsetList.size();
-		if (listSize > 30) {
-			throw new InvalidInputException("TreeFinderBruteForce.powerSet() : the input size "
-					+ "is too large to be handled");
-		}
-		Set<Set<Set<V>>> powerSetOfSubsets = new HashSet<>();
-		for (int i = 0 ; i < (1 << listSize) ; i++) {
-			Set<Set<V>> setOfSubsets = new HashSet<>(listSize);
-			for (int j = 0 ; j < listSize ; j++) {
-				if(((1 << j) & i) > 0) {
-					setOfSubsets.add(subsetList.get(j));
-				}
-			}
-			powerSetOfSubsets.add(setOfSubsets);
-		}
-		return powerSetOfSubsets;
 	}
 
 }

@@ -1,45 +1,43 @@
 package com.tregouet.tree_finder.impl;
 
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.jgrapht.Graphs;
 import org.jgrapht.alg.TransitiveClosure;
-import org.jgrapht.alg.TransitiveReduction;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.google.common.collect.Sets;
 import com.tregouet.tree_finder.EdgeForTests;
 import com.tregouet.tree_finder.ITreeFinder;
 import com.tregouet.tree_finder.data.ClassificationTree;
 import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.StructureInspector;
-import com.tregouet.tree_finder.viz.Visualizer;
 
 public class TreeFinderOptTest {
 	
-	//toy dataset "ABC"
+	//toy dataset "rooted inverted"
 	private String a = "A";
 	private String b = "B";
 	private String c = "C";
-	private String ab = "AB";
-	private String ac = "AC";
-	private String bc = "BC";
-	private String abc = "ABC";
-	private List<String> verticesABC = new ArrayList<>(Arrays.asList(new String[] {a, b, c, ab, ac, bc, abc}));
-	private Set<String> leavesABC = new HashSet<>(Arrays.asList(new String[]{a, b, c}));
-	private DirectedAcyclicGraph<String, EdgeForTests> upperSemiLatticeABC;
+	private String d = "D";
+	private String ab1 = "AB1";
+	private String ab2 = "AB2";
+	private String cd1 = "CD1";
+	private String cd2 = "CD2";
+	private String abc1 = "ABC1";
+	private String abc2 = "ABC2";
+	private String bcd = "BCD";
+	private String abcd = "ABCD";
+	private DirectedAcyclicGraph<String, EdgeForTests> rootedInverted;
+	private Set<String> rInvAtoms = new HashSet<>();
 	
 	//toy dataset "PowerSet"
 	private DirectedAcyclicGraph<Set<Integer>, EdgeForTests> nPowerSet;
@@ -48,7 +46,6 @@ public class TreeFinderOptTest {
 	//toy dataset "BruteForce comparison"
 	private DirectedAcyclicGraph<String, EdgeForTests> bruteForceComparison;
 	private Set<String> bFatoms = new HashSet<>();
-	private String d = "D";
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -59,10 +56,10 @@ public class TreeFinderOptTest {
 	}
 
 	@Test
-	public void whenInputIsLargeThenProceedsInReasonableTime() throws IOException {
+	public void whenInputIsLargeThenProceedsInReasonableTime() throws IOException, InvalidInputException {
 		setUpUpperSemiLatticeFromPowerSetOfNElements(7);
 		long start = System.currentTimeMillis();
-		ITreeFinder<Set<Integer>, EdgeForTests> tF = new TreeFinderOpt<>(nPowerSet, powerSetAtoms);
+		ITreeFinder<Set<Integer>, EdgeForTests> tF = new TreeFinderOpt<>(nPowerSet);
 		int nbOfTreesReturned = 0;
 		while (tF.hasNext()) {
 			tF.next();
@@ -72,28 +69,29 @@ public class TreeFinderOptTest {
 		/*
 		System.out.println("Nb of trees returned = " + Integer.toString(nbOfTreesReturned));
 		*/
-		assertTrue(complete - start < 10000 && nbOfTreesReturned > 0);
+		assertTrue(complete - start < 20000 && nbOfTreesReturned > 0);
 	}
 	
 	@Test
-	public void whenTreesReturnedThenValid() throws IOException {
-		boolean allReturnedTreesAreValid = true;
-		int nbOfChecks = 0;
-		setUpperSemiLatticeABC();
-		/*
-		Visualizer.visualize(upperSemiLatticeABC, "2110091427_USL");
-		*/
-		ITreeFinder<String, EdgeForTests> tF = new TreeFinderOpt<>(upperSemiLatticeABC, leavesABC);
-		while (tF.hasNext()) {
-			ClassificationTree<String, EdgeForTests> tree = tF.next();
-			/*
-			Visualizer.visualize(tree, "2110091427_tree" + Integer.toString(nbOfChecks));
-			*/
-			if (!StructureInspector.isAClassificationTree(tree))
-				allReturnedTreesAreValid = false;
-			nbOfChecks++;
+	public void whenTreesReturnedThenValid() throws IOException, InvalidInputException {
+		boolean valid = true;
+		int rInvCheckCount = 0;
+		int nPowerCheckCount = 0;
+		setUpRootedInverted();
+		setUpUpperSemiLatticeFromPowerSetOfNElements(5);
+		ITreeFinder<String, EdgeForTests> treeFinderRootedInverted = new TreeFinderOpt<>(rootedInverted);
+		ITreeFinder<Set<Integer>, EdgeForTests> treeFinderSemilattice = new TreeFinderOpt<>(nPowerSet);
+		while (treeFinderRootedInverted.hasNext()) {
+			if (!StructureInspector.isAClassificationTree(treeFinderRootedInverted.next()))
+				valid = false;
+			rInvCheckCount++;
 		}
-		assertTrue(allReturnedTreesAreValid && nbOfChecks > 0);
+		while (treeFinderSemilattice.hasNext()) {
+			if (!StructureInspector.isAClassificationTree(treeFinderSemilattice.next()))
+				valid = false;
+			nPowerCheckCount++;
+		}
+		assertTrue(valid && rInvCheckCount > 0 && nPowerCheckCount > 0);
 	}
 	
 	@Test
@@ -101,9 +99,9 @@ public class TreeFinderOptTest {
 		setUpSemilatticeForComparisonWithBruteForce();
 		Set<ClassificationTree<String, EdgeForTests>> returnedFromBruteForce = new HashSet<>();
 		Set<ClassificationTree<String, EdgeForTests>> returnedFromOpt = new HashSet<>();
-		ITreeFinder<String, EdgeForTests> brute = new TreeFinderBruteForce<>(bruteForceComparison, bFatoms);
+		ITreeFinder<String, EdgeForTests> brute = new TreeFinderBruteForce<>(bruteForceComparison);
 		brute.forEachRemaining(t -> returnedFromBruteForce.add(t));
-		ITreeFinder<String, EdgeForTests> opt = new TreeFinderOpt<>(bruteForceComparison, bFatoms);
+		ITreeFinder<String, EdgeForTests> opt = new TreeFinderOpt<>(bruteForceComparison);
 		opt.forEachRemaining(t -> returnedFromOpt.add(t));
 		/*
 		Iterator<ClassificationTree<String, EdgeForTests>> bfIte = returnedFromBruteForce.iterator();
@@ -136,133 +134,31 @@ public class TreeFinderOptTest {
 	}
 	
 	@Test
-	public void whenTreesRequestedThenExpectedReturned2() {
-		
+	public void whenTreesRequestedThenExpectedReturned2() throws InvalidInputException, IOException {
+		setUpRootedInverted();
+		Set<ClassificationTree<String, EdgeForTests>> expected = new HashSet<>();
+		Set<ClassificationTree<String, EdgeForTests>> returned = new HashSet<>();
+		ITreeFinder<String, EdgeForTests> treeFinderBruteForce = 
+				new TreeFinderBruteForce<>(rootedInverted);
+		while (treeFinderBruteForce.hasNext())
+			expected.add(treeFinderBruteForce.next());		
+		/*
+		int bfIdx = 0;
+		for (ClassificationTree<String, EdgeForTests> tree : expected) {
+			Visualizer.visualize(tree, "2110141554_bfTree" + Integer.toString(bfIdx++));
+		}
+		*/
+		ITreeFinder<String, EdgeForTests> treeFinderOpt = new TreeFinderOpt<>(rootedInverted);
+		while (treeFinderOpt.hasNext())
+			returned.add(treeFinderOpt.next());
+		/*
+		int optIdx = 0;
+		for (ClassificationTree<String, EdgeForTests> tree : returned) {
+			Visualizer.visualize(tree, "2110141554_optTree" + Integer.toString(optIdx++));
+		}
+		*/
+		assertTrue(!returned.isEmpty() && !expected.isEmpty() & returned.equals(expected));		
 	}
-	
-	@Test
-	public void whenInputIsNotAtomisticThenWorksAllTheSame() {
-		fail("Not yet implemented");
-	}
-	
-	private void setUpperSemiLatticeABC() {
-		upperSemiLatticeABC = new DirectedAcyclicGraph<>(null, EdgeForTests::new, false);
-		upperSemiLatticeABC.addVertex(a);
-		upperSemiLatticeABC.addVertex(b);
-		upperSemiLatticeABC.addVertex(c);
-		upperSemiLatticeABC.addVertex(ab);
-		upperSemiLatticeABC.addVertex(ac);
-		upperSemiLatticeABC.addVertex(bc);
-		upperSemiLatticeABC.addVertex(abc);
-		upperSemiLatticeABC.addEdge(a, ab);
-		upperSemiLatticeABC.addEdge(a, ac);
-		upperSemiLatticeABC.addEdge(b, ab);
-		upperSemiLatticeABC.addEdge(b, bc);
-		upperSemiLatticeABC.addEdge(c, ac);
-		upperSemiLatticeABC.addEdge(c, bc);
-		upperSemiLatticeABC.addEdge(ab, abc);
-		upperSemiLatticeABC.addEdge(ac, abc);
-		upperSemiLatticeABC.addEdge(bc, abc);
-		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(upperSemiLatticeABC);
-	}
-	
-	private ClassificationTree<String, Edge> setN1() throws InvalidInputException {
-		DirectedAcyclicGraph<String, Edge> nArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
-		Graphs.addAllVertices(nArg, verticesABC);
-		nArg.removeVertex(bc);
-		nArg.addEdge(a, ab);
-		nArg.addEdge(b, ab);
-		nArg.addEdge(c, ac);
-		nArg.addEdge(ab, abc);
-		nArg.addEdge(ac, abc);
-		return new ClassificationTree<String, Edge>(abc, leavesABC, nArg, nArg.edgeSet(), true);
-	}
-	
-	private ClassificationTree<String, Edge> setN2() throws InvalidInputException {
-		DirectedAcyclicGraph<String, Edge> nArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
-		Graphs.addAllVertices(nArg, verticesABC);
-		nArg.removeVertex(ac);
-		nArg.addEdge(a, ab);
-		nArg.addEdge(b, ab);
-		nArg.addEdge(c, bc);
-		nArg.addEdge(ab, abc);
-		nArg.addEdge(bc, abc);
-		return new ClassificationTree<String, Edge>(abc, leavesABC, nArg, nArg.edgeSet(), true);
-	}
-	
-	
-	
-	private ClassificationTree<String, Edge> setN3() throws InvalidInputException {
-		DirectedAcyclicGraph<String, Edge> nArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
-		Graphs.addAllVertices(nArg, verticesABC);
-		nArg.addEdge(a, ab);
-		nArg.addEdge(b, bc);
-		nArg.addEdge(c, ac);
-		nArg.addEdge(ab, abc);
-		nArg.addEdge(ac, abc);
-		nArg.addEdge(bc, abc);
-		return new ClassificationTree<String, Edge>(abc, leavesABC, nArg, nArg.edgeSet(), true);
-	}
-	
-	private ClassificationTree<String, Edge> setN4() throws InvalidInputException {
-		DirectedAcyclicGraph<String, Edge> nArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
-		Graphs.addAllVertices(nArg, verticesABC);
-		nArg.removeVertex(ac);
-		nArg.addEdge(a, ab);
-		nArg.addEdge(b, bc);
-		nArg.addEdge(c, bc);
-		nArg.addEdge(ab, abc);
-		nArg.addEdge(bc, abc);
-		return new ClassificationTree<String, Edge>(abc, leavesABC, nArg, nArg.edgeSet(), true);
-	}
-	
-	private ClassificationTree<String, Edge> setN5() throws InvalidInputException {
-		DirectedAcyclicGraph<String, Edge> nArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
-		Graphs.addAllVertices(nArg, verticesABC);
-		nArg.removeVertex(bc);
-		nArg.addEdge(a, ac);
-		nArg.addEdge(b, ab);
-		nArg.addEdge(c, ac);
-		nArg.addEdge(ab, abc);
-		nArg.addEdge(ac, abc);
-		return new ClassificationTree<String, Edge>(abc, leavesABC, nArg, nArg.edgeSet(), true);
-	}	
-	
-	private ClassificationTree<String, Edge> setN6() throws InvalidInputException {
-		DirectedAcyclicGraph<String, Edge> nArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
-		Graphs.addAllVertices(nArg, verticesABC);
-		nArg.addEdge(a, ac);
-		nArg.addEdge(b, ab);
-		nArg.addEdge(c, bc);
-		nArg.addEdge(ab, abc);
-		nArg.addEdge(ac, abc);
-		nArg.addEdge(bc, abc);
-		return new ClassificationTree<String, Edge>(abc, leavesABC, nArg, nArg.edgeSet(), true);
-	}
-	
-	private ClassificationTree<String, Edge> setN7() throws InvalidInputException {
-		DirectedAcyclicGraph<String, Edge> nArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
-		Graphs.addAllVertices(nArg, verticesABC);
-		nArg.removeVertex(ab);
-		nArg.addEdge(a, ac);
-		nArg.addEdge(b, bc);
-		nArg.addEdge(c, ac);
-		nArg.addEdge(ac, abc);
-		nArg.addEdge(bc, abc);
-		return new ClassificationTree<String, Edge>(abc, leavesABC, nArg, nArg.edgeSet(), true);
-	}
-	
-	private ClassificationTree<String, Edge> setN8() throws InvalidInputException {
-		DirectedAcyclicGraph<String, Edge> nArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
-		Graphs.addAllVertices(nArg, verticesABC);
-		nArg.removeVertex(ab);
-		nArg.addEdge(a, ac);
-		nArg.addEdge(b, bc);
-		nArg.addEdge(c, bc);
-		nArg.addEdge(ac, abc);
-		nArg.addEdge(bc, abc);
-		return new ClassificationTree<String, Edge>(abc, leavesABC, nArg, nArg.edgeSet(), true);
-	}	
 	
 	private void setUpSemilatticeForComparisonWithBruteForce() {
 		bruteForceComparison = new DirectedAcyclicGraph<>(null, EdgeForTests::new, false);
@@ -333,6 +229,47 @@ public class TreeFinderOptTest {
 			if (nPowerSet.inDegreeOf(vertex) == 0)
 				powerSetAtoms.add(vertex);
 		}
-	}	
+	}
+	
+	private void setUpRootedInverted() {
+		rootedInverted = new DirectedAcyclicGraph<>(null, EdgeForTests::new, false);
+		rootedInverted.addVertex(a);
+		rootedInverted.addVertex(b);
+		rootedInverted.addVertex(c);
+		rootedInverted.addVertex(d);
+		rootedInverted.addVertex(ab1);
+		rootedInverted.addVertex(ab2);
+		rootedInverted.addVertex(cd1);
+		rootedInverted.addVertex(cd2);
+		rootedInverted.addVertex(abc1);
+		rootedInverted.addVertex(abc2);
+		rootedInverted.addVertex(bcd);
+		rootedInverted.addVertex(abcd);
+		rootedInverted.addEdge(a,  ab1);
+		rootedInverted.addEdge(a,  ab2);
+		rootedInverted.addEdge(b,  ab1);
+		rootedInverted.addEdge(b,  ab2);
+		rootedInverted.addEdge(b,  bcd);
+		rootedInverted.addEdge(c,  abc1);
+		rootedInverted.addEdge(c,  abc2);
+		rootedInverted.addEdge(c,  cd1);
+		rootedInverted.addEdge(c,  cd2);
+		rootedInverted.addEdge(d,  cd1);
+		rootedInverted.addEdge(d,  cd2);
+		rootedInverted.addEdge(ab1,  abc1);
+		rootedInverted.addEdge(ab1,  abc2);
+		rootedInverted.addEdge(ab2,  abc1);
+		rootedInverted.addEdge(ab2,  abc2);
+		rootedInverted.addEdge(cd1,  bcd);
+		rootedInverted.addEdge(cd2,  bcd);
+		rootedInverted.addEdge(abc1,  abcd);
+		rootedInverted.addEdge(abc2,  abcd);
+		rootedInverted.addEdge(bcd,  abcd);
+		for (String vertex : rootedInverted.vertexSet()) {
+			if (rootedInverted.inDegreeOf(vertex) == 0)
+				rInvAtoms.add(vertex);
+		}
+		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(rootedInverted);
+	}
 
 }
