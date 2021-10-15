@@ -125,10 +125,18 @@ public class TreeFinderSparse {
 		if (atoms.contains(element))
 			return new ArrayList<>();
 		IntArraySet atomsToCover = lowerBoundAtoms.get(element);
+		int nbOfAtomsToCover = atomsToCover.size();
 		boolean[] skipInspection = new boolean[element];
 		for (int i = 0 ; i < element ; i++) {
-			IntArraySet iLowerBoundAtoms = lowerBoundAtoms.get(i); 
-			if (iLowerBoundAtoms.size() >= atomsToCover.size() || !atomsToCover.containsAll(iLowerBoundAtoms))
+			IntArraySet iLowerBoundAtoms = lowerBoundAtoms.get(i);
+			int iLowerBoundAtomsCardinal = iLowerBoundAtoms.size();
+			if (nbOfAtomsToCover < iLowerBoundAtomsCardinal)
+				skipInspection[i] = true;
+			else if (nbOfAtomsToCover == iLowerBoundAtomsCardinal) {
+				if (!lowerSets.get(element).contains(i))
+					skipInspection[i] = true;
+			}
+			else if (!atomsToCover.containsAll(iLowerBoundAtoms)) 
 				skipInspection[i] = true;
 		}
 		return completeForkingSubsetsOfLowerBounds(element, new IntArrayList(), atomsToCover, 
