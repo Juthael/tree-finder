@@ -59,6 +59,26 @@ public class TreeFinderOpt<V, E> implements ITreeFinder<V, E> {
 		TreeFinderSparse treeFinderSparse = new TreeFinderSparse(sparse, sparseMaximum, sparseAtoms);
 		sparseTreeRestrictions.addAll(treeFinderSparse.getSparseTreeVertexSets());
 	}
+	
+	//UNSAFE
+	public TreeFinderOpt(DirectedAcyclicGraph<V, E> rootedInverted, boolean unsafeMode) {
+		this.rootedInverted = new DirectedAcyclicGraph<>(null, null, false);
+		Graphs.addAllEdges(this.rootedInverted, rootedInverted, rootedInverted.edgeSet());
+		TransitiveReduction.INSTANCE.reduce(rootedInverted);
+		new TopologicalOrderIterator<>(this.rootedInverted).forEachRemaining(v -> topoOrderedSet.add(v));
+		this.maximum = topoOrderedSet.get(topoOrderedSet.size() - 1);
+		for (V element : topoOrderedSet) {
+			if (rootedInverted.inDegreeOf(element) == 0)
+				atoms.add(element);
+		}
+		sparseMaximum = topoOrderedSet.size() - 1;
+		for (V atom : atoms)
+			sparseAtoms.add(topoOrderedSet.indexOf(atom));
+		sparseConverter = new SparseGraphConverter<>(rootedInverted, true);
+		sparse = sparseConverter.getSparseGraph();
+		TreeFinderSparse treeFinderSparse = new TreeFinderSparse(sparse, sparseMaximum, sparseAtoms);
+		sparseTreeRestrictions.addAll(treeFinderSparse.getSparseTreeVertexSets());
+	}	
 
 	public int getNbOfTrees() {
 		return sparseTreeRestrictions.size();

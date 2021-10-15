@@ -1,7 +1,8 @@
-D:\ProjetDocs\tree-finder\src\main\java\com\tregouet\tree_finder\utils\NArrayBool.java
-D:\ProjetDocs\tree-finder\src\main\java\com\tregouet\tree_finder\data\InTree.java
+D:\ProjetDocs\tree-finder\src\main\java\com\tregouet\tree_finder\data\ClassificationTree.java
+D:\ProjetDocs\tree-finder\src\main\java\com\tregouet\tree_finder\impl\TreeFinderSparse.java
+D:\ProjetDocs\tree-finder\src\main\java\com\tregouet\tree_finder\utils\SparseGraphConverter.java
+D:\ProjetDocs\tree-finder\src\main\java\com\tregouet\tree_finder\impl\TreeFinderOpt.java
+D:\ProjetDocs\tree-finder\src\main\java\com\tregouet\tree_finder\impl\TreeFinderBruteForce.java
 D:\ProjetDocs\tree-finder\src\main\java\com\tregouet\tree_finder\ITreeFinder.java
-D:\ProjetDocs\tree-finder\src\main\java\com\tregouet\tree_finder\utils\CoordAdvancer.java
-D:\ProjetDocs\tree-finder\src\main\java\com\tregouet\tree_finder\error\InvalidTreeException.java
-D:\ProjetDocs\tree-finder\src\main\java\com\tregouet\tree_finder\error\InvalidSemiLatticeExeption.java
-D:\ProjetDocs\tree-finder\src\main\java\com\tregouet\tree_finder\impl\TreeFinder.java
+D:\ProjetDocs\tree-finder\src\main\java\com\tregouet\tree_finder\utils\StructureInspector.java
+D:\ProjetDocs\tree-finder\src\main\java\com\tregouet\tree_finder\error\InvalidInputException.java

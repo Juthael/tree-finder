@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
-Test set: com.tregouet.tree_finder.impl.TreeFinderTest
+Test set: com.tregouet.tree_finder.impl.TreeFinderOptTest
 -------------------------------------------------------------------------------
 Tests run: 0, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 sec

@@ -1,0 +1,8 @@
+com\tregouet\tree_finder\impl\TreeFinderOpt.class
+com\tregouet\tree_finder\impl\TreeFinderSparse.class
+com\tregouet\tree_finder\data\ClassificationTree.class
+com\tregouet\tree_finder\ITreeFinder.class
+com\tregouet\tree_finder\utils\SparseGraphConverter.class
+com\tregouet\tree_finder\error\InvalidInputException.class
+com\tregouet\tree_finder\impl\TreeFinderBruteForce.class
+com\tregouet\tree_finder\utils\StructureInspector.class

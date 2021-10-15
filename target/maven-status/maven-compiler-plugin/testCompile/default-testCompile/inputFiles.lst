@@ -1,3 +1,7 @@
-D:\ProjetDocs\tree-finder\src\test\java\com\tregouet\tree_finder\impl\TreeFinderTest.java
-D:\ProjetDocs\tree-finder\src\test\java\com\tregouet\tree_finder\utils\CoordAdvancerTest.java
-D:\ProjetDocs\tree-finder\src\test\java\com\tregouet\tree_finder\data\InTreeTest.java
+D:\ProjetDocs\tree-finder\src\test\java\com\tregouet\tree_finder\utils\StructureInspectorTest.java
+D:\ProjetDocs\tree-finder\src\test\java\com\tregouet\tree_finder\EdgeForTests.java
+D:\ProjetDocs\tree-finder\src\test\java\com\tregouet\tree_finder\impl\TreeFinderOptTest.java
+D:\ProjetDocs\tree-finder\src\test\java\com\tregouet\tree_finder\data\ClassificationTreeTest.java
+D:\ProjetDocs\tree-finder\src\test\java\com\tregouet\tree_finder\utils\SparseGraphConverterTest.java
+D:\ProjetDocs\tree-finder\src\test\java\com\tregouet\tree_finder\viz\Visualizer.java
+D:\ProjetDocs\tree-finder\src\test\java\com\tregouet\tree_finder\impl\TreeFinderBruteForceTest.java
