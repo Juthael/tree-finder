@@ -1,2 +1,2 @@
 # tree-finder
-Generates every maximal in-tree out of the Hasse diagram of an upper semilattice.
+Generates every maximal classification tree out of a rooted inverted DAG (Directed Acyclic Graph). 
