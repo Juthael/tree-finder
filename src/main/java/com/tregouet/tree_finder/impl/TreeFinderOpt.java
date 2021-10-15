@@ -65,7 +65,7 @@ public class TreeFinderOpt<V, E> implements ITreeFinder<V, E> {
 		this.rootedInverted = new DirectedAcyclicGraph<>(null, null, false);
 		Graphs.addAllEdges(this.rootedInverted, rootedInverted, rootedInverted.edgeSet());
 		TransitiveReduction.INSTANCE.reduce(rootedInverted);
-		new TopologicalOrderIterator<>(this.rootedInverted).forEachRemaining(v -> topoOrderedSet.add(v));
+		new TopologicalOrderIterator<>(rootedInverted).forEachRemaining(v -> topoOrderedSet.add(v));
 		this.maximum = topoOrderedSet.get(topoOrderedSet.size() - 1);
 		for (V element : topoOrderedSet) {
 			if (rootedInverted.inDegreeOf(element) == 0)
