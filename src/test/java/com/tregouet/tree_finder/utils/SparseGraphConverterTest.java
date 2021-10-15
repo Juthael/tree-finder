@@ -63,7 +63,7 @@ public class SparseGraphConverterTest {
 		SparseIntDirectedGraph sparseDAG = converter.getSparseGraph();
 		IntArraySet sparseDAGVertexSet = new IntArraySet(sparseDAG.vertexSet());
 		IntArrayList sparseDAGEdgeSet = new IntArrayList(sparseDAG.edgeSet());
-		List<String> recoveredVertexSet = converter.getVertexSet(sparseDAGVertexSet);
+		List<String> recoveredVertexSet = converter.getSet(sparseDAGVertexSet);
 		List<EdgeForTests> recoveredEdgeSet = converter.getEdgeSet(sparseDAGEdgeSet);
 		originalVerticesRecovered = dAGVertexSet.equals(new HashSet<>(recoveredVertexSet));
 		originalEdgesRecovered = dAGEdgeSet.equals(new HashSet<>(recoveredEdgeSet));
@@ -90,10 +90,10 @@ public class SparseGraphConverterTest {
 		List<Integer> sparseVertexSet = new ArrayList<>(sparseDAG.vertexSet());
 		for (int i = 0 ; i < sparseVertexSet.size() - 1 ; i++) {
 			Integer iSparseVertex = sparseVertexSet.get(i);
-			String iRecoveredVertex = converter.getVertex(iSparseVertex);
+			String iRecoveredVertex = converter.getElement(iSparseVertex);
 			for (int j = i + 1 ; j < sparseVertexSet.size() ; j++) {
 				Integer jSparseVertex = sparseVertexSet.get(j);
-				String jRecoveredVertex = converter.getVertex(jSparseVertex);
+				String jRecoveredVertex = converter.getElement(jSparseVertex);
 				if (iSparseVertex < jSparseVertex 
 						&& dAGVerticesInTopologicalOrder.indexOf(iRecoveredVertex) 
 						>= dAGVerticesInTopologicalOrder.indexOf(jRecoveredVertex)) {

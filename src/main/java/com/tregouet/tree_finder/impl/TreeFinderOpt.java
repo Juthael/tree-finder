@@ -72,7 +72,7 @@ public class TreeFinderOpt<V, E> implements ITreeFinder<V, E> {
 	@Override
 	public ClassificationTree<V, E> next() {
 		ClassificationTree<V, E> nextTree = new ClassificationTree<V, E>(
-				rootedInverted, sparseConverter.getVertexSet(sparseTreeRestrictions.get(treeIdx)), 
+				rootedInverted, sparseConverter.getSet(sparseTreeRestrictions.get(treeIdx)), 
 				maximum, atoms, false);
 		treeIdx++;
 		return nextTree;

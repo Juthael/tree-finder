@@ -78,7 +78,7 @@ public class TreeFinderSparse {
 		return trees;
 	}
 
-	//Side effects used on purpose on previouslyPicked param
+	//Intentional side effects on previouslyPicked param
 	private List<IntArrayList> completeForkingSubsetsOfLowerBounds(int element, IntArrayList uncompleteFork, 
 			IntArraySet atomsToCover, IntArraySet coveredAtomsSoFar, boolean[] skipInspection, 
 			IntArrayList previouslyPicked) {

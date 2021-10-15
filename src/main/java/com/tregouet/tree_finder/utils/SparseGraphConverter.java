@@ -15,7 +15,7 @@ import it.unimi.dsi.fastutil.ints.IntArraySet;
 
 public class SparseGraphConverter<V, E> {
 
-	private final List<V> topoOrderedVertices;
+	private final List<V> topoOrderedSet;
 	private final List<E> edges;
 	private final List<Pair<Integer, Integer>> sparseEdges = new ArrayList<>();
 	private final SparseIntDirectedGraph sparseGraph;
@@ -23,17 +23,17 @@ public class SparseGraphConverter<V, E> {
 	public SparseGraphConverter(DirectedAcyclicGraph<V, E> dag, boolean skipClosure) {
 		if (!skipClosure)
 			TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(dag);
-		topoOrderedVertices = new ArrayList<>();
+		topoOrderedSet = new ArrayList<>();
 		TopologicalOrderIterator<V, E> topoIte = new TopologicalOrderIterator<>(dag);
-		topoIte.forEachRemaining(v -> topoOrderedVertices.add(v));
+		topoIte.forEachRemaining(v -> topoOrderedSet.add(v));
 		edges = new ArrayList<>(dag.edgeSet());
 		for (E edge : edges) {
 			sparseEdges.add(
 					new Pair<Integer, Integer>(
-							topoOrderedVertices.indexOf(dag.getEdgeSource(edge)), 
-							topoOrderedVertices.indexOf(dag.getEdgeTarget(edge))));
+							topoOrderedSet.indexOf(dag.getEdgeSource(edge)), 
+							topoOrderedSet.indexOf(dag.getEdgeTarget(edge))));
 		}
-		sparseGraph = new SparseIntDirectedGraph(topoOrderedVertices.size(), sparseEdges);
+		sparseGraph = new SparseIntDirectedGraph(topoOrderedSet.size(), sparseEdges);
 	}
 	
 	public DirectedAcyclicGraph<Integer, Integer> asSparseDAG() {
@@ -54,22 +54,22 @@ public class SparseGraphConverter<V, E> {
 		return sparseGraph;
 	}
 	
-	public V getVertex(int sparseVertex) {
-		return topoOrderedVertices.get(sparseVertex);
+	public V getElement(int sparseElement) {
+		return topoOrderedSet.get(sparseElement);
 	}	
 	
-	public List<V> getVertexSet(IntArrayList sparseVertexSet){
+	public List<V> getSet(IntArrayList sparseSet){
 		List<V> vertexSet = new ArrayList<>();
-		for (int sparseVertex : sparseVertexSet) {
-			vertexSet.add(topoOrderedVertices.get(sparseVertex));
+		for (int sparseVertex : sparseSet) {
+			vertexSet.add(topoOrderedSet.get(sparseVertex));
 		}
 		return vertexSet;
 	}
 	
-	public List<V> getVertexSet(IntArraySet sparseVertexSet){
+	public List<V> getSet(IntArraySet sparseSet){
 		List<V> vertexSet = new ArrayList<>();
-		for (int sparseVertex : sparseVertexSet) {
-			vertexSet.add(topoOrderedVertices.get(sparseVertex));
+		for (int sparseVertex : sparseSet) {
+			vertexSet.add(topoOrderedSet.get(sparseVertex));
 		}
 		return vertexSet;
 	}

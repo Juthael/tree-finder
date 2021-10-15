@@ -182,11 +182,11 @@ public class StructureInspectorTest {
 		DirectedAcyclicGraph<String, EdgeForTests> semiLatticeClosedAgain = 
 				new DirectedAcyclicGraph<>(null, EdgeForTests::new, false);
 		for (Integer sparseVertex : semilatticeNotTreeSparseClosedAgain.vertexSet())
-			semiLatticeClosedAgain.addVertex(converter.getVertex(sparseVertex));
+			semiLatticeClosedAgain.addVertex(converter.getElement(sparseVertex));
 		for (Integer sparseEdge : semilatticeNotTreeSparseClosedAgain.edgeSet()) {
 			Integer sparseSource = semilatticeNotTreeSparseClosedAgain.getEdgeSource(sparseEdge);
 			Integer sparseTarget = semilatticeNotTreeSparseClosedAgain.getEdgeTarget(sparseEdge);
-			semiLatticeClosedAgain.addEdge(converter.getVertex(sparseSource), converter.getVertex(sparseTarget));
+			semiLatticeClosedAgain.addEdge(converter.getElement(sparseSource), converter.getElement(sparseTarget));
 		}
 		assertTrue(semiLatticeClosedAgain.equals(upperSemilatticeButNotTree));
 	}
