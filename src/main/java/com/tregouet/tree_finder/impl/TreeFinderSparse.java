@@ -1,6 +1,5 @@
 package com.tregouet.tree_finder.impl;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +8,6 @@ import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.tregouet.tree_finder.utils.Visualizer;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
@@ -30,15 +28,6 @@ public class TreeFinderSparse {
 	 * order on vertices must be topological. 
 	 */
 	protected TreeFinderSparse(SparseIntDirectedGraph rootedInverted, int maximum, IntArraySet atoms) {
-		//HERE
-		/*
-		try {
-			Visualizer.visualize(rootedInverted, "debug");
-		} catch (IOException e) {
-			System.out.println("failed");
-		}
-		*/
-		//HERE
 		this.atoms = atoms;
 		//set predecessors, lower sets and sup-encoding subsets of minimals
 		for (int i = 0 ; i <= maximum ; i++) {
@@ -89,33 +78,22 @@ public class TreeFinderSparse {
 		return trees;
 	}
 
-	//Intentional side effects on previouslyPicked param
 	private List<IntArrayList> completeForkingSubsetsOfLowerBounds(int element, IntArrayList uncompleteFork, 
 			IntArraySet atomsToCover, IntArraySet coveredAtomsSoFar, boolean[] skipInspection) {
-		System.out.println("Element : " + element);
-		System.out.println("Uncomplete fork : " + uncompleteFork.toString());
-		System.out.println("Covered so far : " + coveredAtomsSoFar.toString());
-		//HERE
 		List<IntArrayList> forkingLowerBoundSubsets = new ArrayList<>();
 		int searchStartIdx =	
 				(uncompleteFork.isEmpty() ? element - 1 : (uncompleteFork.getInt(uncompleteFork.size() - 1)) - 1);
-		IntArraySet remainingAtoms = new IntArraySet(atomsToCover);
+		IntArrayList remainingAtoms = new IntArrayList(atomsToCover);
 		remainingAtoms.removeAll(coveredAtomsSoFar);
 		for (int i = searchStartIdx ; i >= max(remainingAtoms) ; i--) {
 			if (!skipInspection[i]) {
-				//HERE
-				System.out.println("Test of " + i);
 				if (continuedForkWillBeMaximal(element, uncompleteFork, i)) {
 					IntArrayList continuedFork = new IntArrayList(uncompleteFork);
 					continuedFork.add(i);
 					IntArraySet nextCoveredAtoms = new IntArraySet(coveredAtomsSoFar);
 					nextCoveredAtoms.addAll(lowerBoundAtoms.get(i));
-					if (nextCoveredAtoms.equals(atomsToCover)) {
+					if (nextCoveredAtoms.equals(atomsToCover))
 						forkingLowerBoundSubsets.add(continuedFork);
-						//HERE
-						System.out.println("Addition of " + i + " yields valid fork : " + continuedFork.toString());
-						//HERE
-					}
 					else {
 						boolean[] nextSkipInspection = new boolean[i];
 						System.arraycopy(skipInspection, 0, nextSkipInspection, 0, i);
@@ -136,7 +114,7 @@ public class TreeFinderSparse {
 
 	private List<IntArrayList> getForkingSubsetsOfLowerBounds(int element) {
 		if (atoms.contains(element))
-			return new ArrayList<>();
+			return null;
 		IntArraySet atomsToCover = lowerBoundAtoms.get(element);
 		int nbOfAtomsToCover = atomsToCover.size();
 		boolean[] skipInspection = new boolean[element];
@@ -164,7 +142,7 @@ public class TreeFinderSparse {
 		minimalUpperBounds.retainAll(upperSets.get(e2));
 		minimalUpperBounds.sort(null);
 		int j = 0;
-		while (j < minimalUpperBounds.size()) {
+		while (j < minimalUpperBounds.size() - 1) {
 			int jElem = minimalUpperBounds.getInt(j);
 			IntArraySet jStrictUpperBounds = new IntArraySet(upperSets.get(jElem));
 			jStrictUpperBounds.remove(jElem);
@@ -203,7 +181,7 @@ public class TreeFinderSparse {
 		return subTreesFromLocalRoot;
 	}
 	
-	private int max(IntArraySet set) {
+	private int max(IntArrayList set) {
 		int max = -1;
 		for (int element : set) {
 		 if (element > max)
