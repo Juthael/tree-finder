@@ -80,38 +80,49 @@ public class TreeFinderSparse {
 
 	private List<IntArrayList> completeForkingSubsetsOfLowerBounds(int element, IntArrayList uncompleteFork, 
 			IntArraySet atomsToCover, IntArraySet coveredAtomsSoFar, boolean[] skipInspection) {
-		List<IntArrayList> forkingLowerBoundSubsets = new ArrayList<>();
+		List<IntArrayList> completeMaxForks = new ArrayList<>();
 		int searchStartIdx =	
 				(uncompleteFork.isEmpty() ? element - 1 : (uncompleteFork.getInt(uncompleteFork.size() - 1)) - 1);
 		IntArrayList remainingAtoms = new IntArrayList(atomsToCover);
 		remainingAtoms.removeAll(coveredAtomsSoFar);
 		for (int i = searchStartIdx ; i >= max(remainingAtoms) ; i--) {
 			if (!skipInspection[i]) {
-				if (continuedForkWillBeMaximal(element, uncompleteFork, i)) {
-					IntArrayList continuedFork = new IntArrayList(uncompleteFork);
-					continuedFork.add(i);
-					IntArraySet nextCoveredAtoms = new IntArraySet(coveredAtomsSoFar);
-					nextCoveredAtoms.addAll(lowerBoundAtoms.get(i));
-					if (nextCoveredAtoms.equals(atomsToCover))
-						forkingLowerBoundSubsets.add(continuedFork);
-					else {
-						boolean[] nextSkipInspection = new boolean[i];
-						System.arraycopy(skipInspection, 0, nextSkipInspection, 0, i);
-						for (int j = i - 1 ; j >=0 ; j--) {
-							if (!nextSkipInspection[j] 
-									&& !Sets.intersection(nextCoveredAtoms, lowerBoundAtoms.get(j)).isEmpty())
-								nextSkipInspection[j] = true;
-						}
-						forkingLowerBoundSubsets.addAll(
-								completeForkingSubsetsOfLowerBounds(element, continuedFork, atomsToCover, 
-								nextCoveredAtoms, nextSkipInspection));
+				IntArrayList continuedFork = new IntArrayList(uncompleteFork);
+				continuedFork.add(i);
+				IntArraySet nextCoveredAtoms = new IntArraySet(coveredAtomsSoFar);
+				nextCoveredAtoms.addAll(lowerBoundAtoms.get(i));
+				if (nextCoveredAtoms.equals(atomsToCover) && forkIsMaximal(continuedFork, completeMaxForks))
+					completeMaxForks.add(continuedFork);
+				else {
+					boolean[] nextSkipInspection = new boolean[i];
+					System.arraycopy(skipInspection, 0, nextSkipInspection, 0, i);
+					for (int j = i - 1 ; j >=0 ; j--) {
+						if (!nextSkipInspection[j] 
+								&& !Sets.intersection(nextCoveredAtoms, lowerBoundAtoms.get(j)).isEmpty())
+							nextSkipInspection[j] = true;
+					}
+					List<IntArrayList> returnedForks = 
+							completeForkingSubsetsOfLowerBounds(element, continuedFork, atomsToCover, 
+							nextCoveredAtoms, nextSkipInspection);
+					for (IntArrayList returnedFork : returnedForks) {
+						if (forkIsMaximal(returnedFork, completeMaxForks))
+							completeMaxForks.add(returnedFork);
 					}
 				}
 			}
 		}
-		return forkingLowerBoundSubsets;
+		return completeMaxForks;
 	}
 
+	private boolean forkIsMaximal(IntArrayList newFork, List<IntArrayList> previousForks) {
+		for (IntArrayList previousFork : previousForks) {
+			IntArraySet prevForkLowerSet = lowerSet(previousFork);
+			if (prevForkLowerSet.containsAll(newFork))
+				return false;				
+		}
+		return true;
+	}
+	
 	private List<IntArrayList> getForkingSubsetsOfLowerBounds(int element) {
 		if (atoms.contains(element))
 			return null;
@@ -132,24 +143,6 @@ public class TreeFinderSparse {
 		}
 		return completeForkingSubsetsOfLowerBounds(element, new IntArrayList(), atomsToCover, 
 				new IntArraySet(), skipInspection);
-	}
-
-	/*	returns a singleton with the least upper bound (supremum) if the constructor's first 
-	 *	parameter is the graph of an upper semilattice.
-	 */
-	private IntArrayList getMinimalUpperBounds(int e1, int e2) {
-		IntArrayList minimalUpperBounds = new IntArrayList(upperSets.get(e1));
-		minimalUpperBounds.retainAll(upperSets.get(e2));
-		minimalUpperBounds.sort(null);
-		int j = 0;
-		while (j < minimalUpperBounds.size() - 1) {
-			int jElem = minimalUpperBounds.getInt(j);
-			IntArraySet jStrictUpperBounds = new IntArraySet(upperSets.get(jElem));
-			jStrictUpperBounds.remove(jElem);
-			minimalUpperBounds.removeAll(jStrictUpperBounds);
-			j++;
-		}
-		return minimalUpperBounds;
 	}
 	
 	private List<IntArrayList> getSubTrees(int localRoot) {
@@ -181,6 +174,14 @@ public class TreeFinderSparse {
 		return subTreesFromLocalRoot;
 	}
 	
+	private IntArraySet lowerSet(IntArrayList set) {
+		IntArraySet lowerSet = new IntArraySet();
+		for (int element : set) {
+			lowerSet.addAll(lowerSets.get(element));
+		}
+		return lowerSet;
+	}
+	
 	private int max(IntArrayList set) {
 		int max = -1;
 		for (int element : set) {
@@ -188,14 +189,6 @@ public class TreeFinderSparse {
 			 max = element;
 		}
 		return max;
-	}
-	
-	private boolean continuedForkWillBeMaximal(int root, IntArrayList uncompleteFork, int newElement) {
-		for (int forkLowerBound : uncompleteFork) {
-			if (!getMinimalUpperBounds(forkLowerBound, newElement).contains(root))
-				return false;
-		}
-		return true;
 	}
 
 }

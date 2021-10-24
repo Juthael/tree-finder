@@ -20,7 +20,9 @@ import com.tregouet.tree_finder.ITreeFinder;
 import com.tregouet.tree_finder.data.ClassificationTree;
 import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.StructureInspector;
+import com.tregouet.tree_finder.viz.Visualizer;
 
+@SuppressWarnings("unused")
 public class TreeFinderOptTest {
 	
 	//toy dataset "rooted inverted"
@@ -144,7 +146,7 @@ public class TreeFinderOptTest {
 			expected.add(treeFinderBruteForce.next());		
 		/*
 		int bfIdx = 0;
-		for (ClassificationTree<String, EdgeForTests> tree : expected) {
+		for (DirectedAcyclicGraph<String, EdgeForTests> tree : expected) {
 			Visualizer.visualize(tree, "2110141554_bfTree" + Integer.toString(bfIdx++));
 		}
 		*/

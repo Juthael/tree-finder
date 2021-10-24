@@ -50,13 +50,9 @@ public class SparseGraphConverter<V, E> {
 		return edgeSet;
 	}
 	
-	public SparseIntDirectedGraph getSparseGraph() {
-		return sparseGraph;
-	}
-	
 	public V getElement(int sparseElement) {
 		return topoOrderedSet.get(sparseElement);
-	}	
+	}
 	
 	public List<V> getSet(IntArrayList sparseSet){
 		List<V> vertexSet = new ArrayList<>();
@@ -64,7 +60,7 @@ public class SparseGraphConverter<V, E> {
 			vertexSet.add(topoOrderedSet.get(sparseVertex));
 		}
 		return vertexSet;
-	}
+	}	
 	
 	public List<V> getSet(IntArraySet sparseSet){
 		List<V> vertexSet = new ArrayList<>();
@@ -72,6 +68,10 @@ public class SparseGraphConverter<V, E> {
 			vertexSet.add(topoOrderedSet.get(sparseVertex));
 		}
 		return vertexSet;
+	}
+	
+	public SparseIntDirectedGraph getSparseGraph() {
+		return sparseGraph;
 	}
 
 }
