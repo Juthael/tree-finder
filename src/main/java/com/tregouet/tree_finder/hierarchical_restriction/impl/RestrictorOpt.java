@@ -1,4 +1,4 @@
-package com.tregouet.tree_finder.impl;
+package com.tregouet.tree_finder.hierarchical_restriction.impl;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -11,16 +11,16 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
-import com.tregouet.tree_finder.ITreeFinder;
-import com.tregouet.tree_finder.data.ClassificationTree;
+import com.tregouet.tree_finder.data.Tree;
 import com.tregouet.tree_finder.error.InvalidInputException;
-import com.tregouet.tree_finder.utils.SparseGraphConverter;
+import com.tregouet.tree_finder.hierarchical_restriction.IHierarchicalRestrictionFinder;
+import com.tregouet.tree_finder.hierarchical_restriction.utils.SparseGraphConverter;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 
-public class TreeFinderOpt<V, E> implements ITreeFinder<V, E> {
+public class RestrictorOpt<V, E> implements IHierarchicalRestrictionFinder<V, E> {
 
 	private final DirectedAcyclicGraph<V, E> rootedInverted;
 	private final List<V> topoOrderedSet = new ArrayList<>();
@@ -37,7 +37,7 @@ public class TreeFinderOpt<V, E> implements ITreeFinder<V, E> {
 	 * The first parameter MUST be a rooted inverted DAG. 
 	 * No transitive reduction must have been operated on it.
 	 */
-	public TreeFinderOpt(DirectedAcyclicGraph<V, E> rootedInverted) throws InvalidInputException {
+	public RestrictorOpt(DirectedAcyclicGraph<V, E> rootedInverted) throws InvalidInputException {
 		if (!StructureInspector.isARootedInvertedDirectedAcyclicGraph(rootedInverted))
 			throw new InvalidInputException("The parameter is not a rooted inverted directed acyclic graph.");
 		if (!StructureInspector.isTransitive(rootedInverted))
@@ -56,12 +56,12 @@ public class TreeFinderOpt<V, E> implements ITreeFinder<V, E> {
 			sparseAtoms.add(topoOrderedSet.indexOf(atom));
 		sparseConverter = new SparseGraphConverter<>(rootedInverted, true);
 		sparse = sparseConverter.getSparseGraph();
-		TreeFinderSparse treeFinderSparse = new TreeFinderSparse(sparse, sparseMaximum, sparseAtoms);
-		sparseTreeRestrictions.addAll(treeFinderSparse.getSparseTreeVertexSets());
+		RestrictorSparse restrictorSparse = new RestrictorSparse(sparse, sparseMaximum, sparseAtoms);
+		sparseTreeRestrictions.addAll(restrictorSparse.getSparseTreeVertexSets());
 	}
 	
 	//UNSAFE
-	public TreeFinderOpt(DirectedAcyclicGraph<V, E> rootedInverted, boolean unsafeMode) {
+	public RestrictorOpt(DirectedAcyclicGraph<V, E> rootedInverted, boolean unsafeMode) {
 		this.rootedInverted = new DirectedAcyclicGraph<>(null, null, false);
 		Graphs.addAllEdges(this.rootedInverted, rootedInverted, rootedInverted.edgeSet());
 		TransitiveReduction.INSTANCE.reduce(rootedInverted);
@@ -76,8 +76,8 @@ public class TreeFinderOpt<V, E> implements ITreeFinder<V, E> {
 			sparseAtoms.add(topoOrderedSet.indexOf(atom));
 		sparseConverter = new SparseGraphConverter<>(rootedInverted, true);
 		sparse = sparseConverter.getSparseGraph();
-		TreeFinderSparse treeFinderSparse = new TreeFinderSparse(sparse, sparseMaximum, sparseAtoms);
-		sparseTreeRestrictions.addAll(treeFinderSparse.getSparseTreeVertexSets());
+		RestrictorSparse restrictorSparse = new RestrictorSparse(sparse, sparseMaximum, sparseAtoms);
+		sparseTreeRestrictions.addAll(restrictorSparse.getSparseTreeVertexSets());
 	}	
 
 	public int getNbOfTrees() {
@@ -90,8 +90,8 @@ public class TreeFinderOpt<V, E> implements ITreeFinder<V, E> {
 	}
 
 	@Override
-	public ClassificationTree<V, E> next() {
-		ClassificationTree<V, E> nextTree = new ClassificationTree<V, E>(
+	public Tree<V, E> next() {
+		Tree<V, E> nextTree = new Tree<V, E>(
 				rootedInverted, sparseConverter.getSet(sparseTreeRestrictions.get(treeIdx)), 
 				maximum, atoms, false);
 		treeIdx++;

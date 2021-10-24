@@ -1,4 +1,4 @@
-package com.tregouet.tree_finder.utils;
+package com.tregouet.tree_finder.hierarchical_restriction.utils;
 
 import static org.junit.Assert.assertTrue;
 
@@ -15,6 +15,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.tregouet.tree_finder.EdgeForTests;
+import com.tregouet.tree_finder.hierarchical_restriction.utils.SparseGraphConverter;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;

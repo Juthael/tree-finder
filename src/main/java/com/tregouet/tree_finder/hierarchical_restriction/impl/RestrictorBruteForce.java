@@ -1,4 +1,4 @@
-package com.tregouet.tree_finder.impl;
+package com.tregouet.tree_finder.hierarchical_restriction.impl;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -8,12 +8,12 @@ import org.jgrapht.Graphs;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 
 import com.google.common.collect.Sets;
-import com.tregouet.tree_finder.ITreeFinder;
-import com.tregouet.tree_finder.data.ClassificationTree;
+import com.tregouet.tree_finder.data.Tree;
 import com.tregouet.tree_finder.error.InvalidInputException;
+import com.tregouet.tree_finder.hierarchical_restriction.IHierarchicalRestrictionFinder;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
-public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
+public class RestrictorBruteForce<V, E> implements IHierarchicalRestrictionFinder<V, E> {
 
 	private final DirectedAcyclicGraph<V, E> rootedInverted;
 	private final V maximum;
@@ -26,7 +26,7 @@ public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
 	 * The parameter MUST be a rooted inverted DAG (reduced or not). Since the 
 	 * generation of a power set is involved, large inputs will throw exceptions. 
 	 */
-	protected TreeFinderBruteForce(DirectedAcyclicGraph<V, E> rootedInverted) 
+	protected RestrictorBruteForce(DirectedAcyclicGraph<V, E> rootedInverted) 
 			throws InvalidInputException {
 		if (!StructureInspector.isARootedInvertedDirectedAcyclicGraph(rootedInverted))
 			throw new InvalidInputException("The parameter is not a rooted inverted directed acyclic graph.");
@@ -71,8 +71,8 @@ public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
 	}
 
 	@Override
-	public ClassificationTree<V, E> next() {
-		return new ClassificationTree<V, E>(rootedInverted, treeIte.next(), maximum, atoms, false);
+	public Tree<V, E> next() {
+		return new Tree<V, E>(rootedInverted, treeIte.next(), maximum, atoms, false);
 	}
 	
 	private boolean isATree(Set<V> candidateRestriction) {
@@ -85,7 +85,7 @@ public class TreeFinderBruteForce<V, E> implements ITreeFinder<V, E> {
 				edges.add(edge);
 		}
 		Graphs.addAllEdges(candidateGraph, rootedInverted, edges);
-		return StructureInspector.isAClassificationTree(candidateGraph);
+		return StructureInspector.isATree(candidateGraph);
 	}
 	
 	private boolean isMaximal(Set<V> thisTree) {

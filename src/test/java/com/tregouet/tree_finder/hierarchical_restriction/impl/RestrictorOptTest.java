@@ -1,4 +1,4 @@
-package com.tregouet.tree_finder.impl;
+package com.tregouet.tree_finder.hierarchical_restriction.impl;
 
 import static org.junit.Assert.assertTrue;
 
@@ -17,13 +17,15 @@ import org.junit.Test;
 
 import com.tregouet.tree_finder.EdgeForTests;
 import com.tregouet.tree_finder.ITreeFinder;
-import com.tregouet.tree_finder.data.ClassificationTree;
+import com.tregouet.tree_finder.data.Tree;
 import com.tregouet.tree_finder.error.InvalidInputException;
+import com.tregouet.tree_finder.hierarchical_restriction.impl.RestrictorBruteForce;
+import com.tregouet.tree_finder.hierarchical_restriction.impl.RestrictorOpt;
 import com.tregouet.tree_finder.utils.StructureInspector;
 import com.tregouet.tree_finder.viz.Visualizer;
 
 @SuppressWarnings("unused")
-public class TreeFinderOptTest {
+public class RestrictorOptTest {
 	
 	//toy dataset "rooted inverted"
 	private String a = "A";
@@ -61,7 +63,7 @@ public class TreeFinderOptTest {
 	public void whenInputIsLargeThenProceedsInReasonableTime() throws IOException, InvalidInputException {
 		setUpUpperSemiLatticeFromPowerSetOfNElements(7);
 		long start = System.currentTimeMillis();
-		ITreeFinder<Set<Integer>, EdgeForTests> tF = new TreeFinderOpt<>(nPowerSet);
+		ITreeFinder<Set<Integer>, EdgeForTests> tF = new RestrictorOpt<>(nPowerSet);
 		int nbOfTreesReturned = 0;
 		while (tF.hasNext()) {
 			tF.next();
@@ -81,15 +83,15 @@ public class TreeFinderOptTest {
 		int nPowerCheckCount = 0;
 		setUpRootedInverted();
 		setUpUpperSemiLatticeFromPowerSetOfNElements(5);
-		ITreeFinder<String, EdgeForTests> treeFinderRootedInverted = new TreeFinderOpt<>(rootedInverted);
-		ITreeFinder<Set<Integer>, EdgeForTests> treeFinderSemilattice = new TreeFinderOpt<>(nPowerSet);
+		ITreeFinder<String, EdgeForTests> treeFinderRootedInverted = new RestrictorOpt<>(rootedInverted);
+		ITreeFinder<Set<Integer>, EdgeForTests> treeFinderSemilattice = new RestrictorOpt<>(nPowerSet);
 		while (treeFinderRootedInverted.hasNext()) {
-			if (!StructureInspector.isAClassificationTree(treeFinderRootedInverted.next()))
+			if (!StructureInspector.isATree(treeFinderRootedInverted.next()))
 				valid = false;
 			rInvCheckCount++;
 		}
 		while (treeFinderSemilattice.hasNext()) {
-			if (!StructureInspector.isAClassificationTree(treeFinderSemilattice.next()))
+			if (!StructureInspector.isATree(treeFinderSemilattice.next()))
 				valid = false;
 			nPowerCheckCount++;
 		}
@@ -99,11 +101,11 @@ public class TreeFinderOptTest {
 	@Test
 	public void whenTreesRequestedThenExpectedReturned1() throws Exception {
 		setUpSemilatticeForComparisonWithBruteForce();
-		Set<ClassificationTree<String, EdgeForTests>> returnedFromBruteForce = new HashSet<>();
-		Set<ClassificationTree<String, EdgeForTests>> returnedFromOpt = new HashSet<>();
-		ITreeFinder<String, EdgeForTests> brute = new TreeFinderBruteForce<>(bruteForceComparison);
+		Set<Tree<String, EdgeForTests>> returnedFromBruteForce = new HashSet<>();
+		Set<Tree<String, EdgeForTests>> returnedFromOpt = new HashSet<>();
+		ITreeFinder<String, EdgeForTests> brute = new RestrictorBruteForce<>(bruteForceComparison);
 		brute.forEachRemaining(t -> returnedFromBruteForce.add(t));
-		ITreeFinder<String, EdgeForTests> opt = new TreeFinderOpt<>(bruteForceComparison);
+		ITreeFinder<String, EdgeForTests> opt = new RestrictorOpt<>(bruteForceComparison);
 		opt.forEachRemaining(t -> returnedFromOpt.add(t));
 		/*
 		Iterator<ClassificationTree<String, EdgeForTests>> bfIte = returnedFromBruteForce.iterator();
@@ -138,10 +140,10 @@ public class TreeFinderOptTest {
 	@Test
 	public void whenTreesRequestedThenExpectedReturned2() throws InvalidInputException, IOException {
 		setUpRootedInverted();
-		Set<ClassificationTree<String, EdgeForTests>> expected = new HashSet<>();
-		Set<ClassificationTree<String, EdgeForTests>> returned = new HashSet<>();
+		Set<Tree<String, EdgeForTests>> expected = new HashSet<>();
+		Set<Tree<String, EdgeForTests>> returned = new HashSet<>();
 		ITreeFinder<String, EdgeForTests> treeFinderBruteForce = 
-				new TreeFinderBruteForce<>(rootedInverted);
+				new RestrictorBruteForce<>(rootedInverted);
 		while (treeFinderBruteForce.hasNext())
 			expected.add(treeFinderBruteForce.next());		
 		/*
@@ -150,7 +152,7 @@ public class TreeFinderOptTest {
 			Visualizer.visualize(tree, "2110141554_bfTree" + Integer.toString(bfIdx++));
 		}
 		*/
-		ITreeFinder<String, EdgeForTests> treeFinderOpt = new TreeFinderOpt<>(rootedInverted);
+		ITreeFinder<String, EdgeForTests> treeFinderOpt = new RestrictorOpt<>(rootedInverted);
 		while (treeFinderOpt.hasNext())
 			returned.add(treeFinderOpt.next());
 		/*

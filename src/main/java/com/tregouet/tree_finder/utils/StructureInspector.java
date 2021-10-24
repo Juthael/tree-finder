@@ -48,7 +48,7 @@ public class StructureInspector {
 		return new SparseIntDirectedGraph(nbOfElements, edgesInTransitiveGraph);
 	}
 	
-	public static <V, E> boolean isAClassificationTree(DirectedAcyclicGraph<V, E> dag) {
+	public static <V, E> boolean isATree(DirectedAcyclicGraph<V, E> dag) {
 		boolean isATree = true;
 		List<V> topoOrderedSet = new ArrayList<>();
 		new TopologicalOrderIterator<>(dag).forEachRemaining(e -> topoOrderedSet.add(e));

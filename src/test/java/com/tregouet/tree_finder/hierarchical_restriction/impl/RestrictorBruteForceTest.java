@@ -1,4 +1,4 @@
-package com.tregouet.tree_finder.impl;
+package com.tregouet.tree_finder.hierarchical_restriction.impl;
 
 import static org.junit.Assert.*;
 
@@ -21,13 +21,14 @@ import org.junit.Test;
 import com.google.common.collect.Sets;
 import com.sun.source.tree.AssertTree;
 import com.tregouet.tree_finder.EdgeForTests;
-import com.tregouet.tree_finder.data.ClassificationTree;
+import com.tregouet.tree_finder.data.Tree;
 import com.tregouet.tree_finder.error.InvalidInputException;
+import com.tregouet.tree_finder.hierarchical_restriction.impl.RestrictorBruteForce;
 import com.tregouet.tree_finder.utils.StructureInspector;
 import com.tregouet.tree_finder.viz.Visualizer;
 
 @SuppressWarnings("unused")
-public class TreeFinderBruteForceTest {
+public class RestrictorBruteForceTest {
 	
 	//toy dataset "upper semilattice"
 	private DirectedAcyclicGraph<String, EdgeForTests> upperSemilattice;
@@ -36,7 +37,7 @@ public class TreeFinderBruteForceTest {
 	private String b = "B";
 	private String c = "C";
 	private String d = "D";
-	TreeFinderBruteForce<String, EdgeForTests> semiLatticeTreeFinder;
+	RestrictorBruteForce<String, EdgeForTests> semiLatticeTreeFinder;
 	
 	//toy dataset "rooted inverted"
 	private DirectedAcyclicGraph<String, EdgeForTests> rootedInverted;
@@ -49,7 +50,7 @@ public class TreeFinderBruteForceTest {
 	private String abc2 = "ABC2";
 	private String bcd = "BCD";
 	private String abcd = "ABCD";
-	TreeFinderBruteForce<String, EdgeForTests> rootedInvertedTreeFinder;
+	RestrictorBruteForce<String, EdgeForTests> rootedInvertedTreeFinder;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -68,15 +69,15 @@ public class TreeFinderBruteForceTest {
 				uSLatoms.add(vertex);
 		}
 		semiLatticeTreeFinder = 
-				new TreeFinderBruteForce<>(upperSemilattice);
+				new RestrictorBruteForce<>(upperSemilattice);
 		/*
 		Visualizer.visualize(upperSemilattice, "2110091649_BFusl");
 		*/
 		boolean returnedValid = true;
 		int checkCount = 0;
 		while (semiLatticeTreeFinder.hasNext()) {
-			ClassificationTree<String, EdgeForTests> nextTree = semiLatticeTreeFinder.next();
-			if (!StructureInspector.isAClassificationTree(nextTree))
+			Tree<String, EdgeForTests> nextTree = semiLatticeTreeFinder.next();
+			if (!StructureInspector.isATree(nextTree))
 				returnedValid = false;
 			/*
 			TransitiveReduction.INSTANCE.reduce(nextTree);
@@ -93,9 +94,9 @@ public class TreeFinderBruteForceTest {
 		boolean returnedValid = true;
 		int checkCount = 0;
 		rootedInvertedTreeFinder = 
-				new TreeFinderBruteForce<>(rootedInverted);
+				new RestrictorBruteForce<>(rootedInverted);
 		while (rootedInvertedTreeFinder.hasNext()) {			
-			ClassificationTree<String, EdgeForTests> nextTree = rootedInvertedTreeFinder.next();
+			Tree<String, EdgeForTests> nextTree = rootedInvertedTreeFinder.next();
 			if (!isValid(nextTree))
 				returnedValid = false;
 			checkCount++;
@@ -109,11 +110,11 @@ public class TreeFinderBruteForceTest {
 	@Test
 	public void whenTreesRequestedThenExpectedReturned() throws InvalidInputException {
 		setUpRootedInverted();
-		Set<ClassificationTree<String, EdgeForTests>> returned = new HashSet<>();
-		rootedInvertedTreeFinder = new TreeFinderBruteForce<>(rootedInverted);
+		Set<Tree<String, EdgeForTests>> returned = new HashSet<>();
+		rootedInvertedTreeFinder = new RestrictorBruteForce<>(rootedInverted);
 		while (rootedInvertedTreeFinder.hasNext())
 			returned.add(rootedInvertedTreeFinder.next());
-		Set<ClassificationTree<String, EdgeForTests>> expected = expect();		
+		Set<Tree<String, EdgeForTests>> expected = expect();		
 		assertTrue(!returned.isEmpty() && !expected.isEmpty() & returned.equals(expected));		
 	}
 	
@@ -189,8 +190,8 @@ public class TreeFinderBruteForceTest {
 		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(rootedInverted);
 	}	
 	
-	private Set<ClassificationTree<String, EdgeForTests>> expect() {
-		Set<ClassificationTree<String, EdgeForTests>> expected = new HashSet<>();
+	private Set<Tree<String, EdgeForTests>> expect() {
+		Set<Tree<String, EdgeForTests>> expected = new HashSet<>();
 		Set<Set<String>> expectedVertexSets = new HashSet<>();
 		expectedVertexSets.add(new HashSet<>(Arrays.asList(new String[]{abcd, abc1, ab1, a, b, c, d})));
 		expectedVertexSets.add(new HashSet<>(Arrays.asList(new String[]{abcd, abc1, ab2, a, b, c, d})));
@@ -209,12 +210,12 @@ public class TreeFinderBruteForceTest {
 						&& expectedVertexSet.contains(rootedInverted.getEdgeTarget(edge)))
 					expectedEdgeSet.add(edge);
 			}
-			expected.add(new ClassificationTree<String, EdgeForTests>(abcd, rInvAtoms, rootedInverted, expectedEdgeSet));
+			expected.add(new Tree<String, EdgeForTests>(abcd, rInvAtoms, rootedInverted, expectedEdgeSet));
 		}
 		return expected;
 	}
 	
-	private boolean isValid(ClassificationTree<String, EdgeForTests> alledgedTree) {
+	private boolean isValid(Tree<String, EdgeForTests> alledgedTree) {
 		boolean isATree = true;
 		TransitiveReduction.INSTANCE.reduce(alledgedTree);
 		TopologicalOrderIterator<String, EdgeForTests> topoIte = new TopologicalOrderIterator<>(alledgedTree);

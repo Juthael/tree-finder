@@ -19,6 +19,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.tregouet.tree_finder.EdgeForTests;
+import com.tregouet.tree_finder.hierarchical_restriction.utils.SparseGraphConverter;
 
 public class StructureInspectorTest {
 	
@@ -57,10 +58,10 @@ public class StructureInspectorTest {
 	@Test
 	public void whenChecksIfParameterIsClassificationTreeThenReturnsAsExpected() {
 		assertTrue(
-				StructureInspector.isAClassificationTree(classificationTree)
-				&& !StructureInspector.isAClassificationTree(wronglyOrientedClassificationTree)
-				&& !StructureInspector.isAClassificationTree(upperSemilatticeButNotTree)
-				&& !StructureInspector.isAClassificationTree(doesNotHaveARoot));
+				StructureInspector.isATree(classificationTree)
+				&& !StructureInspector.isATree(wronglyOrientedClassificationTree)
+				&& !StructureInspector.isATree(upperSemilatticeButNotTree)
+				&& !StructureInspector.isATree(doesNotHaveARoot));
 	}
 	
 	@Test
@@ -196,14 +197,14 @@ public class StructureInspectorTest {
 		//except isTransitive(), obviously
 		setUpReducedDAGS();
 		assertTrue(
-				(StructureInspector.isAClassificationTree(classificationTree) == 
-					StructureInspector.isAClassificationTree(classificationTreeReduced)) 
-				&& (StructureInspector.isAClassificationTree(wronglyOrientedClassificationTree) == 
-				StructureInspector.isAClassificationTree(wronglyOrientedClassificationTreeReduced)) 
-				&& (StructureInspector.isAClassificationTree(upperSemilatticeButNotTree) == 
-				StructureInspector.isAClassificationTree(upperSemilatticeButNotTreeReduced)) 
-				&& (StructureInspector.isAClassificationTree(doesNotHaveARoot) == 
-				StructureInspector.isAClassificationTree(doesNotHaveARootReduced)) 
+				(StructureInspector.isATree(classificationTree) == 
+					StructureInspector.isATree(classificationTreeReduced)) 
+				&& (StructureInspector.isATree(wronglyOrientedClassificationTree) == 
+				StructureInspector.isATree(wronglyOrientedClassificationTreeReduced)) 
+				&& (StructureInspector.isATree(upperSemilatticeButNotTree) == 
+				StructureInspector.isATree(upperSemilatticeButNotTreeReduced)) 
+				&& (StructureInspector.isATree(doesNotHaveARoot) == 
+				StructureInspector.isATree(doesNotHaveARootReduced)) 
 				
 				&& (StructureInspector.isAnUpperSemilattice(classificationTree) == 
 					StructureInspector.isAnUpperSemilattice(classificationTreeReduced))

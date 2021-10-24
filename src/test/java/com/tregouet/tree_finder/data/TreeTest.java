@@ -17,7 +17,7 @@ import org.junit.Test;
 
 import com.tregouet.tree_finder.error.InvalidInputException;
 
-public class ClassificationTreeTest {
+public class TreeTest {
 
 	private String a = "A";
 	private String b = "B";
@@ -31,7 +31,7 @@ public class ClassificationTreeTest {
 	DirectedAcyclicGraph<String, Edge> properTreeDAG;
 	DirectedAcyclicGraph<String, Edge> notRootedDAG;
 	DirectedAcyclicGraph<String, Edge> violatingHierarchyClauseDAG;
-	ClassificationTree<String, Edge> properTree;
+	Tree<String, Edge> properTree;
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -53,8 +53,8 @@ public class ClassificationTreeTest {
 		Set<String> otherDAGLeaves = new HashSet<>(leaves);
 		otherDAGLeaves.add(d);
 		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(otherDAG);
-		ClassificationTree<String, Edge> otherTree = 
-				new ClassificationTree<String, Edge>(abc, otherDAGLeaves, otherDAG, otherDAG.edgeSet(), true);
+		Tree<String, Edge> otherTree = 
+				new Tree<String, Edge>(abc, otherDAGLeaves, otherDAG, otherDAG.edgeSet(), true);
 		assertFalse(properTree.equals(otherTree));
 	}
 	
@@ -67,8 +67,8 @@ public class ClassificationTreeTest {
 		differentTreeArg.addEdge(c, abc);
 		differentTreeArg.addEdge(ab, abc);		
 		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(differentTreeArg);
-		ClassificationTree<String, Edge> differentTree = 
-				new ClassificationTree<String, Edge>(abc, leaves, differentTreeArg, differentTreeArg.edgeSet(), true);
+		Tree<String, Edge> differentTree = 
+				new Tree<String, Edge>(abc, leaves, differentTreeArg, differentTreeArg.edgeSet(), true);
 		assertFalse(differentTree.equals(properTreeDAG));
 	}
 	
@@ -88,8 +88,8 @@ public class ClassificationTreeTest {
 		sameTreeDAG.addEdge(ab, abc);
 		sameTreeDAG.addEdge(ac, abc);
 		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(sameTreeDAG);
-		ClassificationTree<String, Edge> sameTree = 
-				new ClassificationTree<String, Edge>(abc, leaves, sameTreeDAG, sameTreeDAG.edgeSet(), true);
+		Tree<String, Edge> sameTree = 
+				new Tree<String, Edge>(abc, leaves, sameTreeDAG, sameTreeDAG.edgeSet(), true);
 		assertTrue(sameTree.equals(properTree));
 	}
 	
@@ -99,19 +99,19 @@ public class ClassificationTreeTest {
 		boolean exceptionIfHierarchyClauseIsViolated = false;
 		boolean exceptionIfProperTree = false;
 		try {
-			new ClassificationTree<>(abc, leaves, notRootedDAG, notRootedDAG.edgeSet(), true);
+			new Tree<>(abc, leaves, notRootedDAG, notRootedDAG.edgeSet(), true);
 		}
 		catch (InvalidInputException e) {
 			exceptionIfNotRooted = true;
 		}
 		try {
-			new ClassificationTree<>(abc, leaves, violatingHierarchyClauseDAG, violatingHierarchyClauseDAG.edgeSet(), true);
+			new Tree<>(abc, leaves, violatingHierarchyClauseDAG, violatingHierarchyClauseDAG.edgeSet(), true);
 		}
 		catch (InvalidInputException e) {
 			exceptionIfHierarchyClauseIsViolated = true;
 		}
 		try {
-			new ClassificationTree<>(abc, leaves, properTreeDAG, properTreeDAG.edgeSet(), true);
+			new Tree<>(abc, leaves, properTreeDAG, properTreeDAG.edgeSet(), true);
 		}
 		catch (InvalidInputException e) {
 			exceptionIfProperTree = true;
@@ -162,7 +162,7 @@ public class ClassificationTreeTest {
 		properTreeDAG.addEdge(ac, abc);
 		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(properTreeDAG);
 		properTree = 
-				new ClassificationTree<String, Edge>(abc, leaves, properTreeDAG, properTreeDAG.edgeSet());
+				new Tree<String, Edge>(abc, leaves, properTreeDAG, properTreeDAG.edgeSet());
 	}
 }
 

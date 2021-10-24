@@ -1,4 +1,4 @@
-package com.tregouet.tree_finder.impl;
+package com.tregouet.tree_finder.hierarchical_restriction.impl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +12,7 @@ import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 
-public class TreeFinderSparse {
+public class RestrictorSparse {
 
 	private final IntArraySet atoms;
 	private final List<IntArrayList> predecessors = new ArrayList<>();
@@ -27,7 +27,7 @@ public class TreeFinderSparse {
 	 * UNSAFE. Parameter MUST be the transitive reduction of an rooted inverted DAG, and the ascending 
 	 * order on vertices must be topological. 
 	 */
-	protected TreeFinderSparse(SparseIntDirectedGraph rootedInverted, int maximum, IntArraySet atoms) {
+	protected RestrictorSparse(SparseIntDirectedGraph rootedInverted, int maximum, IntArraySet atoms) {
 		this.atoms = atoms;
 		//set predecessors, lower sets and sup-encoding subsets of minimals
 		for (int i = 0 ; i <= maximum ; i++) {

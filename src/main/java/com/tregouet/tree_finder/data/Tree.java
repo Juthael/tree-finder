@@ -12,7 +12,7 @@ import org.jgrapht.traverse.TopologicalOrderIterator;
 import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
-public class ClassificationTree<V, E> extends DirectedAcyclicGraph<V, E> {
+public class Tree<V, E> extends DirectedAcyclicGraph<V, E> {
 
 	private static final long serialVersionUID = 2206651329473240403L;
 	private V root;
@@ -23,7 +23,7 @@ public class ClassificationTree<V, E> extends DirectedAcyclicGraph<V, E> {
 	 * No transitive reduction must have been operated on first parameter. 
 	 * Safe if last argument is 'true'
 	 */
-	public ClassificationTree(DirectedAcyclicGraph<V, E> upperSemilattice, List<V> treeVertices, V root, Set<V> leaves, 
+	public Tree(DirectedAcyclicGraph<V, E> upperSemilattice, List<V> treeVertices, V root, Set<V> leaves, 
 			boolean validate) {
 		super(null, null, false);
 		this.root = root;
@@ -39,7 +39,7 @@ public class ClassificationTree<V, E> extends DirectedAcyclicGraph<V, E> {
 	 * No transitive reduction must have been operated on first parameter. 
 	 * Safe if last argument is 'true'
 	 */
-	public ClassificationTree(DirectedAcyclicGraph<V, E> upperSemilattice, Set<V> treeVertices, V root, Set<V> leaves, 
+	public Tree(DirectedAcyclicGraph<V, E> upperSemilattice, Set<V> treeVertices, V root, Set<V> leaves, 
 			boolean validate) {
 		super(null, null, false);
 		this.root = root;
@@ -52,7 +52,7 @@ public class ClassificationTree<V, E> extends DirectedAcyclicGraph<V, E> {
 	}
 	
 	//Unsafe
-	public ClassificationTree(V root, Set<V> leaves, DirectedAcyclicGraph<V, E> source, Set<E> edges) {
+	public Tree(V root, Set<V> leaves, DirectedAcyclicGraph<V, E> source, Set<E> edges) {
 		super(null, null, false);
 		this.root = root;
 		this.leaves = leaves;
@@ -60,7 +60,7 @@ public class ClassificationTree<V, E> extends DirectedAcyclicGraph<V, E> {
 	}
 	
 	//Safe if last argument is 'true'
-	public ClassificationTree(V root, Set<V> leaves, DirectedAcyclicGraph<V, E> source, Set<E> edges, boolean validate) 
+	public Tree(V root, Set<V> leaves, DirectedAcyclicGraph<V, E> source, Set<E> edges, boolean validate) 
 			throws InvalidInputException {
 		this(root, leaves, source, edges);
 		if (validate)
@@ -74,7 +74,7 @@ public class ClassificationTree<V, E> extends DirectedAcyclicGraph<V, E> {
 		if (getClass() != obj.getClass())
 			return false;
 		@SuppressWarnings("rawtypes")
-		ClassificationTree other = (ClassificationTree) obj;
+		Tree other = (Tree) obj;
 		if (topologicalSortingOfVertices == null) {
 			if (other.topologicalSortingOfVertices != null)
 				return false;
@@ -109,7 +109,7 @@ public class ClassificationTree<V, E> extends DirectedAcyclicGraph<V, E> {
 	}
 
 	public void validate() throws InvalidInputException {
-		if (!StructureInspector.isAClassificationTree(this))
+		if (!StructureInspector.isATree(this))
 			throw new InvalidInputException("ClassificationTree() : parameters do not allow the instantiation "
 					+ "of a valid classification tree.");
 	}
