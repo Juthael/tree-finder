@@ -1,4 +1,4 @@
-package com.tregouet.tree_finder.hierarchical_restriction.impl;
+package com.tregouet.tree_finder.algo.hierarchical_restriction.impl;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -11,10 +11,10 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
+import com.tregouet.tree_finder.algo.hierarchical_restriction.IHierarchicalRestrictionFinder;
+import com.tregouet.tree_finder.algo.hierarchical_restriction.utils.SparseGraphConverter;
 import com.tregouet.tree_finder.data.Tree;
 import com.tregouet.tree_finder.error.InvalidInputException;
-import com.tregouet.tree_finder.hierarchical_restriction.IHierarchicalRestrictionFinder;
-import com.tregouet.tree_finder.hierarchical_restriction.utils.SparseGraphConverter;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;

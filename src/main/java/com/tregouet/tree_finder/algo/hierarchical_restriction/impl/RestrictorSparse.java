@@ -1,4 +1,4 @@
-package com.tregouet.tree_finder.hierarchical_restriction.impl;
+package com.tregouet.tree_finder.algo.hierarchical_restriction.impl;
 
 import java.util.ArrayList;
 import java.util.List;

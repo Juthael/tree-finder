@@ -19,7 +19,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.tregouet.tree_finder.EdgeForTests;
-import com.tregouet.tree_finder.hierarchical_restriction.utils.SparseGraphConverter;
+import com.tregouet.tree_finder.algo.hierarchical_restriction.utils.SparseGraphConverter;
 
 public class StructureInspectorTest {
 	

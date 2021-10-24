@@ -1,4 +1,4 @@
-package com.tregouet.tree_finder.hierarchical_restriction.impl;
+package com.tregouet.tree_finder.algo.hierarchical_restriction.impl;
 
 import static org.junit.Assert.*;
 
@@ -21,9 +21,9 @@ import org.junit.Test;
 import com.google.common.collect.Sets;
 import com.sun.source.tree.AssertTree;
 import com.tregouet.tree_finder.EdgeForTests;
+import com.tregouet.tree_finder.algo.hierarchical_restriction.impl.RestrictorBruteForce;
 import com.tregouet.tree_finder.data.Tree;
 import com.tregouet.tree_finder.error.InvalidInputException;
-import com.tregouet.tree_finder.hierarchical_restriction.impl.RestrictorBruteForce;
 import com.tregouet.tree_finder.utils.StructureInspector;
 import com.tregouet.tree_finder.viz.Visualizer;
 

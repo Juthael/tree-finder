@@ -1,4 +1,4 @@
-package com.tregouet.tree_finder.hierarchical_restriction.impl;
+package com.tregouet.tree_finder.algo.hierarchical_restriction.impl;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -8,9 +8,9 @@ import org.jgrapht.Graphs;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 
 import com.google.common.collect.Sets;
+import com.tregouet.tree_finder.algo.hierarchical_restriction.IHierarchicalRestrictionFinder;
 import com.tregouet.tree_finder.data.Tree;
 import com.tregouet.tree_finder.error.InvalidInputException;
-import com.tregouet.tree_finder.hierarchical_restriction.IHierarchicalRestrictionFinder;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
 public class RestrictorBruteForce<V, E> implements IHierarchicalRestrictionFinder<V, E> {
