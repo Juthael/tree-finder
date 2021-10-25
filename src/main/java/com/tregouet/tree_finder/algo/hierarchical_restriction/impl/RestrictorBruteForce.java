@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.jgrapht.Graphs;
+import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 
 import com.google.common.collect.Sets;
@@ -13,7 +14,7 @@ import com.tregouet.tree_finder.data.Tree;
 import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
-public class RestrictorBruteForce<V, E> implements IHierarchicalRestrictionFinder<V, E> {
+public class RestrictorBruteForce<V, E extends DefaultEdge> implements IHierarchicalRestrictionFinder<V, E> {
 
 	private final DirectedAcyclicGraph<V, E> rootedInverted;
 	private final V maximum;
