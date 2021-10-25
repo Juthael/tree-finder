@@ -1,4 +1,4 @@
-package com.tregouet.tree_finder.algo.unidimensional_sorting.functions;
+package com.tregouet.tree_finder.algo.unidimensional_sorting.utils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -18,14 +18,23 @@ public class WithinSetFunc {
 	private WithinSetFunc() {
 	}
 
-	public static <V, E extends DefaultEdge> Set<V> maxima(DirectedAcyclicGraph<V, E> dag) {
-		Set<V> maxima = new HashSet<>();
+	public static <V, E extends DefaultEdge> List<V> maxima(DirectedAcyclicGraph<V, E> dag) {
+		List<V> maxima = new ArrayList<>();
 		for (V element : dag.vertexSet()) {
 			if (dag.outDegreeOf(element) == 0)
 				maxima.add(element);
 		}
 		return maxima;
 	}
+	
+	public static <V, E extends DefaultEdge> List<V> minima(DirectedAcyclicGraph<V, E> dag) {
+		List<V> minima = new ArrayList<>();
+		for (V element : dag.vertexSet()) {
+			if (dag.inDegreeOf(element) == 0)
+				minima.add(element);
+		}
+		return minima;
+	}	
 	
 	public static <V, E extends DefaultEdge> List<V> reversedTopologicalOrder(RootedInvertedGraph<V, E> rootedInverted) {
 		return new ArrayList<>(Lists.reverse(rootedInverted.getTopologicalSortingOfVertices()));
@@ -55,14 +64,24 @@ public class WithinSetFunc {
 		return restriction;
 	}
 	
+	public static <V, E extends DefaultEdge> DirectedAcyclicGraph<V, E> uprooted(RootedInvertedGraph<V, E> rootedInverted, 
+			V root , Supplier<E> edgeSupplier) {
+		DirectedAcyclicGraph<V, E> uprooted = new DirectedAcyclicGraph<>(null, edgeSupplier, false);
+		Set<E> edges = new HashSet<>();
+		for (E edge : rootedInverted.edgeSet()) {
+			if (!rootedInverted.getEdgeTarget(edge).equals(root))
+				edges.add(edge);
+		}
+		Graphs.addAllEdges(uprooted, rootedInverted, edges);
+		return uprooted;
+	}
+	
 	public static <V, E extends DefaultEdge> Set<V> finishingSubset(DirectedAcyclicGraph<V, E> dag, Set<V> base) {
 		Set<V> finishingSubset = new HashSet<>(base);
 		for (V baseElement : base) {
 			finishingSubset.addAll(dag.getDescendants(baseElement));
 		}
 		return finishingSubset;
-	}
-	
-	 
+	} 
 
 }
