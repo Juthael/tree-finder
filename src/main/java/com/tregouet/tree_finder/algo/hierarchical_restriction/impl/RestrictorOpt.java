@@ -93,7 +93,7 @@ public class RestrictorOpt<V, E> implements IHierarchicalRestrictionFinder<V, E>
 	public Tree<V, E> next() {
 		Tree<V, E> nextTree = new Tree<V, E>(
 				rootedInverted, sparseConverter.getSet(sparseTreeRestrictions.get(treeIdx)), 
-				maximum, atoms, false);
+				maximum, atoms);
 		treeIdx++;
 		return nextTree;
 	}

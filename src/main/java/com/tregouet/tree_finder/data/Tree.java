@@ -1,62 +1,36 @@
 package com.tregouet.tree_finder.data;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import org.jgrapht.Graphs;
 import org.jgrapht.graph.DirectedAcyclicGraph;
-import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
-public class Tree<V, E> extends DirectedAcyclicGraph<V, E> {
+public class Tree<V, E> extends RootedInvertedGraph<V, E> {
 
 	private static final long serialVersionUID = 2206651329473240403L;
-	private V root;
-	private Set<V> leaves;
-	private List<V> topologicalSortingOfVertices = null;
 
 	/* 
 	 * No transitive reduction must have been operated on first parameter. 
-	 * Safe if last argument is 'true'
+	 * UNSAFE. The restriction of the first parameter to the second parameter MUST be a tree. 
 	 */
-	public Tree(DirectedAcyclicGraph<V, E> upperSemilattice, List<V> treeVertices, V root, Set<V> leaves, 
-			boolean validate) {
-		super(null, null, false);
-		this.root = root;
-		this.leaves = leaves;
-		Set<E> edges = upperSemilattice.edgeSet().stream()
-				.filter(e -> treeVertices.contains(upperSemilattice.getEdgeSource(e)) 
-						&& treeVertices.contains(upperSemilattice.getEdgeTarget(e)))
-				.collect(Collectors.toSet());
-		Graphs.addAllEdges(this, upperSemilattice, edges);
+	public Tree(DirectedAcyclicGraph<V, E> upperSemilattice, List<V> treeVertices, V root, Set<V> leaves) {
+		super(upperSemilattice, treeVertices, root, leaves);
 	}	
 	
 	/* 
 	 * No transitive reduction must have been operated on first parameter. 
-	 * Safe if last argument is 'true'
+	 * UNSAFE. The restriction of the first parameter to the second parameter MUST be a tree.
 	 */
-	public Tree(DirectedAcyclicGraph<V, E> upperSemilattice, Set<V> treeVertices, V root, Set<V> leaves, 
-			boolean validate) {
-		super(null, null, false);
-		this.root = root;
-		this.leaves = leaves;
-		Set<E> edges = upperSemilattice.edgeSet().stream()
-				.filter(e -> treeVertices.contains(upperSemilattice.getEdgeSource(e)) 
-						&& treeVertices.contains(upperSemilattice.getEdgeTarget(e)))
-				.collect(Collectors.toSet());
-		Graphs.addAllEdges(this, upperSemilattice, edges);
+	public Tree(DirectedAcyclicGraph<V, E> upperSemilattice, Set<V> treeVertices, V root, Set<V> leaves) {
+		super(upperSemilattice, treeVertices, root, leaves);
 	}
 	
-	//Unsafe
+	//UNSAFE. The restriction of the source's relation to the last parameter MUST be a tree.
 	public Tree(V root, Set<V> leaves, DirectedAcyclicGraph<V, E> source, Set<E> edges) {
-		super(null, null, false);
-		this.root = root;
-		this.leaves = leaves;
-		Graphs.addAllEdges(this, source, edges);
+		super(root, leaves, source, edges);
 	}
 	
 	//Safe if last argument is 'true'
@@ -66,47 +40,6 @@ public class Tree<V, E> extends DirectedAcyclicGraph<V, E> {
 		if (validate)
 			validate();
 	}	
-	
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (getClass() != obj.getClass())
-			return false;
-		@SuppressWarnings("rawtypes")
-		Tree other = (Tree) obj;
-		if (topologicalSortingOfVertices == null) {
-			if (other.topologicalSortingOfVertices != null)
-				return false;
-		} else if (!topologicalSortingOfVertices.equals(other.topologicalSortingOfVertices))
-			return false;
-		return (this.edgeSet().equals(other.edgeSet()));
-	}
-	
-	public Set<V> getLeaves(){
-		return leaves;
-	}
-	
-	public V getRoot() {
-		return root;
-	}
-	
-	public List<V> getTopologicalSortingOfVertices() {
-		if (topologicalSortingOfVertices == null) {
-			topologicalSortingOfVertices = new ArrayList<>();
-			new TopologicalOrderIterator<V, E>(this).forEachRemaining(topologicalSortingOfVertices::add);
-		}
-		return topologicalSortingOfVertices;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result
-				+ ((topologicalSortingOfVertices == null) ? 0 : topologicalSortingOfVertices.hashCode());
-		return result;
-	}
 
 	public void validate() throws InvalidInputException {
 		if (!StructureInspector.isATree(this))

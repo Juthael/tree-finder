@@ -72,7 +72,7 @@ public class RestrictorBruteForce<V, E> implements IHierarchicalRestrictionFinde
 
 	@Override
 	public Tree<V, E> next() {
-		return new Tree<V, E>(rootedInverted, treeIte.next(), maximum, atoms, false);
+		return new Tree<V, E>(rootedInverted, treeIte.next(), maximum, atoms);
 	}
 	
 	private boolean isATree(Set<V> candidateRestriction) {
