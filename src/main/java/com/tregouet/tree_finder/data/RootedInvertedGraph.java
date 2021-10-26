@@ -19,45 +19,7 @@ public class RootedInvertedGraph<V, E> extends DirectedAcyclicGraph<V, E> {
 	private static final long serialVersionUID = -7454975765743463119L;
 	private final V root;
 	private final Set<V> leaves;
-	private List<V> topologicalSortingOfVertices = null;
-	
-	/* 
-	 * UNSAFE. The restriction of the first parameter to the second parameter MUST be a rooted inverted graph.
-	 */
-	public RootedInvertedGraph(DirectedAcyclicGraph<V, E> dag, List<V> restriction, V root, Set<V> leaves) {
-		super(null, null, false);
-		this.root = root;
-		this.leaves = leaves;
-		Set<E> edges = dag.edgeSet().stream()
-				.filter(e -> restriction.contains(dag.getEdgeSource(e)) 
-						&& restriction.contains(dag.getEdgeTarget(e)))
-				.collect(Collectors.toSet());
-		Graphs.addAllEdges(this, dag, edges);
-	}
-	
-	/* 
-	 * UNSAFE. The restriction of the first parameter to the second parameter MUST be a rooted inverted graph.
-	 */
-	public RootedInvertedGraph(DirectedAcyclicGraph<V, E> dag, Set<V> restriction, V root, Set<V> leaves) {
-		super(null, null, false);
-		this.root = root;
-		this.leaves = leaves;
-		Set<E> edges = dag.edgeSet().stream()
-				.filter(e -> restriction.contains(dag.getEdgeSource(e)) 
-						&& restriction.contains(dag.getEdgeTarget(e)))
-				.collect(Collectors.toSet());
-		Graphs.addAllEdges(this, dag, edges);
-	}	
-	
-	/* 
-	 * UNSAFE. The restriction of the first parameter to the second parameter MUST be a rooted inverted graph.
-	 */
-	public RootedInvertedGraph(V root, Set<V> leaves, DirectedAcyclicGraph<V, E> source, Set<E> edges) {
-		super(null, null, false);
-		this.root = root;
-		this.leaves = leaves;
-		Graphs.addAllEdges(this, source, edges);
-	}	
+	private List<V> topologicalSortingOfVertices = null;	
 	
 	/* 
 	 * UNSAFE. The restriction of the first parameter's relation to the second parameter MUST be a rooted 
@@ -87,13 +49,16 @@ public class RootedInvertedGraph<V, E> extends DirectedAcyclicGraph<V, E> {
 		}
 	}
 	
-	//Safe if last argument is 'true'
-	public RootedInvertedGraph(V root, Set<V> leaves, DirectedAcyclicGraph<V, E> source, Set<E> edges, boolean validate) 
-			throws InvalidInputException {
-		this(root, leaves, source, edges);
-		if (validate)
-			validate();
-	}	
+	//UNSAFE. The first parameter MUST be a rooted inverted graph, and the effective root must be the second parameter.
+	public RootedInvertedGraph(DirectedAcyclicGraph<V, E> rootedInverted, V root, Set<V> leaves, 
+			List<V> topoOrder, Supplier<E> edgeSupplier) {
+		super(null, edgeSupplier, false);
+		Graphs.addAllVertices(this, rootedInverted.vertexSet());
+		Graphs.addAllEdges(this, rootedInverted, rootedInverted.edgeSet());
+		this.root = root;
+		this.leaves = leaves;
+		this.topologicalSortingOfVertices = topoOrder;
+	}
 	
 	protected RootedInvertedGraph(RootedInvertedGraph<V, E> rootedInverted, Supplier<E> edgeSupplier) {
 		super(null, edgeSupplier, false);
@@ -102,6 +67,28 @@ public class RootedInvertedGraph<V, E> extends DirectedAcyclicGraph<V, E> {
 		Graphs.addAllEdges(this, rootedInverted, rootedInverted.edgeSet());
 		this.topologicalSortingOfVertices = rootedInverted.topologicalSortingOfVertices;
 	}
+	
+	protected RootedInvertedGraph(DirectedAcyclicGraph<V, E> dag, List<V> restriction, V root, Set<V> leaves) {
+		super(null, null, false);
+		this.root = root;
+		this.leaves = leaves;
+		Set<E> edges = dag.edgeSet().stream()
+				.filter(e -> restriction.contains(dag.getEdgeSource(e)) 
+						&& restriction.contains(dag.getEdgeTarget(e)))
+				.collect(Collectors.toSet());
+		Graphs.addAllEdges(this, dag, edges);
+	}	
+	
+	protected RootedInvertedGraph(DirectedAcyclicGraph<V, E> dag, Set<V> restriction, V root, Set<V> leaves) {
+		super(null, null, false);
+		this.root = root;
+		this.leaves = leaves;
+		Set<E> edges = dag.edgeSet().stream()
+				.filter(e -> restriction.contains(dag.getEdgeSource(e)) 
+						&& restriction.contains(dag.getEdgeTarget(e)))
+				.collect(Collectors.toSet());
+		Graphs.addAllEdges(this, dag, edges);
+	}	
 	
 	public Set<V> getLeaves(){
 		return new HashSet<>(leaves);

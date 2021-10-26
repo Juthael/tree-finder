@@ -29,11 +29,6 @@ public class Tree<V, E> extends RootedInvertedGraph<V, E> {
 		super(source, treeVertices, root, leaves);
 	}
 	
-	//UNSAFE. The restriction of the source's relation to the last parameter MUST be a tree.
-	public Tree(V root, Set<V> leaves, DirectedAcyclicGraph<V, E> source, Set<E> edges) {
-		super(root, leaves, source, edges);
-	}
-	
 	//UNSAFE. The parameter MUST be a tree.
 	public Tree(DirectedAcyclicGraph<V, E> tree, V root, Supplier<E> edgeSupplier) {
 		super(tree, root, edgeSupplier);
@@ -42,15 +37,7 @@ public class Tree<V, E> extends RootedInvertedGraph<V, E> {
 	//UNSAFE. The parameter MUST be a tree.
 	public Tree(RootedInvertedGraph<V, E> tree, Supplier<E> edgeSupplier) {
 		super(tree, edgeSupplier);
-	}	
-	
-	//Safe if last argument is 'true'
-	public Tree(V root, Set<V> leaves, DirectedAcyclicGraph<V, E> source, Set<E> edges, boolean validate) 
-			throws InvalidInputException {
-		this(root, leaves, source, edges);
-		if (validate)
-			validate();
-	}	
+	}		
 
 	public void validate() throws InvalidInputException {
 		if (!StructureInspector.isATree(this))

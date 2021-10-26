@@ -53,7 +53,7 @@ public class WithinSetFunc {
 	}
 	
 	public static <V, E extends DefaultEdge> DirectedAcyclicGraph<V, E> restriction(DirectedAcyclicGraph<V, E> source, 
-			Set<V> restrictTo, Supplier<E> edgeSupplier) {
+			List<V> restrictTo, Supplier<E> edgeSupplier) {
 		DirectedAcyclicGraph<V, E> restriction = new DirectedAcyclicGraph<>(null, edgeSupplier, false);
 		Set<E> edges = new HashSet<>();
 		for (E edge : source.edgeSet()) {
