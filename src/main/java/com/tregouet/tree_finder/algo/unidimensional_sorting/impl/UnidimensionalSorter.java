@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedAcyclicGraph;
+import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -17,13 +18,41 @@ import com.tregouet.tree_finder.algo.unidimensional_sorting.utils.BetweenSetFunc
 import com.tregouet.tree_finder.algo.unidimensional_sorting.utils.WithinSetFunc;
 import com.tregouet.tree_finder.data.RootedInvertedGraph;
 import com.tregouet.tree_finder.data.Tree;
+import com.tregouet.tree_finder.error.InvalidInputException;
+import com.tregouet.tree_finder.utils.StructureInspector;
 
 public class UnidimensionalSorter<V, E extends DefaultEdge> implements IUnidimensionalSorter<V, E> {
 
 	private final Supplier<E> edgeSupplier;
+	private final List<Tree<V, E>> trees;
+	private int treeIdx = 0;
 	
-	public UnidimensionalSorter(DirectedAcyclicGraph<V, E> dag, Supplier<E> edgeSupplier) {
+	//The first parameter MUST be rooted and inverted or an exception will be thrown 
+	public UnidimensionalSorter(DirectedAcyclicGraph<V, E> dag, Supplier<E> edgeSupplier) throws InvalidInputException {
+		if (!StructureInspector.isARootedInvertedDirectedAcyclicGraph(dag))
+			throw new InvalidInputException("The first parameter is not a rooted inverted graph.");
+		V root = null;
+		Set<V> atoms = new HashSet<>();
+		List<V> topologicalOrder = new ArrayList<>();
+		TopologicalOrderIterator<V, E> topoIte = new TopologicalOrderIterator<>(dag);
+		while (topoIte.hasNext()) {
+			V nextElem = topoIte.next();
+			topologicalOrder.add(nextElem);
+			if (dag.inDegreeOf(nextElem) == 0)
+				atoms.add(nextElem);
+			if (!topoIte.hasNext())
+				root = nextElem;
+		}
+		RootedInvertedGraph<V, E> rootedInverted = 
+				new RootedInvertedGraph<V, E>(dag, root, atoms, topologicalOrder, edgeSupplier);
 		this.edgeSupplier = edgeSupplier;
+		trees = slice(rootedInverted);
+	}
+	
+	public UnidimensionalSorter(RootedInvertedGraph<V, E> rootedInverted, Supplier<E> edgeSupplier) {
+		this.edgeSupplier = edgeSupplier;
+		trees = slice(rootedInverted);
+		
 	}
 	
 	private List<Tree<V, E>> slice(RootedInvertedGraph<V, E> alphaCategories) {
@@ -110,14 +139,12 @@ public class UnidimensionalSorter<V, E extends DefaultEdge> implements IUnidimen
 
 	@Override
 	public boolean hasNext() {
-		// TODO Auto-generated method stub
-		return false;
+		return treeIdx < trees.size() - 1;
 	}
 
 	@Override
 	public Tree<V, E> next() {
-		// TODO Auto-generated method stub
-		return null;
+		return trees.get(treeIdx++);
 	}
 
 }
