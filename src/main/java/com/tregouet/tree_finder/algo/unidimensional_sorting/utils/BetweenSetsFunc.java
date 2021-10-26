@@ -10,9 +10,9 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 
 import com.tregouet.tree_finder.data.Tree;
 
-public class BetweenSetFunc {
+public class BetweenSetsFunc {
 
-	private BetweenSetFunc() {
+	private BetweenSetsFunc() {
 	}
 	
 	//Side effect on first parameter. Operates on a transitive reduction.

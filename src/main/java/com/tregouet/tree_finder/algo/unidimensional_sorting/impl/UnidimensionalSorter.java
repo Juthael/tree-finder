@@ -14,7 +14,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.tregouet.tree_finder.algo.unidimensional_sorting.IUnidimensionalSorter;
 import com.tregouet.tree_finder.algo.unidimensional_sorting.utils.BasicFunc;
-import com.tregouet.tree_finder.algo.unidimensional_sorting.utils.BetweenSetFunc;
+import com.tregouet.tree_finder.algo.unidimensional_sorting.utils.BetweenSetsFunc;
 import com.tregouet.tree_finder.algo.unidimensional_sorting.utils.WithinSetFunc;
 import com.tregouet.tree_finder.data.RootedInvertedGraph;
 import com.tregouet.tree_finder.data.Tree;
@@ -79,8 +79,8 @@ public class UnidimensionalSorter<V, E extends DefaultEdge> implements IUnidimen
 			subAlphasTopoOrder.remove(subAlphasTopoOrder.size() - 1);
 			List<List<Tree<V, E>>> sortingsOfSubAlphas = discern(alphaSubCategories, atoms, subAlphasTopoOrder);
 			for (List<Tree<V, E>> subAlphaSorting : sortingsOfSubAlphas) {
-				DirectedAcyclicGraph<V, E> sum = BetweenSetFunc.cardinalSum(subAlphaSorting, edgeSupplier);
-				BetweenSetFunc.ordinalSum(sum, alphaClass, true);
+				DirectedAcyclicGraph<V, E> sum = BetweenSetsFunc.cardinalSum(subAlphaSorting, edgeSupplier);
+				BetweenSetsFunc.ordinalSum(sum, alphaClass, true);
 				alphaSortings.add(new Tree<>(sum, alphaClass, edgeSupplier));
 			}
 		}
