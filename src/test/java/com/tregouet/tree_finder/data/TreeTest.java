@@ -3,10 +3,6 @@ package com.tregouet.tree_finder.data;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.TransitiveClosure;
 import org.jgrapht.graph.DefaultEdge;
@@ -27,7 +23,6 @@ public class TreeTest {
 	private String ac = "AC";
 	private String bc = "BC";
 	private String abc = "ABC";
-	private Set<String> leaves = new HashSet<>(Arrays.asList(new String[]{a, b, c}));
 	DirectedAcyclicGraph<String, Edge> properTreeDAG;
 	DirectedAcyclicGraph<String, Edge> notRootedDAG;
 	DirectedAcyclicGraph<String, Edge> violatingHierarchyClauseDAG;
@@ -50,11 +45,9 @@ public class TreeTest {
 		Graphs.addAllEdges(otherDAG, properTreeDAG, properTreeDAG.edgeSet());
 		otherDAG.addVertex(d);
 		otherDAG.addEdge(d, abc);
-		Set<String> otherDAGLeaves = new HashSet<>(leaves);
-		otherDAGLeaves.add(d);
 		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(otherDAG);
 		Tree<String, Edge> otherTree = 
-				new Tree<String, Edge>(abc, otherDAGLeaves, otherDAG, otherDAG.edgeSet(), true);
+				new Tree<String, Edge>(otherDAG, abc, Edge::new);
 		assertFalse(properTree.equals(otherTree));
 	}
 	
@@ -68,7 +61,7 @@ public class TreeTest {
 		differentTreeArg.addEdge(ab, abc);		
 		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(differentTreeArg);
 		Tree<String, Edge> differentTree = 
-				new Tree<String, Edge>(abc, leaves, differentTreeArg, differentTreeArg.edgeSet(), true);
+				new Tree<String, Edge>(differentTreeArg, abc, Edge::new);
 		assertFalse(differentTree.equals(properTreeDAG));
 	}
 	
@@ -89,34 +82,8 @@ public class TreeTest {
 		sameTreeDAG.addEdge(ac, abc);
 		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(sameTreeDAG);
 		Tree<String, Edge> sameTree = 
-				new Tree<String, Edge>(abc, leaves, sameTreeDAG, sameTreeDAG.edgeSet(), true);
+				new Tree<String, Edge>(sameTreeDAG, abc, Edge::new);
 		assertTrue(sameTree.equals(properTree));
-	}
-	
-	@Test
-	public void whenSafeConstructorUsedThenInvalidArgThrowsException() {
-		boolean exceptionIfNotRooted = false;
-		boolean exceptionIfHierarchyClauseIsViolated = false;
-		boolean exceptionIfProperTree = false;
-		try {
-			new Tree<>(abc, leaves, notRootedDAG, notRootedDAG.edgeSet(), true);
-		}
-		catch (InvalidInputException e) {
-			exceptionIfNotRooted = true;
-		}
-		try {
-			new Tree<>(abc, leaves, violatingHierarchyClauseDAG, violatingHierarchyClauseDAG.edgeSet(), true);
-		}
-		catch (InvalidInputException e) {
-			exceptionIfHierarchyClauseIsViolated = true;
-		}
-		try {
-			new Tree<>(abc, leaves, properTreeDAG, properTreeDAG.edgeSet(), true);
-		}
-		catch (InvalidInputException e) {
-			exceptionIfProperTree = true;
-		}
-		assertTrue(exceptionIfNotRooted && exceptionIfHierarchyClauseIsViolated && !exceptionIfProperTree);
 	}
 	
 	private void setUnrootedDAG() {
@@ -162,7 +129,7 @@ public class TreeTest {
 		properTreeDAG.addEdge(ac, abc);
 		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(properTreeDAG);
 		properTree = 
-				new Tree<String, Edge>(abc, leaves, properTreeDAG, properTreeDAG.edgeSet());
+				new Tree<String, Edge>(properTreeDAG, abc, Edge::new);
 	}
 }
 

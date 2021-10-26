@@ -210,7 +210,10 @@ public class RestrictorBruteForceTest {
 						&& expectedVertexSet.contains(rootedInverted.getEdgeTarget(edge)))
 					expectedEdgeSet.add(edge);
 			}
-			expected.add(new Tree<String, EdgeForTests>(abcd, rInvAtoms, rootedInverted, expectedEdgeSet));
+			DirectedAcyclicGraph<String, EdgeForTests> expectedDAG = 
+					new DirectedAcyclicGraph<>(null, EdgeForTests::new, false);
+			Graphs.addAllEdges(expectedDAG, rootedInverted, expectedEdgeSet);
+			expected.add(new Tree<String, EdgeForTests>(expectedDAG, abcd, EdgeForTests::new));
 		}
 		return expected;
 	}
