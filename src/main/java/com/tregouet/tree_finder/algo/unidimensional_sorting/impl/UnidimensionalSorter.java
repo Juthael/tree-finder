@@ -48,19 +48,22 @@ public class UnidimensionalSorter<V, E extends DefaultEdge> implements IUnidimen
 		RootedInvertedGraph<V, E> rootedInverted = 
 				new RootedInvertedGraph<V, E>(dag, root, atoms, topologicalOrder, edgeSupplier);
 		this.edgeSupplier = edgeSupplier;
-		trees = slice(rootedInverted);
+		trees = slice(rootedInverted, new String());
 	}
 	
 	public UnidimensionalSorter(RootedInvertedGraph<V, E> rootedInverted, Supplier<E> edgeSupplier) {
 		TransitiveReduction.INSTANCE.reduce(rootedInverted);
 		this.edgeSupplier = edgeSupplier;
-		trees = slice(rootedInverted);
+		trees = slice(rootedInverted, new String());
 		
 	}
 	
-	private List<Tree<V, E>> slice(RootedInvertedGraph<V, E> alphaCategories) {
+	private List<Tree<V, E>> slice(RootedInvertedGraph<V, E> alphaCategories, String alinea) {
+		//HERE
+		System.out.println(alinea + "slice(" + alphaCategories.vertexSet().toString() + ")");
+		//HERE
 		List<Tree<V, E>> alphaSortings = new ArrayList<>();
-		if (alphaCategories.vertexSet().size() == 1) {
+		if (StructureInspector.isATree(alphaCategories)) {
 			Tree<V, E> singleton = 
 					new Tree<>(alphaCategories, edgeSupplier);
 			alphaSortings.add(singleton);
@@ -74,13 +77,13 @@ public class UnidimensionalSorter<V, E extends DefaultEdge> implements IUnidimen
 			V subAlphaClass = subAlphaMaxima.get(0);
 			RootedInvertedGraph<V, E> subAlphaCategories = 
 					new RootedInvertedGraph<>(alphaSubCategories, subAlphaClass, edgeSupplier);
-			alphaSortings.addAll(slice(subAlphaCategories));
+			alphaSortings.addAll(slice(subAlphaCategories, alinea + "   "));
 		}
 		else {
 			Set<V> atoms = alphaCategories.getLeaves();
 			List<V> subAlphasTopoOrder = alphaCategories.getTopologicalSortingOfVertices();
 			subAlphasTopoOrder.remove(subAlphasTopoOrder.size() - 1);
-			List<List<Tree<V, E>>> sortingsOfSubAlphas = discern(alphaSubCategories, atoms, subAlphasTopoOrder);
+			List<List<Tree<V, E>>> sortingsOfSubAlphas = discern(alphaSubCategories, atoms, subAlphasTopoOrder, alinea + "   ");
 			for (List<Tree<V, E>> subAlphaSorting : sortingsOfSubAlphas) {
 				DirectedAcyclicGraph<V, E> sum = BetweenSetsFunc.cardinalSum(subAlphaSorting, edgeSupplier);
 				BetweenSetsFunc.ordinalSum(sum, alphaClass, true);
@@ -91,48 +94,45 @@ public class UnidimensionalSorter<V, E extends DefaultEdge> implements IUnidimen
 	}
 	
 	private List<List<Tree<V, E>>> discern(DirectedAcyclicGraph<V, E> scatteredCategories, Set<V> atoms, 
-			List<V> topoOrder) {
-		List<List<Tree<V, E>>> setsOfDiscernedClasses = null;
+			List<V> topoOrder, String alinea) {
+		System.out.println(alinea + "discern(" + scatteredCategories.vertexSet().toString() + ", " + atoms.toString() + ")");
+		List<List<Tree<V, E>>> setsOfDiscernedClasses = new ArrayList<>();
 		List<V> inspectionOrder = new ArrayList<>(Lists.reverse(topoOrder));
 		int lastInspectableIndex = BasicFunc.minIndexOf(atoms, inspectionOrder);
 		inspectionOrder.subList(lastInspectableIndex + 1, inspectionOrder.size()).clear();
-		for (V alphaClass : inspectionOrder) {
+		for (int i = 0 ; i < inspectionOrder.size() ; i++) {
+			V alphaClass = inspectionOrder.get(i);
 			RootedInvertedGraph<V, E> alphaCategories = 
 					WithinSetFunc.lowerSet(scatteredCategories, alphaClass, edgeSupplier);
-			List<Tree<V, E>> alphaSortings = slice(alphaCategories);
+			List<Tree<V, E>> alphaSortings = slice(alphaCategories, alinea + "   ");
 			Set<V> reachedAtoms = alphaCategories.getLeaves();
-			if (reachedAtoms.containsAll(atoms)) {
-				setsOfDiscernedClasses = new ArrayList<>();
-				setsOfDiscernedClasses.add(alphaSortings);
+			Set<V> unreachedAtoms = new HashSet<>(Sets.difference(atoms, reachedAtoms));
+			List<V> restrictedTopoOrder = new ArrayList<>(topoOrder);
+			restrictedTopoOrder.removeAll(inspectionOrder.subList(0, i + 1));
+			restrictedTopoOrder.retainAll(WithinSetFunc.finishingSubset(scatteredCategories, unreachedAtoms));
+			restrictedTopoOrder.removeAll(WithinSetFunc.nonMinimalUpperBounds(scatteredCategories, unreachedAtoms));
+			DirectedAcyclicGraph<V, E> relevantNonAlphaCategories = 
+					WithinSetFunc.restriction(scatteredCategories, restrictedTopoOrder, edgeSupplier);
+			List<V> nonAlphaMaxima = WithinSetFunc.maxima(relevantNonAlphaCategories);
+			if (nonAlphaMaxima.size() == 1) {
+				V antiAlphaClass = nonAlphaMaxima.get(0); 
+				RootedInvertedGraph<V, E> antiAlphaCategories = 
+						new RootedInvertedGraph<V, E>(
+								relevantNonAlphaCategories, antiAlphaClass, unreachedAtoms, restrictedTopoOrder, 
+								edgeSupplier);
+				List<Tree<V, E>> antiAlphaSortings = slice(antiAlphaCategories, alinea + "   ");
+				setsOfDiscernedClasses = BasicFunc.cartesianProduct(alphaSortings, antiAlphaSortings);
 			}
 			else {
-				Set<V> unreachedAtoms = new HashSet<>(Sets.difference(atoms, reachedAtoms));
-				List<V> restrictedTopoOrder = new ArrayList<>(topoOrder);
-				restrictedTopoOrder.retainAll(WithinSetFunc.finishingSubset(scatteredCategories, unreachedAtoms));
-				restrictedTopoOrder.removeAll(WithinSetFunc.nonMinimalUpperBounds(scatteredCategories, unreachedAtoms));
-				DirectedAcyclicGraph<V, E> relevantNonAlphaCategories = 
-						WithinSetFunc.restriction(scatteredCategories, restrictedTopoOrder, edgeSupplier);
-				List<V> nonAlphaMaxima = WithinSetFunc.maxima(relevantNonAlphaCategories);
-				if (nonAlphaMaxima.size() == 1) {
-					V antiAlphaClass = nonAlphaMaxima.get(0); 
-					RootedInvertedGraph<V, E> antiAlphaCategories = 
-							new RootedInvertedGraph<V, E>(
-									relevantNonAlphaCategories, antiAlphaClass, unreachedAtoms, restrictedTopoOrder, 
-									edgeSupplier);
-					List<Tree<V, E>> antiAlphaSortings = slice(antiAlphaCategories);
-					setsOfDiscernedClasses = BasicFunc.cartesianProduct(alphaSortings, antiAlphaSortings);
-				}
-				else {
-					setsOfDiscernedClasses = new ArrayList<>();
-					List<List<Tree<V, E>>> setsOfDiscernedNonAlphaClasses = 
-							discern(relevantNonAlphaCategories, unreachedAtoms, restrictedTopoOrder);
-					for (List<Tree<V, E>> discernedNonAlphaClasses : setsOfDiscernedNonAlphaClasses) {
-						for (Tree<V, E> alphaSorting : alphaSortings) {
-							List<Tree<V, E>> discernedClasses = new ArrayList<>();
-							discernedClasses.add(alphaSorting);
-							discernedClasses.addAll(discernedNonAlphaClasses);
-							setsOfDiscernedClasses.add(discernedClasses);
-						}
+				setsOfDiscernedClasses = new ArrayList<>();
+				List<List<Tree<V, E>>> setsOfDiscernedNonAlphaClasses = 
+						discern(relevantNonAlphaCategories, unreachedAtoms, restrictedTopoOrder, alinea + "   ");
+				for (List<Tree<V, E>> discernedNonAlphaClasses : setsOfDiscernedNonAlphaClasses) {
+					for (Tree<V, E> alphaSorting : alphaSortings) {
+						List<Tree<V, E>> discernedClasses = new ArrayList<>();
+						discernedClasses.add(alphaSorting);
+						discernedClasses.addAll(discernedNonAlphaClasses);
+						setsOfDiscernedClasses.add(discernedClasses);
 					}
 				}
 			}

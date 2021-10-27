@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.util.Pair;
@@ -13,6 +12,7 @@ import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import com.google.common.collect.Sets;
+import com.tregouet.tree_finder.data.RootedInvertedGraph;
 
 public class StructureInspector {
 
@@ -50,12 +50,20 @@ public class StructureInspector {
 	
 	public static <V, E> boolean isATree(DirectedAcyclicGraph<V, E> dag) {
 		boolean isATree = true;
+		if (dag.vertexSet().size() == 1)
+			return isATree;
 		List<V> topoOrderedSet = new ArrayList<>();
 		new TopologicalOrderIterator<>(dag).forEachRemaining(e -> topoOrderedSet.add(e));
-		Set<V> outDegree0 = topoOrderedSet.stream().filter(e -> dag.outDegreeOf(e) == 0).collect(Collectors.toSet());
-		//hierarchy clause n°1
-		if (outDegree0.size() != 1)
-			isATree = false;
+		if (!(dag instanceof RootedInvertedGraph<?, ?>)) {
+			Set<V> outDegree0 = new HashSet<>();
+			for (V element : topoOrderedSet) {
+				if (dag.outDegreeOf(element) == 0)
+					outDegree0.add(element);
+			}
+			//hierarchy clause n°1
+			if (outDegree0.size() != 1)
+				isATree = false;	
+		}
 		List<Set<V>> lowerSets = new ArrayList<>(topoOrderedSet.size());
 		for (V iElement : topoOrderedSet) {
 			Set<V> iLowerSet = new HashSet<>();

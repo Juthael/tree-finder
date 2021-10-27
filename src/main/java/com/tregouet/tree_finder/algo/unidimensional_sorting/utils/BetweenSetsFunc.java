@@ -35,6 +35,8 @@ public class BetweenSetsFunc {
 	
 	public static <V, E extends DefaultEdge> DirectedAcyclicGraph<V, E> cardinalSum(
 			List<Tree<V, E>> dags, Supplier<E> edgeSupplier) {
+		if (dags.size() == 1)
+			return dags.get(0);
 		DirectedAcyclicGraph<V, E> cardinalSum = new DirectedAcyclicGraph<>(null, edgeSupplier, false);
 		for (DirectedAcyclicGraph<V, E> dag : dags) {
 			Graphs.addAllVertices(cardinalSum, dag.vertexSet());
