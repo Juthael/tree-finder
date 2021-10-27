@@ -1,11 +1,11 @@
 package com.tregouet.tree_finder.data;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import org.jgrapht.Graphs;
 import org.jgrapht.graph.DirectedAcyclicGraph;
@@ -21,20 +21,6 @@ public class RootedInvertedGraph<V, E> extends DirectedAcyclicGraph<V, E> {
 	private final Set<V> leaves;
 	private List<V> topologicalSortingOfVertices = null;	
 	
-	/* 
-	 * UNSAFE. The restriction of the first parameter's relation to the second parameter MUST be a rooted 
-	 * inverted graph, and the effective root must be the third parameter.
-	 */
-	public RootedInvertedGraph(DirectedAcyclicGraph<V, E> source, Set<E> edges, V root, Supplier<E> edgeSupplier) {
-		super(null, edgeSupplier, false);
-		Graphs.addAllEdges(this, source, edges);
-		this.root = root;
-		leaves = new HashSet<>();
-		for (V element : this.vertexSet()) {
-			if (inDegreeOf(element) == 0)
-				leaves.add(element);
-		}
-	}
 	
 	//UNSAFE. The first parameter MUST be a rooted inverted graph, and the effective root must be the second parameter.
 	public RootedInvertedGraph(DirectedAcyclicGraph<V, E> rootedInverted, V root, Supplier<E> edgeSupplier) {
@@ -49,7 +35,9 @@ public class RootedInvertedGraph<V, E> extends DirectedAcyclicGraph<V, E> {
 		}
 	}
 	
-	//UNSAFE. The first parameter MUST be a rooted inverted graph, and the effective root must be the second parameter.
+	/*UNSAFE. The first parameter MUST be a rooted inverted graph, and the effective root must be the second parameter
+	 * effective leaves the third, etc.
+	 */
 	public RootedInvertedGraph(DirectedAcyclicGraph<V, E> rootedInverted, V root, Set<V> leaves, 
 			List<V> topoOrder, Supplier<E> edgeSupplier) {
 		super(null, edgeSupplier, false);
@@ -60,34 +48,63 @@ public class RootedInvertedGraph<V, E> extends DirectedAcyclicGraph<V, E> {
 		this.topologicalSortingOfVertices = topoOrder;
 	}
 	
+	/*
+	 * UNSAFE
+	 */
+	public RootedInvertedGraph(DirectedAcyclicGraph<V, E> source, Collection<V> restriction, V root, Supplier<E> edgeSupplier) {
+		super(null, edgeSupplier, false);
+		this.root = root;
+		this.leaves = new HashSet<>();
+		List<E> restrictedEdges = new ArrayList<>();
+		for (E edge : source.edgeSet()) {
+			if (restriction.contains(source.getEdgeSource(edge)) && restriction.contains(source.getEdgeTarget(edge)))
+				restrictedEdges.add(edge);
+		}
+		Graphs.addAllVertices(this, restriction);
+		Graphs.addAllEdges(this, source, restrictedEdges);
+		for (V retained : restriction) {
+			if (inDegreeOf(retained) == 0)
+				leaves.add(retained);
+		}
+	}		
+	
+	public RootedInvertedGraph(DirectedAcyclicGraph<V, E> source, Collection<V> restriction, V root, Set<V> leaves, 
+			List<V> topologicalOrder, Supplier<E> edgeSupplier) {
+		super(null, edgeSupplier, false);
+		this.root = root;
+		this.leaves = leaves;
+		List<E> restrictedEdges = new ArrayList<>();
+		for (E edge : source.edgeSet()) {
+			if (restriction.contains(source.getEdgeSource(edge)) && restriction.contains(source.getEdgeTarget(edge)))
+				restrictedEdges.add(edge);
+		}
+		Graphs.addAllVertices(this, restriction);
+		Graphs.addAllEdges(this, source, restrictedEdges);
+	}		
+	
 	protected RootedInvertedGraph(RootedInvertedGraph<V, E> rootedInverted, Supplier<E> edgeSupplier) {
 		super(null, edgeSupplier, false);
 		this.root = rootedInverted.root;
 		this.leaves = rootedInverted.leaves;
+		Graphs.addAllVertices(this, rootedInverted.vertexSet());
 		Graphs.addAllEdges(this, rootedInverted, rootedInverted.edgeSet());
 		this.topologicalSortingOfVertices = rootedInverted.topologicalSortingOfVertices;
 	}
 	
-	protected RootedInvertedGraph(DirectedAcyclicGraph<V, E> dag, List<V> restriction, V root, Set<V> leaves) {
+	/*
+	 * UNMODIFIABLE
+	 */
+	protected RootedInvertedGraph(DirectedAcyclicGraph<V, E> dag, Collection<V> restriction, V root, Set<V> leaves) {
 		super(null, null, false);
 		this.root = root;
 		this.leaves = leaves;
-		Set<E> edges = dag.edgeSet().stream()
-				.filter(e -> restriction.contains(dag.getEdgeSource(e)) 
-						&& restriction.contains(dag.getEdgeTarget(e)))
-				.collect(Collectors.toSet());
-		Graphs.addAllEdges(this, dag, edges);
-	}	
-	
-	protected RootedInvertedGraph(DirectedAcyclicGraph<V, E> dag, Set<V> restriction, V root, Set<V> leaves) {
-		super(null, null, false);
-		this.root = root;
-		this.leaves = leaves;
-		Set<E> edges = dag.edgeSet().stream()
-				.filter(e -> restriction.contains(dag.getEdgeSource(e)) 
-						&& restriction.contains(dag.getEdgeTarget(e)))
-				.collect(Collectors.toSet());
-		Graphs.addAllEdges(this, dag, edges);
+		List<E> restrictedEdges = new ArrayList<>();
+		for (E edge : dag.edgeSet()) {
+			if (restriction.contains(dag.getEdgeSource(edge)) && restriction.contains(dag.getEdgeTarget(edge)))
+				restrictedEdges.add(edge);
+		}
+		Graphs.addAllVertices(this, restriction);
+		Graphs.addAllEdges(this, dag, restrictedEdges);
 	}	
 	
 	public Set<V> getLeaves(){

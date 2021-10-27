@@ -1,6 +1,6 @@
 package com.tregouet.tree_finder.data;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -17,15 +17,7 @@ public class Tree<V, E> extends RootedInvertedGraph<V, E> {
 	 * No transitive reduction must have been operated on first parameter. 
 	 * UNSAFE. The restriction of the first parameter to the second parameter MUST be a tree. 
 	 */
-	public Tree(DirectedAcyclicGraph<V, E> source, List<V> treeVertices, V root, Set<V> leaves) {
-		super(source, treeVertices, root, leaves);
-	}	
-	
-	/* 
-	 * No transitive reduction must have been operated on first parameter. 
-	 * UNSAFE. The restriction of the first parameter to the second parameter MUST be a tree.
-	 */
-	public Tree(DirectedAcyclicGraph<V, E> source, Set<V> treeVertices, V root, Set<V> leaves) {
+	public Tree(DirectedAcyclicGraph<V, E> source, Collection<V> treeVertices, V root, Set<V> leaves) {
 		super(source, treeVertices, root, leaves);
 	}
 	

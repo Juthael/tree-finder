@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.DefaultAttribute;
@@ -73,6 +74,29 @@ public class Visualizer {
 		Graphviz.fromGraph(dotGraph)
 			.render(Format.PNG).toFile(new File("D:\\ProjetDocs\\essais_viz\\" + fileName));
 	}	
+	
+	public static void visualize(DirectedAcyclicGraph<Set<String>, DefaultEdge> graph, String fileName, int any) 
+			throws IOException {
+		//convert in DOT format
+		DOTExporter<Set<String>, DefaultEdge> exporter = new DOTExporter<>();
+		exporter.setGraphAttributeProvider(() -> {
+			Map<String, Attribute> map = new LinkedHashMap<>();
+			map.put("rankdir", DefaultAttribute.createAttribute("BT"));
+			return map;
+		});
+		exporter.setVertexAttributeProvider((v) -> {
+			Map<String, Attribute> map = new LinkedHashMap<>();
+			map.put("label", DefaultAttribute.createAttribute(v.toString()));
+			return map;
+		}); 
+		Writer writer = new StringWriter();
+		exporter.exportGraph(graph, writer);
+		String stringDOT = writer.toString();
+		//display graph
+		MutableGraph dotGraph = new Parser().read(stringDOT);
+		Graphviz.fromGraph(dotGraph)
+			.render(Format.PNG).toFile(new File("D:\\ProjetDocs\\essais_viz\\" + fileName));		
+	}
 	
 	private Visualizer() {
 	}

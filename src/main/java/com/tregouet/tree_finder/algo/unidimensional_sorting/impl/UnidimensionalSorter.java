@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import org.jgrapht.alg.TransitiveReduction;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
@@ -31,6 +32,7 @@ public class UnidimensionalSorter<V, E extends DefaultEdge> implements IUnidimen
 	public UnidimensionalSorter(DirectedAcyclicGraph<V, E> dag, Supplier<E> edgeSupplier) throws InvalidInputException {
 		if (!StructureInspector.isARootedInvertedDirectedAcyclicGraph(dag))
 			throw new InvalidInputException("The first parameter is not a rooted inverted graph.");
+		TransitiveReduction.INSTANCE.reduce(dag);
 		V root = null;
 		Set<V> atoms = new HashSet<>();
 		List<V> topologicalOrder = new ArrayList<>();
@@ -50,6 +52,7 @@ public class UnidimensionalSorter<V, E extends DefaultEdge> implements IUnidimen
 	}
 	
 	public UnidimensionalSorter(RootedInvertedGraph<V, E> rootedInverted, Supplier<E> edgeSupplier) {
+		TransitiveReduction.INSTANCE.reduce(rootedInverted);
 		this.edgeSupplier = edgeSupplier;
 		trees = slice(rootedInverted);
 		
@@ -66,9 +69,9 @@ public class UnidimensionalSorter<V, E extends DefaultEdge> implements IUnidimen
 		V alphaClass = alphaCategories.getRoot();
 		DirectedAcyclicGraph<V, E> alphaSubCategories = 
 				WithinSetFunc.uprooted(alphaCategories, alphaClass, edgeSupplier);
-		List<V> alphaSubRoots = WithinSetFunc.maxima(alphaSubCategories);
-		if (alphaSubRoots.size() == 1) {
-			V subAlphaClass = alphaSubRoots.get(0);
+		List<V> subAlphaMaxima = WithinSetFunc.maxima(alphaSubCategories);
+		if (subAlphaMaxima.size() == 1) {
+			V subAlphaClass = subAlphaMaxima.get(0);
 			RootedInvertedGraph<V, E> subAlphaCategories = 
 					new RootedInvertedGraph<>(alphaSubCategories, subAlphaClass, edgeSupplier);
 			alphaSortings.addAll(slice(subAlphaCategories));
@@ -105,16 +108,16 @@ public class UnidimensionalSorter<V, E extends DefaultEdge> implements IUnidimen
 			else {
 				Set<V> unreachedAtoms = new HashSet<>(Sets.difference(atoms, reachedAtoms));
 				List<V> restrictedTopoOrder = new ArrayList<>(topoOrder);
-				restrictedTopoOrder.removeAll(alphaCategories.vertexSet());
 				restrictedTopoOrder.retainAll(WithinSetFunc.finishingSubset(scatteredCategories, unreachedAtoms));
-				DirectedAcyclicGraph<V, E> allCatsButAlphas = 
+				restrictedTopoOrder.removeAll(WithinSetFunc.nonMinimalUpperBounds(scatteredCategories, unreachedAtoms));
+				DirectedAcyclicGraph<V, E> relevantNonAlphaCategories = 
 						WithinSetFunc.restriction(scatteredCategories, restrictedTopoOrder, edgeSupplier);
-				List<V> nonAlphaMaxima = WithinSetFunc.maxima(allCatsButAlphas);
+				List<V> nonAlphaMaxima = WithinSetFunc.maxima(relevantNonAlphaCategories);
 				if (nonAlphaMaxima.size() == 1) {
 					V antiAlphaClass = nonAlphaMaxima.get(0); 
 					RootedInvertedGraph<V, E> antiAlphaCategories = 
 							new RootedInvertedGraph<V, E>(
-									allCatsButAlphas, antiAlphaClass, unreachedAtoms, restrictedTopoOrder, 
+									relevantNonAlphaCategories, antiAlphaClass, unreachedAtoms, restrictedTopoOrder, 
 									edgeSupplier);
 					List<Tree<V, E>> antiAlphaSortings = slice(antiAlphaCategories);
 					setsOfDiscernedClasses = BasicFunc.cartesianProduct(alphaSortings, antiAlphaSortings);
@@ -122,7 +125,7 @@ public class UnidimensionalSorter<V, E extends DefaultEdge> implements IUnidimen
 				else {
 					setsOfDiscernedClasses = new ArrayList<>();
 					List<List<Tree<V, E>>> setsOfDiscernedNonAlphaClasses = 
-							discern(allCatsButAlphas, unreachedAtoms, restrictedTopoOrder);
+							discern(relevantNonAlphaCategories, unreachedAtoms, restrictedTopoOrder);
 					for (List<Tree<V, E>> discernedNonAlphaClasses : setsOfDiscernedNonAlphaClasses) {
 						for (Tree<V, E> alphaSorting : alphaSortings) {
 							List<Tree<V, E>> discernedClasses = new ArrayList<>();
