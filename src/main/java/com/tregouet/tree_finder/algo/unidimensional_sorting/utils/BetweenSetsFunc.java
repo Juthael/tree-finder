@@ -16,7 +16,7 @@ public class BetweenSetsFunc {
 	}
 	
 	//Side effect on first parameter. Operates on a transitive reduction.
-	public static <V, E extends DefaultEdge> void ordinalSum(DirectedAcyclicGraph<V, E> dag, V newMaximum, 
+	public static <V, E extends DefaultEdge> void asMaximum(DirectedAcyclicGraph<V, E> dag, V newMaximum, 
 			boolean operateOnTransitiveReduction){
 		if (operateOnTransitiveReduction) {
 			List<V> maxima = WithinSetFunc.maxima(dag);

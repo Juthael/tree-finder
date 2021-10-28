@@ -78,7 +78,7 @@ public class WithinSetFunc {
 		return restriction;
 	}
 	
-	public static <V, E extends DefaultEdge> DirectedAcyclicGraph<V, E> uprooted(RootedInvertedGraph<V, E> rootedInverted, 
+	public static <V, E extends DefaultEdge> DirectedAcyclicGraph<V, E> beheaded(RootedInvertedGraph<V, E> rootedInverted, 
 			V root , Supplier<E> edgeSupplier) {
 		DirectedAcyclicGraph<V, E> uprooted = new DirectedAcyclicGraph<>(null, edgeSupplier, false);
 		Graphs.addAllVertices(uprooted, rootedInverted.vertexSet());
@@ -103,28 +103,28 @@ public class WithinSetFunc {
 		return beginningSubset;
 	}
 	
-	public static <V, E extends DefaultEdge> Set<V> minimalUpperBounds(DirectedAcyclicGraph<V, E> dag, Set<V> subset) {
+	public static <V, E extends DefaultEdge> V supremum(DirectedAcyclicGraph<V, E> dag, Set<V> subset) {
 		int subsetSize = subset.size();
 		if (subsetSize == 0)
 			return null;
-		Set<V> minimalUpperBounds;
 		Iterator<V> subsetIte = subset.iterator();
 		if (subsetSize == 1) {
-			minimalUpperBounds = new HashSet<>();
-			minimalUpperBounds.add(subsetIte.next());
+			return subsetIte.next();
 		}
 		else {
 			Set<V> upperBounds = new HashSet<>();
 			upperBounds.addAll(dag.getDescendants(subsetIte.next()));
 			while (subsetIte.hasNext())
 				upperBounds.retainAll(dag.getDescendants(subsetIte.next()));
-			minimalUpperBounds = new HashSet<>(upperBounds);
+			Set<V> minimalUpperBounds = new HashSet<>(upperBounds);
 			for (V upperBound : upperBounds) {
 				if (minimalUpperBounds.contains(upperBound))
 					minimalUpperBounds.removeAll(dag.getDescendants(upperBound));
 			}
+			if (minimalUpperBounds.size() ==1)
+				return minimalUpperBounds.iterator().next();
 		}
-		return minimalUpperBounds;
+		return null;
 	}
 	
 	public static <V, E extends DefaultEdge> Set<V> nonMinimalUpperBounds(DirectedAcyclicGraph<V, E> dag, 
