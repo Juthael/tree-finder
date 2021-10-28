@@ -1,6 +1,7 @@
 package com.tregouet.tree_finder.algo.unidimensional_sorting.utils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -12,6 +13,7 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.tregouet.tree_finder.data.RootedInvertedGraph;
 
 public class WithinSetFunc {
@@ -48,8 +50,23 @@ public class WithinSetFunc {
 		return new RootedInvertedGraph<V, E>(source, lowerSet, lowerSetMaximum, edgeSupplier);
 	}
 	
+	public static <V, E extends DefaultEdge> DirectedAcyclicGraph<V, E> complement(
+			DirectedAcyclicGraph<V, E> source, Set<V> subset, Supplier<E> edgeSupplier) {
+		DirectedAcyclicGraph<V, E> complement = new DirectedAcyclicGraph<>(null, edgeSupplier, false);
+		Set<V> complementElements = new HashSet<>(Sets.difference(source.vertexSet(), subset));
+		Set<E> complementRelation = new HashSet<>();
+		for (E edge : source.edgeSet()) {
+			if (complementElements.contains(source.getEdgeSource(edge)) 
+					&& complementElements.contains(source.getEdgeTarget(edge)))
+				complementRelation.add(edge);
+		}
+		Graphs.addAllVertices(complement, complementElements);
+		Graphs.addAllEdges(complement, source, complementRelation);
+		return complement;
+	}
+	
 	public static <V, E extends DefaultEdge> DirectedAcyclicGraph<V, E> restriction(DirectedAcyclicGraph<V, E> source, 
-			List<V> restrictTo, Supplier<E> edgeSupplier) {
+			Collection<V> restrictTo, Supplier<E> edgeSupplier) {
 		DirectedAcyclicGraph<V, E> restriction = new DirectedAcyclicGraph<>(null, edgeSupplier, false);
 		Set<E> restrictedEdges = new HashSet<>();
 		for (E edge : source.edgeSet()) {
@@ -78,10 +95,45 @@ public class WithinSetFunc {
 		return finishingSubset;
 	} 
 	
+	public static <V, E extends DefaultEdge> Set<V> beginningSubset(DirectedAcyclicGraph<V, E> dag, Set<V> base) {
+		Set<V> beginningSubset = new HashSet<>(base);
+		for (V baseElement : base) {
+			beginningSubset.addAll(dag.getAncestors(baseElement));
+		}
+		return beginningSubset;
+	}
+	
+	public static <V, E extends DefaultEdge> Set<V> minimalUpperBounds(DirectedAcyclicGraph<V, E> dag, Set<V> subset) {
+		int subsetSize = subset.size();
+		if (subsetSize == 0)
+			return null;
+		Set<V> minimalUpperBounds;
+		Iterator<V> subsetIte = subset.iterator();
+		if (subsetSize == 1) {
+			minimalUpperBounds = new HashSet<>();
+			minimalUpperBounds.add(subsetIte.next());
+		}
+		else {
+			Set<V> upperBounds = new HashSet<>();
+			upperBounds.addAll(dag.getDescendants(subsetIte.next()));
+			while (subsetIte.hasNext())
+				upperBounds.retainAll(dag.getDescendants(subsetIte.next()));
+			minimalUpperBounds = new HashSet<>(upperBounds);
+			for (V upperBound : upperBounds) {
+				if (minimalUpperBounds.contains(upperBound))
+					minimalUpperBounds.removeAll(dag.getDescendants(upperBound));
+			}
+		}
+		return minimalUpperBounds;
+	}
+	
 	public static <V, E extends DefaultEdge> Set<V> nonMinimalUpperBounds(DirectedAcyclicGraph<V, E> dag, 
 			Set<V> subset) {
+		int subsetSize = subset.size();
+		if (subsetSize == 0)
+			return null;
 		Set<V> nonMinimalUpperBounds = new HashSet<>();
-		if (subset.size() < 2) {
+		if (subsetSize == 1) {
 			nonMinimalUpperBounds.addAll(dag.vertexSet());
 			nonMinimalUpperBounds.removeAll(subset);
 			return nonMinimalUpperBounds;

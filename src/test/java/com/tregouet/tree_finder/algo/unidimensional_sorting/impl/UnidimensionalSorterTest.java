@@ -56,11 +56,11 @@ class UnidimensionalSorterTest {
 
 	@Test
 	void whenSortingsRequestedThenReturned() throws InvalidInputException, IOException {
-		
+		/*
 		TransitiveReduction.INSTANCE.reduce(upperSemiLattice);
 		Visualizer.visualize(upperSemiLattice, "2110261512_USL", 0);
 		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(upperSemiLattice);
-		
+		*/
 		IUnidimensionalSorter<Set<String>, DefaultEdge> sorter = 
 				new UnidimensionalSorter<>(upperSemiLattice, DefaultEdge::new);
 		int treeIdx = 0;
