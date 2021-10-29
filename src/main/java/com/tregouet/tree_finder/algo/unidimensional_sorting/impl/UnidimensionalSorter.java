@@ -30,10 +30,8 @@ public class UnidimensionalSorter<V, E extends DefaultEdge> implements IUnidimen
 	
 	//The first parameter MUST be an upper semilattice or an exception will be thrown 
 	public UnidimensionalSorter(DirectedAcyclicGraph<V, E> dag, Supplier<E> edgeSupplier) throws InvalidInputException {
-		/*
 		if (!StructureInspector.isAnUpperSemilattice(dag))
 			throw new InvalidInputException("The first parameter is not an upper semilattice");
-		*/
 		TransitiveReduction.INSTANCE.reduce(dag);
 		V root = null;
 		Set<V> atoms = new HashSet<>();

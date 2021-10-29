@@ -18,6 +18,7 @@ import org.junit.Test;
 
 import com.google.common.collect.Sets;
 import com.tregouet.tree_finder.algo.unidimensional_sorting.IUnidimensionalSorter;
+import com.tregouet.tree_finder.data.Tree;
 import com.tregouet.tree_finder.error.InvalidInputException;
 
 public class UnidimensionalSorterTest {
@@ -57,13 +58,13 @@ public class UnidimensionalSorterTest {
 				new UnidimensionalSorter<>(upperSemiLattice, DefaultEdge::new);
 		int treeIdx = 0;
 		while (sorter.hasNext()) {
+			Tree<Set<String>, DefaultEdge> nextTree = sorter.next();
 			/*
-			Visualizer.visualize(sorter.next(), "2110261512_tree" + Integer.toString(treeIdx), 0);
+			Visualizer.visualize(nextTree, "2110261512_tree" + Integer.toString(treeIdx), 0);
 			*/
 			treeIdx++;
 		}
 		assertTrue(treeIdx > 0);
-		fail();
 	}
 
 }
