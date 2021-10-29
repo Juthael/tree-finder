@@ -68,7 +68,7 @@ public class UnidimensionalSorter<V, E extends DefaultEdge> implements IUnidimen
 		}
 		V alphaClass = alphaCategories.getRoot();
 		DirectedAcyclicGraph<V, E> alphaSubCategories = 
-				WithinSetFunc.beheaded(alphaCategories, alphaClass, edgeSupplier);
+				WithinSetFunc.remove(alphaCategories, alphaClass, edgeSupplier);
 		Set<V> atoms = alphaCategories.getLeaves();
 		List<V> subAlphasTopoOrder = alphaCategories.getTopologicalSortingOfVertices();
 		subAlphasTopoOrder.remove(subAlphasTopoOrder.size() - 1);

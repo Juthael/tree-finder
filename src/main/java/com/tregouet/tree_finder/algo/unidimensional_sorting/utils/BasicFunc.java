@@ -1,10 +1,7 @@
 package com.tregouet.tree_finder.algo.unidimensional_sorting.utils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
-import com.tregouet.tree_finder.data.Tree;
 
 public class BasicFunc {
 
@@ -19,20 +16,6 @@ public class BasicFunc {
 				minIdx = elementIdx;
 		}
 		return minIdx;
-	}
-	
-	public static <V, E> List<List<Tree<V, E>>> cartesianProduct(List<Tree<V, E>> treeSet1, 
-			List<Tree<V, E>> treeSet2) {
-		List<List<Tree<V, E>>> pairsOfTrees = new ArrayList<>();
-		for (Tree<V, E> firstTree : treeSet1) {
-			for (Tree<V, E> secondTree : treeSet2){
-				List<Tree<V, E>> pairOfTrees = new ArrayList<>();
-				pairOfTrees.add(firstTree);
-				pairOfTrees.add(secondTree);
-				pairsOfTrees.add(pairOfTrees);
-			}
-		}
-		return pairsOfTrees;
 	}
 
 }
