@@ -1,6 +1,6 @@
 package com.tregouet.tree_finder.algo.unidimensional_sorting.impl;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -10,34 +10,31 @@ import java.util.List;
 import java.util.Set;
 
 import org.jgrapht.Graphs;
-import org.jgrapht.alg.TransitiveClosure;
-import org.jgrapht.alg.TransitiveReduction;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedAcyclicGraph;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.google.common.collect.Sets;
 import com.tregouet.tree_finder.algo.unidimensional_sorting.IUnidimensionalSorter;
 import com.tregouet.tree_finder.error.InvalidInputException;
-import com.tregouet.tree_finder.viz.Visualizer;
 
-class UnidimensionalSorterTest {
-
+public class UnidimensionalSorterTest {
+	
 	private final String a = "A";
 	private final String b = "B";
 	private final String c = "C";
 	private final String d = "D";
 	private final Set<String> atoms = new HashSet<>(Arrays.asList(new String[] {a, b, c, d}));
-	private DirectedAcyclicGraph<Set<String>, DefaultEdge> upperSemiLattice;
-	
-	@BeforeAll
-	static void setUpBeforeClass() throws Exception {
+	private DirectedAcyclicGraph<Set<String>, DefaultEdge> upperSemiLattice;	
+
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
 	}
 
-	@BeforeEach
-	void setUp() throws Exception {
+	@Before
+	public void setUp() throws Exception {
 		upperSemiLattice = new DirectedAcyclicGraph<>(null, DefaultEdge::new, false);
 		List<Set<String>> vertices = new ArrayList<>(Sets.powerSet(atoms));
 		vertices.remove(new HashSet<String>());
@@ -53,24 +50,20 @@ class UnidimensionalSorterTest {
 			}
 		}
 	}
-
+	
 	@Test
-	void whenSortingsRequestedThenReturned() throws InvalidInputException, IOException {
-		/*
-		TransitiveReduction.INSTANCE.reduce(upperSemiLattice);
-		Visualizer.visualize(upperSemiLattice, "2110261512_USL", 0);
-		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(upperSemiLattice);
-		*/
+	public void whenSortingsRequestedThenReturned() throws InvalidInputException {
 		IUnidimensionalSorter<Set<String>, DefaultEdge> sorter = 
 				new UnidimensionalSorter<>(upperSemiLattice, DefaultEdge::new);
 		int treeIdx = 0;
 		while (sorter.hasNext()) {
-			
+			/*
 			Visualizer.visualize(sorter.next(), "2110261512_tree" + Integer.toString(treeIdx), 0);
-			
+			*/
 			treeIdx++;
 		}
 		assertTrue(treeIdx > 0);
+		fail();
 	}
 
 }
