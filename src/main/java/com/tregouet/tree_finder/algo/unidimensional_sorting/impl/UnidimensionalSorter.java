@@ -18,13 +18,13 @@ import com.tregouet.tree_finder.utils.StructureInspector;
 
 public class UnidimensionalSorter<V, E extends DefaultEdge> implements IUnidimensionalSorter<V, E> {
 	
-	private final List<Tree<V, E>> trees = new ArrayList<>();
+	private final List<Tree<V, E>> trees;
 	private int treeIdx = 0;
 
 	public UnidimensionalSorter(UpperSemilattice<V, E> alphas) 
 			throws InvalidInputException {
 		alphas.validate();
-
+		trees = sort(alphas);
 	}
 	
 	@Override

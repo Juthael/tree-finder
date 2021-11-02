@@ -12,6 +12,7 @@ import java.util.Set;
 import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedAcyclicGraph;
+import org.jgrapht.traverse.TopologicalOrderIterator;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -19,6 +20,7 @@ import org.junit.Test;
 import com.google.common.collect.Sets;
 import com.tregouet.tree_finder.algo.unidimensional_sorting.IUnidimensionalSorter;
 import com.tregouet.tree_finder.data.Tree;
+import com.tregouet.tree_finder.data.UpperSemilattice;
 import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.viz.Visualizer;
 
@@ -31,7 +33,7 @@ public class UnidimensionalSorterDepTest {
 	private final String d = "D";
 	private final Set<String> atoms = new HashSet<>(Arrays.asList(new String[] {a, b, c, d}));
 	//dataset1
-	private DirectedAcyclicGraph<Set<String>, DefaultEdge> upperSemiLattice = null;
+	private UpperSemilattice<Set<String>, DefaultEdge> upperSemiLattice = null;
 	//dataset2
 	private DirectedAcyclicGraph<String, DefaultEdge> rootedInverted = null;
 
@@ -43,13 +45,11 @@ public class UnidimensionalSorterDepTest {
 	public void setUp() throws Exception {
 	}
 	
-	/*
-	
 	@Test
 	public void whenSortingsRequestedThenReturned1() throws InvalidInputException, IOException {
 		setUpUpperSemilattice();
 		IUnidimensionalSorter<Set<String>, DefaultEdge> sorter = 
-				new UnidimensionalSorterDep<>(upperSemiLattice, DefaultEdge::new);
+				new UnidimensionalSorter<Set<String>, DefaultEdge>(upperSemiLattice);
 		int treeIdx = 0;
 		while (sorter.hasNext()) {
 			Tree<Set<String>, DefaultEdge> nextTree = sorter.next();
@@ -60,8 +60,6 @@ public class UnidimensionalSorterDepTest {
 		}
 		assertTrue(treeIdx > 0);
 	}
-	
-	*/
 	
 	/*
 	@Test
@@ -82,7 +80,7 @@ public class UnidimensionalSorterDepTest {
 	*/
 	
 	private void setUpUpperSemilattice() {
-		upperSemiLattice = new DirectedAcyclicGraph<>(null, DefaultEdge::new, false);
+		DirectedAcyclicGraph<Set<String>, DefaultEdge> upperSemiLattice = new DirectedAcyclicGraph<>(null, DefaultEdge::new, false);
 		List<Set<String>> vertices = new ArrayList<>(Sets.powerSet(atoms));
 		vertices.remove(new HashSet<String>());
 		Graphs.addAllVertices(upperSemiLattice, vertices);
@@ -96,6 +94,19 @@ public class UnidimensionalSorterDepTest {
 					upperSemiLattice.addEdge(iVertex, jVertex);
 			}
 		}
+		List<Set<String>> topoOrder = new ArrayList<>();
+		Set<Set<String>> leaves = new HashSet<>();
+		Set<String> root = null;;
+		TopologicalOrderIterator<Set<String>, DefaultEdge> topoIte = new TopologicalOrderIterator<>(upperSemiLattice);
+		while (topoIte.hasNext()) {
+			Set<String> nextElement = topoIte.next();
+			topoOrder.add(nextElement);
+			if (upperSemiLattice.inDegreeOf(nextElement) == 0)
+				leaves.add(nextElement);
+			if (upperSemiLattice.outDegreeOf(nextElement) == 0)
+				root = nextElement;
+		}
+		this.upperSemiLattice = new UpperSemilattice<Set<String>, DefaultEdge>(upperSemiLattice, root, leaves, topoOrder);
 	}
 	
 	private void setUpRootedInverted() {

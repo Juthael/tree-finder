@@ -18,7 +18,7 @@ public class UpperSemilattice<V, E extends DefaultEdge> extends RootedInverted<V
 		super(dag, restriction, root, leaves);
 	}
 
-	protected UpperSemilattice(DirectedAcyclicGraph<V, E> rootedInverted, V root, Set<V> leaves, 
+	public UpperSemilattice(DirectedAcyclicGraph<V, E> rootedInverted, V root, Set<V> leaves, 
 			List<V> topoOrder) {
 		super(rootedInverted, root, leaves, topoOrder);
 	}
