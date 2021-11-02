@@ -13,14 +13,14 @@ import org.jgrapht.traverse.TopologicalOrderIterator;
 import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
-public class RootedInvertedGraph<V, E> extends DirectedAcyclicGraph<V, E> {
+public class RootedInverted<V, E> extends DirectedAcyclicGraph<V, E> {
 
 	private static final long serialVersionUID = -7454975765743463119L;
 	private V root;
 	private Set<V> leaves;
 	private List<V> topologicalSortingOfVertices = null;
 	
-	protected RootedInvertedGraph(DirectedAcyclicGraph<V, E> dag, Collection<V> restriction, V root, Set<V> leaves) {
+	protected RootedInverted(DirectedAcyclicGraph<V, E> dag, Collection<V> restriction, V root, Set<V> leaves) {
 		super(null, dag.getEdgeSupplier(), false);
 		this.root = root;
 		this.leaves = leaves;
@@ -36,7 +36,7 @@ public class RootedInvertedGraph<V, E> extends DirectedAcyclicGraph<V, E> {
 	/*UNSAFE. The first parameter MUST be a rooted inverted graph, and the effective root must be the second parameter
 	 * effective leaves the third, etc.
 	 */
-	protected RootedInvertedGraph(DirectedAcyclicGraph<V, E> rootedInverted, V root, Set<V> leaves, 
+	protected RootedInverted(DirectedAcyclicGraph<V, E> rootedInverted, V root, Set<V> leaves, 
 			List<V> topoOrder) {
 		super(null, rootedInverted.getEdgeSupplier(), false);
 		Graphs.addAllVertices(this, rootedInverted.vertexSet());
@@ -46,7 +46,7 @@ public class RootedInvertedGraph<V, E> extends DirectedAcyclicGraph<V, E> {
 		this.topologicalSortingOfVertices = topoOrder;
 	}
 	
-	protected RootedInvertedGraph(RootedInvertedGraph<V, E> rootedInverted) {
+	protected RootedInverted(RootedInverted<V, E> rootedInverted) {
 		super(null, rootedInverted.getEdgeSupplier(), false);
 		this.root = rootedInverted.root;
 		this.leaves = rootedInverted.leaves;

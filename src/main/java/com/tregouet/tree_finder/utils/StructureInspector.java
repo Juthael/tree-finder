@@ -12,7 +12,7 @@ import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import com.google.common.collect.Sets;
-import com.tregouet.tree_finder.data.RootedInvertedGraph;
+import com.tregouet.tree_finder.data.RootedInverted;
 
 public class StructureInspector {
 
@@ -162,7 +162,7 @@ public class StructureInspector {
 			return isATree;
 		List<V> topoOrderedSet = new ArrayList<>();
 		new TopologicalOrderIterator<>(dag).forEachRemaining(e -> topoOrderedSet.add(e));
-		if (!(dag instanceof RootedInvertedGraph<?, ?>)) {
+		if (!(dag instanceof RootedInverted<?, ?>)) {
 			Set<V> outDegree0 = new HashSet<>();
 			for (V element : topoOrderedSet) {
 				if (dag.outDegreeOf(element) == 0)

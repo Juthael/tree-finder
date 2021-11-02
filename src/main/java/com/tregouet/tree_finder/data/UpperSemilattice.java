@@ -10,7 +10,7 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
-public class UpperSemilattice<V, E extends DefaultEdge> extends RootedInvertedGraph<V, E> {
+public class UpperSemilattice<V, E extends DefaultEdge> extends RootedInverted<V, E> {
 
 	private static final long serialVersionUID = -4915255891481664388L;
 
@@ -23,7 +23,7 @@ public class UpperSemilattice<V, E extends DefaultEdge> extends RootedInvertedGr
 		super(rootedInverted, root, leaves, topoOrder);
 	}
 
-	protected UpperSemilattice(RootedInvertedGraph<V, E> rootedInverted) {
+	protected UpperSemilattice(RootedInverted<V, E> rootedInverted) {
 		super(rootedInverted);
 	}
 	

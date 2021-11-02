@@ -28,7 +28,7 @@ public class Tree<V, E extends DefaultEdge> extends UpperSemilattice<V, E> {
 	}
 	
 	//UNSAFE. The parameter MUST be a tree.
-	public Tree(RootedInvertedGraph<V, E> tree) {
+	public Tree(RootedInverted<V, E> tree) {
 		super(tree);
 	}		
 

@@ -12,7 +12,7 @@ import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 
-import com.tregouet.tree_finder.data.RootedInvertedGraph;
+import com.tregouet.tree_finder.data.RootedInverted;
 
 public class WithinSetFunc {
 
@@ -34,7 +34,7 @@ public class WithinSetFunc {
 		return maxima;
 	}
 	
-	public static <V, E extends DefaultEdge> DirectedAcyclicGraph<V, E> remove(RootedInvertedGraph<V, E> rootedInverted, 
+	public static <V, E extends DefaultEdge> DirectedAcyclicGraph<V, E> remove(RootedInverted<V, E> rootedInverted, 
 			V element , Supplier<E> edgeSupplier) {
 		DirectedAcyclicGraph<V, E> elementRemoved = new DirectedAcyclicGraph<>(null, edgeSupplier, false);
 		Graphs.addAllVertices(elementRemoved, rootedInverted.vertexSet());
