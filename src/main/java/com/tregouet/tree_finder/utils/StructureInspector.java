@@ -48,45 +48,7 @@ public class StructureInspector {
 		return new SparseIntDirectedGraph(nbOfElements, edgesInTransitiveGraph);
 	}
 	
-	public static <V, E> boolean isATree(DirectedAcyclicGraph<V, E> dag) {
-		boolean isATree = true;
-		if (dag.vertexSet().size() == 1)
-			return isATree;
-		List<V> topoOrderedSet = new ArrayList<>();
-		new TopologicalOrderIterator<>(dag).forEachRemaining(e -> topoOrderedSet.add(e));
-		if (!(dag instanceof RootedInvertedGraph<?, ?>)) {
-			Set<V> outDegree0 = new HashSet<>();
-			for (V element : topoOrderedSet) {
-				if (dag.outDegreeOf(element) == 0)
-					outDegree0.add(element);
-			}
-			//hierarchy clause n°1
-			if (outDegree0.size() != 1)
-				isATree = false;	
-		}
-		List<Set<V>> lowerSets = new ArrayList<>(topoOrderedSet.size());
-		for (V iElement : topoOrderedSet) {
-			Set<V> iLowerSet = new HashSet<>();
-			iLowerSet.add(iElement);
-			//more efficient if the graph is reduced, but still valid otherwise.
-			for (E incomingEdge : dag.incomingEdgesOf(iElement))
-				iLowerSet.addAll(lowerSets.get(topoOrderedSet.indexOf(dag.getEdgeSource(incomingEdge))));
-			lowerSets.add(iLowerSet);
-		}
-		for (int j = 0 ; j < topoOrderedSet.size() - 1 ; j++) {
-			Set<V> jLowerSet = lowerSets.get(j);
-			for (int k = j + 1 ; k < topoOrderedSet.size() ; k++) {
-				Set<V> kLowerSet = lowerSets.get(k);
-				Set<V> intersection = new HashSet<>(Sets.intersection(jLowerSet, kLowerSet));
-				//hierarchy clause n°2
-				if (!intersection.isEmpty() && !intersection.equals(jLowerSet) && !intersection.equals(kLowerSet))
-					isATree = false;
-			}
-		}
-		return isATree;
-	}
-	
-	public static <V, E> boolean isAnUpperSemilattice(DirectedAcyclicGraph<V, E> dag) {
+	public static <G, V, E> boolean isAnUpperSemilattice(DirectedAcyclicGraph<V, E> dag) {
 		if (dag.vertexSet().isEmpty())
 			return true; //sad, but true
 		List<V> topoOrderedSet = new ArrayList<>();
@@ -192,6 +154,44 @@ public class StructureInspector {
 			}
 		}
 		return true;
+	}
+	
+	public static <V, E> boolean isATree(DirectedAcyclicGraph<V, E> dag) {
+		boolean isATree = true;
+		if (dag.vertexSet().size() == 1)
+			return isATree;
+		List<V> topoOrderedSet = new ArrayList<>();
+		new TopologicalOrderIterator<>(dag).forEachRemaining(e -> topoOrderedSet.add(e));
+		if (!(dag instanceof RootedInvertedGraph<?, ?>)) {
+			Set<V> outDegree0 = new HashSet<>();
+			for (V element : topoOrderedSet) {
+				if (dag.outDegreeOf(element) == 0)
+					outDegree0.add(element);
+			}
+			//hierarchy clause n°1
+			if (outDegree0.size() != 1)
+				isATree = false;	
+		}
+		List<Set<V>> lowerSets = new ArrayList<>(topoOrderedSet.size());
+		for (V iElement : topoOrderedSet) {
+			Set<V> iLowerSet = new HashSet<>();
+			iLowerSet.add(iElement);
+			//more efficient if the graph is reduced, but still valid otherwise.
+			for (E incomingEdge : dag.incomingEdgesOf(iElement))
+				iLowerSet.addAll(lowerSets.get(topoOrderedSet.indexOf(dag.getEdgeSource(incomingEdge))));
+			lowerSets.add(iLowerSet);
+		}
+		for (int j = 0 ; j < topoOrderedSet.size() - 1 ; j++) {
+			Set<V> jLowerSet = lowerSets.get(j);
+			for (int k = j + 1 ; k < topoOrderedSet.size() ; k++) {
+				Set<V> kLowerSet = lowerSets.get(k);
+				Set<V> intersection = new HashSet<>(Sets.intersection(jLowerSet, kLowerSet));
+				//hierarchy clause n°2
+				if (!intersection.isEmpty() && !intersection.equals(jLowerSet) && !intersection.equals(kLowerSet))
+					isATree = false;
+			}
+		}
+		return isATree;
 	}
 	
 	public static boolean isRooted(SparseIntDirectedGraph directedGraph) {

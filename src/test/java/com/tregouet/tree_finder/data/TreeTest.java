@@ -3,10 +3,16 @@ package com.tregouet.tree_finder.data;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.TransitiveClosure;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedAcyclicGraph;
+import org.jgrapht.traverse.TopologicalOrderIterator;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -46,8 +52,11 @@ public class TreeTest {
 		otherDAG.addVertex(d);
 		otherDAG.addEdge(d, abc);
 		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(otherDAG);
+		List<String> topoOrder = new ArrayList<>();
+		new TopologicalOrderIterator<>(otherDAG).forEachRemaining(topoOrder::add);
 		Tree<String, Edge> otherTree = 
-				new Tree<String, Edge>(otherDAG, abc, Edge::new);
+				new Tree<String, Edge>(otherDAG, abc, new HashSet<String>(Arrays.asList(new String[] {a, b, c})), 
+						topoOrder);
 		assertFalse(properTree.equals(otherTree));
 	}
 	
@@ -60,8 +69,11 @@ public class TreeTest {
 		differentTreeArg.addEdge(c, abc);
 		differentTreeArg.addEdge(ab, abc);		
 		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(differentTreeArg);
+		List<String> topoOrder = new ArrayList<>();
+		new TopologicalOrderIterator<>(differentTreeArg).forEachRemaining(topoOrder::add);
 		Tree<String, Edge> differentTree = 
-				new Tree<String, Edge>(differentTreeArg, abc, Edge::new);
+				new Tree<String, Edge>(differentTreeArg, abc, new HashSet<String>(Arrays.asList(new String[] {a, b, c})), 
+						topoOrder);
 		assertFalse(differentTree.equals(properTreeDAG));
 	}
 	
@@ -81,8 +93,11 @@ public class TreeTest {
 		sameTreeDAG.addEdge(ab, abc);
 		sameTreeDAG.addEdge(ac, abc);
 		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(sameTreeDAG);
+		List<String> topoOrder = new ArrayList<>();
+		new TopologicalOrderIterator<>(sameTreeDAG).forEachRemaining(topoOrder::add);
 		Tree<String, Edge> sameTree = 
-				new Tree<String, Edge>(sameTreeDAG, abc, Edge::new);
+				new Tree<String, Edge>(sameTreeDAG, abc, new HashSet<String>(Arrays.asList(new String[] {a, b, c})), 
+						topoOrder);
 		assertTrue(sameTree.equals(properTree));
 	}
 	
@@ -128,8 +143,11 @@ public class TreeTest {
 		properTreeDAG.addEdge(ab, abc);
 		properTreeDAG.addEdge(ac, abc);
 		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(properTreeDAG);
+		List<String> topoOrder = new ArrayList<>();
+		new TopologicalOrderIterator<>(properTreeDAG).forEachRemaining(topoOrder::add);
 		properTree = 
-				new Tree<String, Edge>(properTreeDAG, abc, Edge::new);
+				new Tree<String, Edge>(properTreeDAG, abc, new HashSet<String>(Arrays.asList(new String[] {a, b, c})), 
+						topoOrder);
 	}
 }
 

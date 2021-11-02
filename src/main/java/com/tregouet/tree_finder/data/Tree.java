@@ -1,15 +1,16 @@
 package com.tregouet.tree_finder.data;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
-import java.util.function.Supplier;
 
+import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 
 import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
-public class Tree<V, E> extends RootedInvertedGraph<V, E> {
+public class Tree<V, E extends DefaultEdge> extends UpperSemilattice<V, E> {
 
 	private static final long serialVersionUID = 2206651329473240403L;
 
@@ -21,16 +22,17 @@ public class Tree<V, E> extends RootedInvertedGraph<V, E> {
 		super(source, treeVertices, root, leaves);
 	}
 	
-	//UNSAFE. The parameter MUST be a tree.
-	public Tree(DirectedAcyclicGraph<V, E> tree, V root, Supplier<E> edgeSupplier) {
-		super(tree, root, edgeSupplier);
+	//UNSAFE. The first parameter MUST be a tree.
+	public Tree(DirectedAcyclicGraph<V, E> tree, V root, Set<V> leaves, List<V> topoOrderedSet) {
+		super(tree, root, leaves, topoOrderedSet);
 	}
 	
 	//UNSAFE. The parameter MUST be a tree.
-	public Tree(RootedInvertedGraph<V, E> tree, Supplier<E> edgeSupplier) {
-		super(tree, edgeSupplier);
+	public Tree(RootedInvertedGraph<V, E> tree) {
+		super(tree);
 	}		
 
+	@Override
 	public void validate() throws InvalidInputException {
 		if (!StructureInspector.isATree(this))
 			throw new InvalidInputException("ClassificationTree() : parameters do not allow the instantiation "

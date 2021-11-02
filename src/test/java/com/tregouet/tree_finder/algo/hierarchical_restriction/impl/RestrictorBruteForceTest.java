@@ -213,7 +213,10 @@ public class RestrictorBruteForceTest {
 			DirectedAcyclicGraph<String, EdgeForTests> expectedDAG = 
 					new DirectedAcyclicGraph<>(null, EdgeForTests::new, false);
 			Graphs.addAllEdges(expectedDAG, rootedInverted, expectedEdgeSet);
-			expected.add(new Tree<String, EdgeForTests>(expectedDAG, abcd, EdgeForTests::new));
+			List<String> expTopoOrder = new ArrayList<>();
+			TopologicalOrderIterator<String, EdgeForTests> topoIte = new TopologicalOrderIterator<>(expectedDAG);
+			topoIte.forEachRemaining(expTopoOrder::add);
+			expected.add(new Tree<String, EdgeForTests>(expectedDAG, abcd, uSLatoms, expTopoOrder));
 		}
 		return expected;
 	}
@@ -221,9 +224,8 @@ public class RestrictorBruteForceTest {
 	private boolean isValid(Tree<String, EdgeForTests> alledgedTree) {
 		boolean isATree = true;
 		TransitiveReduction.INSTANCE.reduce(alledgedTree);
-		TopologicalOrderIterator<String, EdgeForTests> topoIte = new TopologicalOrderIterator<>(alledgedTree);
 		List<String> topoElements = new ArrayList<>();
-		topoIte.forEachRemaining(e -> topoElements.add(e));
+		new TopologicalOrderIterator<>(alledgedTree).forEachRemaining(e -> topoElements.add(e));
 		String root = abcd;
 		//hierarchy clause n°1
 		if (!topoElements.contains(root) || !topoElements.containsAll(rInvAtoms))
