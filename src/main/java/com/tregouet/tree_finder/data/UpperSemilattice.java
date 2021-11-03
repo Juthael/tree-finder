@@ -4,13 +4,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 
 import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
-public class UpperSemilattice<V, E extends DefaultEdge> extends RootedInverted<V, E> {
+public class UpperSemilattice<V, E> extends RootedInverted<V, E> {
 
 	private static final long serialVersionUID = -4915255891481664388L;
 

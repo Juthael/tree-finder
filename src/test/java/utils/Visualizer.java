@@ -1,4 +1,4 @@
-package com.tregouet.tree_finder.viz;
+package utils;
 
 
 import java.io.File;
@@ -18,7 +18,6 @@ import guru.nidi.graphviz.engine.Format;
 import guru.nidi.graphviz.engine.Graphviz;
 import guru.nidi.graphviz.model.MutableGraph;
 import guru.nidi.graphviz.parse.Parser;
-import utils.EdgeForTests;
 
 public class Visualizer {
 	

@@ -21,9 +21,9 @@ import com.tregouet.tree_finder.algo.hierarchical_restriction.impl.RestrictorOpt
 import com.tregouet.tree_finder.data.Tree;
 import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.StructureInspector;
-import com.tregouet.tree_finder.viz.Visualizer;
 
 import utils.EdgeForTests;
+import utils.Visualizer;
 
 @SuppressWarnings("unused")
 public class RestrictorOptTest {

@@ -23,10 +23,10 @@ import com.tregouet.tree_finder.algo.unidimensional_sorting.IUnidimensionalSorte
 import com.tregouet.tree_finder.data.Tree;
 import com.tregouet.tree_finder.data.UpperSemilattice;
 import com.tregouet.tree_finder.error.InvalidInputException;
-import com.tregouet.tree_finder.viz.Visualizer;
 
 import utils.EdgeForTests;
 import utils.RandomUSLGenerator;
+import utils.Visualizer;
 
 @SuppressWarnings("unused")
 public class UnidimensionalSorterTest {
