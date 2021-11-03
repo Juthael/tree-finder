@@ -19,14 +19,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.google.common.collect.Sets;
-import com.sun.source.tree.AssertTree;
 import com.tregouet.tree_finder.algo.hierarchical_restriction.impl.RestrictorBruteForce;
 import com.tregouet.tree_finder.data.Tree;
 import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
 import utils.EdgeForTests;
-import utils.Visualizer;
 
 @SuppressWarnings("unused")
 public class RestrictorBruteForceTest {

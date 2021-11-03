@@ -7,7 +7,6 @@ import java.util.Set;
 
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.TransitiveReduction;
-import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
@@ -21,7 +20,7 @@ import com.tregouet.tree_finder.utils.StructureInspector;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 
-public class RestrictorOpt<V, E extends DefaultEdge> implements IHierarchicalRestrictionFinder<V, E> {
+public class RestrictorOpt<V, E> implements IHierarchicalRestrictionFinder<V, E> {
 
 	private final DirectedAcyclicGraph<V, E> rootedInverted;
 	private final List<V> topoOrderedSet = new ArrayList<>();

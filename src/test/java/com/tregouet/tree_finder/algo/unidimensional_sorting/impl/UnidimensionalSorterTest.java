@@ -26,7 +26,6 @@ import com.tregouet.tree_finder.error.InvalidInputException;
 
 import utils.EdgeForTests;
 import utils.RandomUSLGenerator;
-import utils.Visualizer;
 
 @SuppressWarnings("unused")
 public class UnidimensionalSorterTest {

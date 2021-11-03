@@ -23,7 +23,6 @@ import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
 import utils.EdgeForTests;
-import utils.Visualizer;
 
 @SuppressWarnings("unused")
 public class RestrictorOptTest {
