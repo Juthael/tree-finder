@@ -15,12 +15,11 @@ import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.DefaultAttribute;
 import org.jgrapht.nio.dot.DOTExporter;
 
-import com.tregouet.tree_finder.EdgeForTests;
-
 import guru.nidi.graphviz.engine.Format;
 import guru.nidi.graphviz.engine.Graphviz;
 import guru.nidi.graphviz.model.MutableGraph;
 import guru.nidi.graphviz.parse.Parser;
+import utils.EdgeForTests;
 
 public class Visualizer {
 	

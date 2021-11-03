@@ -14,11 +14,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.tregouet.tree_finder.EdgeForTests;
 import com.tregouet.tree_finder.algo.hierarchical_restriction.utils.SparseGraphConverter;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
+import utils.EdgeForTests;
 
 public class SparseGraphConverterTest {
 

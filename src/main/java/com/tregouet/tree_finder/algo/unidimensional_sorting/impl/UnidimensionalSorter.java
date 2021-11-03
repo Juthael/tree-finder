@@ -2,6 +2,7 @@ package com.tregouet.tree_finder.algo.unidimensional_sorting.impl;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -18,27 +19,28 @@ import com.tregouet.tree_finder.utils.StructureInspector;
 
 public class UnidimensionalSorter<V, E extends DefaultEdge> implements IUnidimensionalSorter<V, E> {
 	
-	private final List<Tree<V, E>> trees;
-	private int treeIdx = 0;
+	private final Set<Tree<V, E>> trees;
+	private Iterator<Tree<V, E>> treeIte;
 
 	public UnidimensionalSorter(UpperSemilattice<V, E> alphas) 
 			throws InvalidInputException {
 		alphas.validate();
 		trees = sort(alphas);
+		treeIte = trees.iterator();
 	}
 	
 	@Override
 	public boolean hasNext() {
-		return treeIdx < trees.size();
+		return treeIte.hasNext();
 	}
 
 	@Override
 	public Tree<V, E> next() {
-		return trees.get(treeIdx);
+		return treeIte.next();
 	}
 
-	public List<Tree<V, E>> sort(UpperSemilattice<V, E> alphas) {
-		List<Tree<V, E>> alphaSortings = new ArrayList<>();
+	public Set<Tree<V, E>> sort(UpperSemilattice<V, E> alphas) {
+		Set<Tree<V, E>> alphaSortings = new HashSet<>();
 		List<V> topoOrderedSet = alphas.getTopologicalSortingOfVertices();
 		Set<V> minima = alphas.getLeaves();
 		List<Set<V>> lowerSets = new ArrayList<>();

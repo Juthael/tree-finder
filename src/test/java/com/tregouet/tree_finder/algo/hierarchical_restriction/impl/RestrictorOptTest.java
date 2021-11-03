@@ -15,7 +15,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.tregouet.tree_finder.EdgeForTests;
 import com.tregouet.tree_finder.ITreeFinder;
 import com.tregouet.tree_finder.algo.hierarchical_restriction.impl.RestrictorBruteForce;
 import com.tregouet.tree_finder.algo.hierarchical_restriction.impl.RestrictorOpt;
@@ -23,6 +22,8 @@ import com.tregouet.tree_finder.data.Tree;
 import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.StructureInspector;
 import com.tregouet.tree_finder.viz.Visualizer;
+
+import utils.EdgeForTests;
 
 @SuppressWarnings("unused")
 public class RestrictorOptTest {
