@@ -25,6 +25,7 @@ import com.tregouet.tree_finder.data.UpperSemilattice;
 import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.viz.Visualizer;
 
+import utils.EdgeForTests;
 import utils.RandomUSLGenerator;
 
 @SuppressWarnings("unused")
@@ -36,9 +37,9 @@ public class UnidimensionalSorterTest {
 	private final String d = "D";
 	private final Set<String> atoms = new HashSet<>(Arrays.asList(new String[] {a, b, c, d}));
 	//dataset1
-	private UpperSemilattice<Set<String>, DefaultEdge> powerSetUSL = null;
+	private UpperSemilattice<Set<String>, EdgeForTests> powerSetUSL = null;
 	//dataset2
-	private UpperSemilattice<String, DefaultEdge> notComplementedUSL = null;
+	private UpperSemilattice<String, EdgeForTests> notComplementedUSL = null;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -51,37 +52,29 @@ public class UnidimensionalSorterTest {
 	@Test
 	public void whenSortingsOfPowerSetUSLRequestedThenReturned() throws InvalidInputException, IOException {
 		setUpPowerSet();
-		IUnidimensionalSorter<Set<String>, DefaultEdge> sorter = 
-				new UnidimensionalSorter<Set<String>, DefaultEdge>(powerSetUSL);
-		int treeIdx = 0;
-		while (sorter.hasNext()) {
-			Tree<Set<String>, DefaultEdge> nextTree = sorter.next();
-			/*
-			Visualizer.visualize(nextTree, "2110261512_tree" + Integer.toString(treeIdx), 0);
-			*/
-			treeIdx++;
-		}
-		assertTrue(treeIdx > 0);
+		IUnidimensionalSorter<Set<String>, EdgeForTests> sorter = 
+				new UnidimensionalSorter<Set<String>, EdgeForTests>(powerSetUSL);
+		Set<Tree<Set<String>, EdgeForTests>> sortingTrees = sorter.getSortingTrees();
+		assertTrue(sortingTrees.size() > 0);
 	}
 	
 	
 	@Test
 	public void whenSortingsOfNotComplementedUSLRequestedThenReturned() throws InvalidInputException, IOException {
 		setUpSmallUpperSemilattice();
-		
-		Visualizer.visualize(((DirectedAcyclicGraph<String, DefaultEdge>) notComplementedUSL), "2111030946_USL", 'a');
-		
-		IUnidimensionalSorter<String, DefaultEdge> sorter = 
-				new UnidimensionalSorter<String, DefaultEdge>(notComplementedUSL);
+		/*
+		Visualizer.visualize(((DirectedAcyclicGraph<String, EdgeForTests>) notComplementedUSL), "2111030946_USL", 'a');
+		*/
+		IUnidimensionalSorter<String, EdgeForTests> sorter = 
+				new UnidimensionalSorter<String, EdgeForTests>(notComplementedUSL);
+		Set<Tree<String, EdgeForTests>> sortingTrees = sorter.getSortingTrees();
+		/*
 		int treeIdx = 0;
-		while (sorter.hasNext()) {
-			Tree<String, DefaultEdge> nextTree = sorter.next();
-			
-			Visualizer.visualize(nextTree, "2111030946_RI_tree" + Integer.toString(treeIdx), 'a');
-			
-			treeIdx++;
+		for (Tree<String, EdgeForTests> tree : sortingTrees){
+			Visualizer.visualize(tree, "2111030946_RI_tree" + Integer.toString(treeIdx++), 'a');
 		}
-		assertTrue(treeIdx > 0);
+		*/
+		assertTrue(sortingTrees.size() > 0);
 	}
 	
 	@Test
@@ -114,7 +107,7 @@ public class UnidimensionalSorterTest {
 	}
 	
 	private void setUpPowerSet() {
-		DirectedAcyclicGraph<Set<String>, DefaultEdge> upperSemiLattice = new DirectedAcyclicGraph<>(null, DefaultEdge::new, false);
+		DirectedAcyclicGraph<Set<String>, EdgeForTests> upperSemiLattice = new DirectedAcyclicGraph<>(null, EdgeForTests::new, false);
 		List<Set<String>> vertices = new ArrayList<>(Sets.powerSet(atoms));
 		vertices.remove(new HashSet<String>());
 		Graphs.addAllVertices(upperSemiLattice, vertices);
@@ -131,7 +124,7 @@ public class UnidimensionalSorterTest {
 		List<Set<String>> topoOrder = new ArrayList<>();
 		Set<Set<String>> leaves = new HashSet<>();
 		Set<String> root = null;;
-		TopologicalOrderIterator<Set<String>, DefaultEdge> topoIte = new TopologicalOrderIterator<>(upperSemiLattice);
+		TopologicalOrderIterator<Set<String>, EdgeForTests> topoIte = new TopologicalOrderIterator<>(upperSemiLattice);
 		while (topoIte.hasNext()) {
 			Set<String> nextElement = topoIte.next();
 			topoOrder.add(nextElement);
@@ -140,7 +133,7 @@ public class UnidimensionalSorterTest {
 			if (upperSemiLattice.outDegreeOf(nextElement) == 0)
 				root = nextElement;
 		}
-		this.powerSetUSL = new UpperSemilattice<Set<String>, DefaultEdge>(upperSemiLattice, root, leaves, topoOrder);
+		this.powerSetUSL = new UpperSemilattice<Set<String>, EdgeForTests>(upperSemiLattice, root, leaves, topoOrder);
 	}
 	
 	private void setUpSmallUpperSemilattice() {
@@ -149,8 +142,8 @@ public class UnidimensionalSorterTest {
 		String abc = "ABC";
 		String bcd = "BCD";
 		String abcd = "ABCD";
-		DirectedAcyclicGraph<String, DefaultEdge> smallUpperSemilattice = 
-				new DirectedAcyclicGraph<>(null, DefaultEdge::new, false);
+		DirectedAcyclicGraph<String, EdgeForTests> smallUpperSemilattice = 
+				new DirectedAcyclicGraph<>(null, EdgeForTests::new, false);
 		smallUpperSemilattice.addVertex(a);
 		smallUpperSemilattice.addVertex(b);
 		smallUpperSemilattice.addVertex(c);
@@ -174,7 +167,7 @@ public class UnidimensionalSorterTest {
 		new TopologicalOrderIterator<>(smallUpperSemilattice).forEachRemaining(topologicalOrder::add);
 		Set<String> leaves = new HashSet<>(Arrays.asList(new String[] {a, b, c, d}));
 		this.notComplementedUSL = 
-				new UpperSemilattice<String, DefaultEdge>(smallUpperSemilattice, abcd, leaves, topologicalOrder);
+				new UpperSemilattice<String, EdgeForTests>(smallUpperSemilattice, abcd, leaves, topologicalOrder);
 	}
 
 }

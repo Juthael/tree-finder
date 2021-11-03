@@ -74,8 +74,7 @@ public class RandomUSLGenerator {
 			lowerSets.add(
 					Functions.restriction(
 							powerSet, 
-							Functions.lowerSet(powerSet, elements.get(new Random().nextInt(elements.size()))), 
-							DefaultEdge::new));
+							Functions.lowerSet(powerSet, elements.get(new Random().nextInt(elements.size())))));
 		}
 		DirectedAcyclicGraph<Set<String>, DefaultEdge> randomDAG = 
 				new DirectedAcyclicGraph<>(null, DefaultEdge::new, false);

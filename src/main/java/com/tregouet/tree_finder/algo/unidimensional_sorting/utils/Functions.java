@@ -72,8 +72,8 @@ public class Functions {
 	}
 	
 	public static <V, E extends DefaultEdge> DirectedAcyclicGraph<V, E> restriction(DirectedAcyclicGraph<V, E> source, 
-			Collection<V> restrictTo, Supplier<E> edgeSupplier) {
-		DirectedAcyclicGraph<V, E> restriction = new DirectedAcyclicGraph<>(null, edgeSupplier, false);
+			Collection<V> restrictTo) {
+		DirectedAcyclicGraph<V, E> restriction = new DirectedAcyclicGraph<>(null, source.getEdgeSupplier(), false);
 		Set<E> restrictedEdges = new HashSet<>();
 		for (E edge : source.edgeSet()) {
 			if (restrictTo.contains(source.getEdgeSource(edge)) && restrictTo.contains(source.getEdgeTarget(edge)))

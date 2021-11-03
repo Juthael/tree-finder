@@ -9,7 +9,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.DefaultAttribute;
@@ -48,9 +47,9 @@ public class Visualizer {
 			.render(Format.PNG).toFile(new File("D:\\ProjetDocs\\essais_viz\\" + fileName));
 	}
 	
-	public static void visualize(DirectedAcyclicGraph<String, DefaultEdge> graph, String fileName, char any) throws IOException {
+	public static void visualize(DirectedAcyclicGraph<String, EdgeForTests> graph, String fileName, char any) throws IOException {
 		//convert in DOT format
-		DOTExporter<String, DefaultEdge> exporter = new DOTExporter<>();
+		DOTExporter<String, EdgeForTests> exporter = new DOTExporter<>();
 		exporter.setGraphAttributeProvider(() -> {
 			Map<String, Attribute> map = new LinkedHashMap<>();
 			map.put("rankdir", DefaultAttribute.createAttribute("BT"));
@@ -99,10 +98,10 @@ public class Visualizer {
 			.render(Format.PNG).toFile(new File("D:\\ProjetDocs\\essais_viz\\" + fileName));
 	}	
 	
-	public static void visualize(DirectedAcyclicGraph<Set<String>, DefaultEdge> graph, String fileName, int any) 
+	public static void visualize(DirectedAcyclicGraph<Set<String>, EdgeForTests> graph, String fileName, int any) 
 			throws IOException {
 		//convert in DOT format
-		DOTExporter<Set<String>, DefaultEdge> exporter = new DOTExporter<>();
+		DOTExporter<Set<String>, EdgeForTests> exporter = new DOTExporter<>();
 		exporter.setGraphAttributeProvider(() -> {
 			Map<String, Attribute> map = new LinkedHashMap<>();
 			map.put("rankdir", DefaultAttribute.createAttribute("BT"));

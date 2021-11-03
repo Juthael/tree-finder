@@ -30,6 +30,11 @@ public class UnidimensionalSorter<V, E extends DefaultEdge> implements IUnidimen
 	}
 	
 	@Override
+	public Set<Tree<V, E>> getSortingTrees() {
+		return trees;
+	}
+
+	@Override
 	public boolean hasNext() {
 		return treeIte.hasNext();
 	}
