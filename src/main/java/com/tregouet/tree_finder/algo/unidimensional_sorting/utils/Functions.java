@@ -19,7 +19,7 @@ public class Functions {
 	private Functions() {
 	}
 	
-	public static <V, E extends DefaultEdge> DirectedAcyclicGraph<V, E> cardinalSum(
+	public static <V, E> DirectedAcyclicGraph<V, E> cardinalSum(
 			List<Tree<V, E>> dags, Supplier<E> edgeSupplier) {
 		if (dags.size() == 1)
 			return dags.get(0);
@@ -31,7 +31,7 @@ public class Functions {
 		return cardinalSum;
 	}	
 	
-	public static <V, E extends DefaultEdge> DirectedAcyclicGraph<V, E> cardinalSum(Tree<V, E> tree1, Tree<V, E> tree2, 
+	public static <V, E> DirectedAcyclicGraph<V, E> cardinalSum(Tree<V, E> tree1, Tree<V, E> tree2, 
 			Supplier<E> edgeSupplier) {
 		DirectedAcyclicGraph<V, E> cardinalSum = new DirectedAcyclicGraph<>(null, edgeSupplier, false);
 		Graphs.addAllVertices(cardinalSum, tree1.vertexSet());
@@ -41,14 +41,14 @@ public class Functions {
 		return cardinalSum;
 	}
 	
-	public static <V, E extends DefaultEdge> Set<V> lowerSet(DirectedAcyclicGraph<V, E> source, V lowerSetMaximum) {
+	public static <V, E> Set<V> lowerSet(DirectedAcyclicGraph<V, E> source, V lowerSetMaximum) {
 		Set<V> lowerSet = source.getAncestors(lowerSetMaximum);
 		lowerSet.add(lowerSetMaximum);
 		return lowerSet;
 	}
 		
 	
-	public static <V, E extends DefaultEdge> Set<V> maxima(DirectedAcyclicGraph<V, E> dag) {
+	public static <V, E> Set<V> maxima(DirectedAcyclicGraph<V, E> dag) {
 		Set<V> maxima = new HashSet<>();
 		for (V element : dag.vertexSet()) {
 			if (dag.outDegreeOf(element) == 0)
@@ -84,7 +84,7 @@ public class Functions {
 		return restriction;
 	}
 	
-	public static <V, E extends DefaultEdge> V supremum(UpperSemilattice<V, E> dag, Set<V> subset) {
+	public static <V, E> V supremum(UpperSemilattice<V, E> dag, Set<V> subset) {
 		int subsetSize = subset.size();
 		if (subsetSize == 0)
 			return null;

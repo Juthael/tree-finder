@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.alg.TransitiveReduction;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 
 import com.google.common.collect.Sets;
@@ -17,13 +17,14 @@ import com.tregouet.tree_finder.data.UpperSemilattice;
 import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
-public class UnidimensionalSorter<V, E extends DefaultEdge> implements IUnidimensionalSorter<V, E> {
+public class UnidimensionalSorter<V, E> implements IUnidimensionalSorter<V, E> {
 	
 	private final Set<Tree<V, E>> trees;
 	private Iterator<Tree<V, E>> treeIte;
 
 	public UnidimensionalSorter(UpperSemilattice<V, E> alphas) 
 			throws InvalidInputException {
+		TransitiveReduction.INSTANCE.reduce(alphas);
 		alphas.validate();
 		trees = sort(alphas);
 		treeIte = trees.iterator();
@@ -107,8 +108,10 @@ public class UnidimensionalSorter<V, E extends DefaultEdge> implements IUnidimen
 							if (!maximalElement.equals(alphaClass))
 								alphaSorting.addEdge(maximalElement, alphaClass);
 						}
+						List<V> alphaSortingTopoOrderedSet = new ArrayList<>(topoOrderedSet);
+						alphaSortingTopoOrderedSet.retainAll(alphaSorting.vertexSet());
 						Tree<V, E> alphaSortingTree = 
-								new Tree<V, E>(alphaSorting, alphaClass, minima, topoOrderedSet);
+								new Tree<V, E>(alphaSorting, alphaClass, minima, alphaSortingTopoOrderedSet);
 						alphaSortings.add(alphaSortingTree);
 					}
 				}
