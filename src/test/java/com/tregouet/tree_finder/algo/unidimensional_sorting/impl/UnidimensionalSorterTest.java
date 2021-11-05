@@ -122,7 +122,7 @@ public class UnidimensionalSorterTest {
 		}
 		*/
 		for (Tree<Set<String>, EdgeForTests> sortingTree : sortingTrees) {
-			if (!sortingTree.vertexSet().equals(new HashSet<Set<String>>(sortingTree.getTopologicalSortingOfVertices())))
+			if (!sortingTree.vertexSet().equals(new HashSet<Set<String>>(sortingTree.getTopologicalOrder())))
 				everyElementFound = false;
 		}
 		assertTrue(sortingTrees.size() > 0);

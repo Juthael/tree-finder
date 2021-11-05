@@ -20,7 +20,7 @@ public class UpperSemilattice<V, E> extends RootedInverted<V, E> {
 	public UpperSemilattice(DirectedAcyclicGraph<V, E> rootedInverted, V root, Set<V> leaves, 
 			List<V> topoOrder) {
 		super(rootedInverted, root, leaves, topoOrder);
-	}
+	}	
 
 	protected UpperSemilattice(RootedInverted<V, E> rootedInverted) {
 		super(rootedInverted);

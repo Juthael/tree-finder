@@ -82,6 +82,40 @@ public class StructureInspector {
 		return true;
 	}
 	
+	public static <G, V, E> boolean isALowerSemilattice(DirectedAcyclicGraph<V, E> dag) {
+		if (dag.vertexSet().isEmpty())
+			return true; //sad, but true
+		List<V> topoOrderedSet = new ArrayList<>();
+		new TopologicalOrderIterator<V, E>(dag).forEachRemaining(v -> topoOrderedSet.add(v));
+		for (int i = 0 ; i < topoOrderedSet.size() - 1; i++) {
+			V iElement = topoOrderedSet.get(i);
+			Set<V> iLowerSet = dag.getAncestors(iElement);
+			iLowerSet.add(iElement);
+			for (int j = i + 1 ; j < topoOrderedSet.size() ; j++) {
+				V jElement = topoOrderedSet.get(j);
+				Set<V> jLowerSet = dag.getAncestors(jElement);
+				jLowerSet.add(jElement);
+				Set<V> ijLowerSet = new HashSet<>(Sets.intersection(iLowerSet, jLowerSet));
+				if (ijLowerSet.isEmpty())
+					//then {i,j} admits no upper bound, and dag is not an upper semilattice
+					return false;
+				V ijAlledgedInfimum = null;
+				int elementIdx = topoOrderedSet.size() - 1;
+				while (ijAlledgedInfimum == null) {
+					V testedElement = topoOrderedSet.get(elementIdx);
+					if (ijLowerSet.contains(testedElement))
+						ijAlledgedInfimum = testedElement;
+					else elementIdx--;
+				}
+				ijLowerSet.removeAll(dag.getAncestors(ijAlledgedInfimum));
+				if (ijLowerSet.size() != 1)
+					//then {i,j} upper set admits many minimal elements, and dag is not an upper semilattice. 
+					return false;
+			}
+		}
+		return true;
+	}	
+	
 	public static boolean isAnUpperSemilattice(SparseIntDirectedGraph directedGraph) {
 		if (directedGraph.vertexSet().isEmpty())
 			return true; //sad, but true

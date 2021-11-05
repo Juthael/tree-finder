@@ -52,8 +52,18 @@ public class RootedInverted<V, E> extends DirectedAcyclicGraph<V, E> {
 		this.leaves = rootedInverted.leaves;
 		Graphs.addAllVertices(this, rootedInverted.vertexSet());
 		Graphs.addAllEdges(this, rootedInverted, rootedInverted.edgeSet());
-		this.topologicalSortingOfVertices = rootedInverted.getTopologicalSortingOfVertices();
+		this.topologicalSortingOfVertices = rootedInverted.getTopologicalOrder();
 	}	
+	
+	public boolean addAsNewRoot(V element) {
+		boolean added = addVertex(element);
+		if (added) {
+			addEdge(root, element);
+			root = element;
+			topologicalSortingOfVertices.add(element);
+		}
+		return added;
+	}
 	
 	public Set<V> getLeaves(){
 		return new HashSet<>(leaves);
@@ -63,7 +73,7 @@ public class RootedInverted<V, E> extends DirectedAcyclicGraph<V, E> {
 		return root;
 	}
 	
-	public List<V> getTopologicalSortingOfVertices() {
+	public List<V> getTopologicalOrder() {
 		if (topologicalSortingOfVertices == null) {
 			topologicalSortingOfVertices = new ArrayList<>();
 			new TopologicalOrderIterator<V, E>(this).forEachRemaining(topologicalSortingOfVertices::add);

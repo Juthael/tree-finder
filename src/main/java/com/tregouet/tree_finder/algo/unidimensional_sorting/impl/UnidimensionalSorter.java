@@ -47,7 +47,7 @@ public class UnidimensionalSorter<V, E> implements IUnidimensionalSorter<V, E> {
 
 	public Set<Tree<V, E>> sort(UpperSemilattice<V, E> alphas) {
 		Set<Tree<V, E>> alphaSortings = new HashSet<>();
-		List<V> topoOrderedSet = alphas.getTopologicalSortingOfVertices();
+		List<V> topoOrderedSet = alphas.getTopologicalOrder();
 		Set<V> minima = alphas.getLeaves();
 		List<Set<V>> lowerSets = new ArrayList<>();
 		List<Set<V>> setEncodingInPowerSetOfMinima = new ArrayList<>();
