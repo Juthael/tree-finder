@@ -118,7 +118,7 @@ public class RestrictorSparse {
 
 	private boolean forkIsMaximal(IntArrayList newFork, List<IntArrayList> previousForks) {
 		for (IntArrayList previousFork : previousForks) {
-			IntArraySet prevForkLowerSet = lowerSet(previousFork);
+			IntArraySet prevForkLowerSet = beginningSet(previousFork);
 			if (prevForkLowerSet.containsAll(newFork))
 				return false;				
 		}
@@ -176,7 +176,7 @@ public class RestrictorSparse {
 		return subTreesFromLocalRoot;
 	}
 	
-	private IntArraySet lowerSet(IntArrayList set) {
+	private IntArraySet beginningSet(IntArrayList set) {
 		IntArraySet lowerSet = new IntArraySet();
 		for (int element : set) {
 			lowerSet.addAll(lowerSets.get(element));

@@ -24,8 +24,7 @@ public class SparseGraphConverter<V, E> {
 		if (!skipClosure)
 			TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(dag);
 		topoOrderedSet = new ArrayList<>();
-		TopologicalOrderIterator<V, E> topoIte = new TopologicalOrderIterator<>(dag);
-		topoIte.forEachRemaining(v -> topoOrderedSet.add(v));
+		new TopologicalOrderIterator<>(dag).forEachRemaining(v -> topoOrderedSet.add(v));
 		edges = new ArrayList<>(dag.edgeSet());
 		for (E edge : edges) {
 			sparseEdges.add(
