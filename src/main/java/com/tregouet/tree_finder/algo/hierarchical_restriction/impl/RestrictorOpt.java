@@ -18,7 +18,6 @@ import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntArraySet;
 
 public class RestrictorOpt<V, E> implements IHierarchicalRestrictionFinder<V, E> {
 
@@ -28,8 +27,6 @@ public class RestrictorOpt<V, E> implements IHierarchicalRestrictionFinder<V, E>
 	private final V maximum;	
 	private final Set<V> atoms = new HashSet<>();
 	private final SparseIntDirectedGraph sparse;
-	private final int sparseMaximum;
-	private final IntArraySet sparseAtoms = new IntArraySet();
 	private final List<IntArrayList> sparseTreeRestrictions = new ArrayList<>();
 	private int treeIdx = 0;
 	
@@ -51,17 +48,18 @@ public class RestrictorOpt<V, E> implements IHierarchicalRestrictionFinder<V, E>
 			if (rootedInverted.inDegreeOf(element) == 0)
 				atoms.add(element);
 		}
-		sparseMaximum = topoOrderedSet.size() - 1;
-		for (V atom : atoms)
-			sparseAtoms.add(topoOrderedSet.indexOf(atom));
 		sparseConverter = new SparseGraphConverter<>(rootedInverted, true);
 		sparse = sparseConverter.getSparseGraph();
-		RestrictorSparse restrictorSparse = new RestrictorSparse(sparse, sparseMaximum, sparseAtoms);
+		RestrictorSparse restrictorSparse = new RestrictorSparse(sparse);
 		sparseTreeRestrictions.addAll(restrictorSparse.getSparseTreeVertexSets());
 	}
 	
-	//UNSAFE
-	public RestrictorOpt(DirectedAcyclicGraph<V, E> rootedInverted, boolean unsafeMode) {
+	/*
+	 * UNSAFE
+	 * The first parameter MUST be a rooted inverted DAG. 
+	 * No transitive reduction must have been operated on it.
+	 */
+	public RestrictorOpt(DirectedAcyclicGraph<V, E> rootedInverted, boolean unsafeModeSignature) {
 		this.rootedInverted = new DirectedAcyclicGraph<>(null, null, false);
 		Graphs.addAllEdges(this.rootedInverted, rootedInverted, rootedInverted.edgeSet());
 		TransitiveReduction.INSTANCE.reduce(rootedInverted);
@@ -71,12 +69,9 @@ public class RestrictorOpt<V, E> implements IHierarchicalRestrictionFinder<V, E>
 			if (rootedInverted.inDegreeOf(element) == 0)
 				atoms.add(element);
 		}
-		sparseMaximum = topoOrderedSet.size() - 1;
-		for (V atom : atoms)
-			sparseAtoms.add(topoOrderedSet.indexOf(atom));
 		sparseConverter = new SparseGraphConverter<>(rootedInverted, true);
 		sparse = sparseConverter.getSparseGraph();
-		RestrictorSparse restrictorSparse = new RestrictorSparse(sparse, sparseMaximum, sparseAtoms);
+		RestrictorSparse restrictorSparse = new RestrictorSparse(sparse);
 		sparseTreeRestrictions.addAll(restrictorSparse.getSparseTreeVertexSets());
 	}	
 
@@ -95,6 +90,13 @@ public class RestrictorOpt<V, E> implements IHierarchicalRestrictionFinder<V, E>
 				rootedInverted, sparseConverter.getSet(sparseTreeRestrictions.get(treeIdx)), 
 				maximum, atoms);
 		treeIdx++;
+		return nextTree;
+	}
+	
+	@Override
+	public Tree<V, E> nextTransitiveReduction() {
+		Tree<V, E> nextTree = next();
+		TransitiveReduction.INSTANCE.reduce(nextTree);
 		return nextTree;
 	}
 

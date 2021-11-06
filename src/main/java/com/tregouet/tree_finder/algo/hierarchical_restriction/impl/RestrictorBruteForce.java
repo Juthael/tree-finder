@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.jgrapht.Graphs;
+import org.jgrapht.alg.TransitiveReduction;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 
 import com.google.common.collect.Sets;
@@ -99,6 +100,13 @@ public class RestrictorBruteForce<V, E> implements IHierarchicalRestrictionFinde
 		}
 		treeRestrictions.removeAll(notMaximalAfterAll);
 		return isMaximal;
+	}
+
+	@Override
+	public Tree<V, E> nextTransitiveReduction() {
+		Tree<V, E> next = next();
+		TransitiveReduction.INSTANCE.reduce(next);
+		return next;
 	}
 
 }

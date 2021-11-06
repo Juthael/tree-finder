@@ -14,7 +14,7 @@ import it.unimi.dsi.fastutil.ints.IntArraySet;
 
 public class RestrictorSparse {
 
-	private final IntArraySet atoms;
+	private final IntArraySet atoms = new IntArraySet();
 	private final List<IntArrayList> predecessors = new ArrayList<>();
 	private final List<IntArraySet> lowerSets = new ArrayList<>();
 	private final List<IntArraySet> upperSets = new ArrayList<>();
@@ -27,12 +27,13 @@ public class RestrictorSparse {
 	 * UNSAFE. Parameter MUST be the transitive reduction of an rooted inverted DAG, and the ascending 
 	 * order on vertices must be topological. 
 	 */
-	protected RestrictorSparse(SparseIntDirectedGraph rootedInverted, int maximum, IntArraySet atoms) {
-		this.atoms = atoms;
+	protected RestrictorSparse(SparseIntDirectedGraph rootedInverted) {
 		//set predecessors, lower sets and sup-encoding subsets of minimals
-		for (int i = 0 ; i <= maximum ; i++) {
+		int nbOfElements = rootedInverted.vertexSet().size();
+		for (int i = 0 ; i < nbOfElements ; i++) {
 			predecessors.add(new IntArrayList(Graphs.predecessorListOf(rootedInverted, i)));
-			if (atoms.contains(i)) {
+			if (rootedInverted.inDegreeOf(i) == 0) {
+				atoms.add(i);
 				IntArraySet singleton = new IntArraySet(new int[] {i});
 				lowerSets.add(singleton);
 				lowerBoundAtoms.add(singleton);
@@ -40,18 +41,19 @@ public class RestrictorSparse {
 			else {
 				IntArraySet iLowerSet = new IntArraySet();
 				iLowerSet.add(i);
-				IntArraySet iSupEncodingSubsetOfAtoms = new IntArraySet();
+				IntArraySet iLowerBoundAtoms = new IntArraySet();
 				for (int iCoveredElmnt : predecessors.get(i)) {
 					iLowerSet.addAll(lowerSets.get(iCoveredElmnt));
-					iSupEncodingSubsetOfAtoms.addAll(lowerBoundAtoms.get(iCoveredElmnt));
+					iLowerBoundAtoms.addAll(lowerBoundAtoms.get(iCoveredElmnt));
 				}
 				lowerSets.add(iLowerSet);
-				lowerBoundAtoms.add(iSupEncodingSubsetOfAtoms);
+				lowerBoundAtoms.add(iLowerBoundAtoms);
 			}
 			//prepare for below
 			upperSets.add(null);
 		}
 		//set upper sets
+		int maximum = nbOfElements - 1;
 		for (int i = maximum ; i >= 0 ; i--) {
 			IntArraySet iUpperSet = new IntArraySet();
 			iUpperSet.add(i);
