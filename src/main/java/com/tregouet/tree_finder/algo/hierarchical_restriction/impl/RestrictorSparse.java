@@ -1,14 +1,27 @@
 package com.tregouet.tree_finder.algo.hierarchical_restriction.impl;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jgrapht.Graphs;
+import org.jgrapht.nio.Attribute;
+import org.jgrapht.nio.DefaultAttribute;
+import org.jgrapht.nio.dot.DOTExporter;
 import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import guru.nidi.graphviz.engine.Format;
+import guru.nidi.graphviz.engine.Graphviz;
+import guru.nidi.graphviz.model.MutableGraph;
+import guru.nidi.graphviz.parse.Parser;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 
@@ -28,6 +41,16 @@ public class RestrictorSparse {
 	 * order on vertices must be topological. 
 	 */
 	protected RestrictorSparse(SparseIntDirectedGraph rootedInverted) {
+		//HERE
+		/*
+		try {
+			visualize(rootedInverted, "211106rootedInverted");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		*/
+		//HERE
 		//set predecessors, lower sets and sup-encoding subsets of minimals
 		int nbOfElements = rootedInverted.vertexSet().size();
 		for (int i = 0 ; i < nbOfElements ; i++) {
@@ -81,14 +104,14 @@ public class RestrictorSparse {
 	}
 
 	private List<IntArrayList> completeForkingSubsetsOfLowerBounds(int element, IntArrayList uncompleteFork, 
-			IntArraySet atomsToCover, IntArraySet coveredAtomsSoFar, boolean[] skipInspection) {
+			IntArraySet atomsToCover, IntArraySet coveredAtomsSoFar, boolean[] inspect) {
 		List<IntArrayList> completeMaxForks = new ArrayList<>();
 		int searchStartIdx =	
 				(uncompleteFork.isEmpty() ? element - 1 : (uncompleteFork.getInt(uncompleteFork.size() - 1)) - 1);
 		IntArrayList remainingAtoms = new IntArrayList(atomsToCover);
 		remainingAtoms.removeAll(coveredAtomsSoFar);
 		for (int i = searchStartIdx ; i >= max(remainingAtoms) ; i--) {
-			if (!skipInspection[i]) {
+			if (inspect[i]) {
 				IntArrayList continuedFork = new IntArrayList(uncompleteFork);
 				continuedFork.add(i);
 				IntArraySet nextCoveredAtoms = new IntArraySet(coveredAtomsSoFar);
@@ -96,16 +119,17 @@ public class RestrictorSparse {
 				if (nextCoveredAtoms.equals(atomsToCover) && forkIsMaximal(continuedFork, completeMaxForks))
 					completeMaxForks.add(continuedFork);
 				else {
-					boolean[] nextSkipInspection = new boolean[i];
-					System.arraycopy(skipInspection, 0, nextSkipInspection, 0, i);
-					for (int j = i - 1 ; j >=0 ; j--) {
-						if (!nextSkipInspection[j] 
-								&& !Sets.intersection(nextCoveredAtoms, lowerBoundAtoms.get(j)).isEmpty())
-							nextSkipInspection[j] = true;
+					boolean[] nextInspect = new boolean[i];
+					System.arraycopy(inspect, 0, nextInspect, 0, i);
+					for (int j = 0 ; j < i ; j++) {
+						if (nextInspect[j] 
+								&& ((lowerSets.get(i).contains(j))
+										|| !Sets.intersection(nextCoveredAtoms, lowerBoundAtoms.get(j)).isEmpty()))
+							nextInspect[j] = false;
 					}
 					List<IntArrayList> returnedForks = 
 							completeForkingSubsetsOfLowerBounds(element, continuedFork, atomsToCover, 
-							nextCoveredAtoms, nextSkipInspection);
+							nextCoveredAtoms, nextInspect);
 					for (IntArrayList returnedFork : returnedForks) {
 						if (forkIsMaximal(returnedFork, completeMaxForks))
 							completeMaxForks.add(returnedFork);
@@ -129,22 +153,14 @@ public class RestrictorSparse {
 		if (atoms.contains(element))
 			return null;
 		IntArraySet atomsToCover = lowerBoundAtoms.get(element);
-		int nbOfAtomsToCover = atomsToCover.size();
-		boolean[] skipInspection = new boolean[element];
-		for (int i = 0 ; i < element ; i++) {
-			IntArraySet iLowerBoundAtoms = lowerBoundAtoms.get(i);
-			int iLowerBoundAtomsCardinal = iLowerBoundAtoms.size();
-			if (nbOfAtomsToCover < iLowerBoundAtomsCardinal)
-				skipInspection[i] = true;
-			else if (nbOfAtomsToCover == iLowerBoundAtomsCardinal) {
-				if (!lowerSets.get(element).contains(i))
-					skipInspection[i] = true;
-			}
-			else if (!atomsToCover.containsAll(iLowerBoundAtoms)) 
-				skipInspection[i] = true;
+		boolean[] inspect = new boolean[element];
+		IntArraySet elementLowerSet = lowerSets.get(element);
+		for (int lowerBound : elementLowerSet) {
+			if (lowerBound != element)
+				inspect[lowerBound] = true;
 		}
 		return completeForkingSubsetsOfLowerBounds(element, new IntArrayList(), atomsToCover, 
-				new IntArraySet(), skipInspection);
+				new IntArraySet(), inspect);
 	}
 	
 	private List<IntArrayList> getSubTrees(int localRoot) {
@@ -192,5 +208,34 @@ public class RestrictorSparse {
 		}
 		return max;
 	}
+	
+	//HERE
+	
+	public static void visualize(SparseIntDirectedGraph graph, String fileName) throws IOException {
+		//convert in DOT format
+		DOTExporter<Integer, Integer> exporter = new DOTExporter<>();
+		exporter.setGraphAttributeProvider(() -> {
+			Map<String, Attribute> map = new LinkedHashMap<>();
+			map.put("rankdir", DefaultAttribute.createAttribute("BT"));
+			return map;
+		});
+		exporter.setVertexAttributeProvider((v) -> {
+			Map<String, Attribute> map = new LinkedHashMap<>();
+			map.put("label", DefaultAttribute.createAttribute(v.toString()));
+			return map;
+		}); 
+		Writer writer = new StringWriter();
+		exporter.exportGraph(graph, writer);
+		String stringDOT = writer.toString();
+		/*
+		 System.out.println(writer.toString());
+		*/ 
+		//display graph
+		MutableGraph dotGraph = new Parser().read(stringDOT);
+		Graphviz.fromGraph(dotGraph)
+			.render(Format.PNG).toFile(new File("D:\\ProjetDocs\\essais_viz\\" + fileName));
+	}
+	
+	//HERE	
 
 }
