@@ -1,27 +1,14 @@
 package com.tregouet.tree_finder.algo.hierarchical_restriction.impl;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.jgrapht.Graphs;
-import org.jgrapht.nio.Attribute;
-import org.jgrapht.nio.DefaultAttribute;
-import org.jgrapht.nio.dot.DOTExporter;
 import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import guru.nidi.graphviz.engine.Format;
-import guru.nidi.graphviz.engine.Graphviz;
-import guru.nidi.graphviz.model.MutableGraph;
-import guru.nidi.graphviz.parse.Parser;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 
@@ -41,17 +28,6 @@ public class RestrictorSparse {
 	 * order on vertices must be topological. 
 	 */
 	protected RestrictorSparse(SparseIntDirectedGraph rootedInverted) {
-		//HERE
-		/*
-		try {
-			visualize(rootedInverted, "211106rootedInverted");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		*/
-		//HERE
-		//set predecessors, lower sets and sup-encoding subsets of minimals
 		int nbOfElements = rootedInverted.vertexSet().size();
 		for (int i = 0 ; i < nbOfElements ; i++) {
 			predecessors.add(new IntArrayList(Graphs.predecessorListOf(rootedInverted, i)));
@@ -208,34 +184,5 @@ public class RestrictorSparse {
 		}
 		return max;
 	}
-	
-	//HERE
-	
-	public static void visualize(SparseIntDirectedGraph graph, String fileName) throws IOException {
-		//convert in DOT format
-		DOTExporter<Integer, Integer> exporter = new DOTExporter<>();
-		exporter.setGraphAttributeProvider(() -> {
-			Map<String, Attribute> map = new LinkedHashMap<>();
-			map.put("rankdir", DefaultAttribute.createAttribute("BT"));
-			return map;
-		});
-		exporter.setVertexAttributeProvider((v) -> {
-			Map<String, Attribute> map = new LinkedHashMap<>();
-			map.put("label", DefaultAttribute.createAttribute(v.toString()));
-			return map;
-		}); 
-		Writer writer = new StringWriter();
-		exporter.exportGraph(graph, writer);
-		String stringDOT = writer.toString();
-		/*
-		 System.out.println(writer.toString());
-		*/ 
-		//display graph
-		MutableGraph dotGraph = new Parser().read(stringDOT);
-		Graphviz.fromGraph(dotGraph)
-			.render(Format.PNG).toFile(new File("D:\\ProjetDocs\\essais_viz\\" + fileName));
-	}
-	
-	//HERE	
 
 }
