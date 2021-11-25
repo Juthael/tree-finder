@@ -92,15 +92,16 @@ public class RestrictorSparse {
 				continuedFork.add(i);
 				IntArraySet nextCoveredAtoms = new IntArraySet(coveredAtomsSoFar);
 				nextCoveredAtoms.addAll(lowerBoundAtoms.get(i));
-				if (nextCoveredAtoms.equals(atomsToCover) && forkIsMaximal(continuedFork, completeMaxForks))
-					completeMaxForks.add(continuedFork);
+				if (nextCoveredAtoms.equals(atomsToCover)) {
+					if (forkIsMaximal(continuedFork, completeMaxForks))
+						completeMaxForks.add(continuedFork);
+				}
 				else {
 					boolean[] nextInspect = new boolean[i];
 					System.arraycopy(inspect, 0, nextInspect, 0, i);
 					for (int j = 0 ; j < i ; j++) {
 						if (nextInspect[j] 
-								&& ((lowerSets.get(i).contains(j))
-										|| !Sets.intersection(nextCoveredAtoms, lowerBoundAtoms.get(j)).isEmpty()))
+								&& (!Sets.intersection(nextCoveredAtoms, lowerBoundAtoms.get(j)).isEmpty()))
 							nextInspect[j] = false;
 					}
 					List<IntArrayList> returnedForks = 

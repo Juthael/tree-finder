@@ -45,11 +45,15 @@ public class UnidimensionalSorter<V, E> implements IUnidimensionalSorter<V, E> {
 		return treeIte.next();
 	}
 
-	public Set<Tree<V, E>> sort(UpperSemilattice<V, E> alphas) {
+	private Set<Tree<V, E>> sort(UpperSemilattice<V, E> alphas) {
+		//returned set of sortings
 		Set<Tree<V, E>> alphaSortings = new HashSet<>();
 		List<V> topoOrderedSet = alphas.getTopologicalOrder();
 		Set<V> minima = alphas.getLeaves();
 		List<Set<V>> lowerSets = new ArrayList<>();
+		//make the upper semilattice atomistic
+		//build topological list of lowersets
+		//build semilattice encoding in power set of minima
 		List<Set<V>> setEncodingInPowerSetOfMinima = new ArrayList<>();
 		for (int i = 0 ; i < topoOrderedSet.size() ; i++) {
 			V element = topoOrderedSet.get(i);
@@ -67,14 +71,17 @@ public class UnidimensionalSorter<V, E> implements IUnidimensionalSorter<V, E> {
 				setEncodingInPowerSetOfMinima.add(elementEncoding);
 			}
 		}
+		//unnecessary but efficient shortcut
 		if (StructureInspector.isATree(alphas)) {
 			alphaSortings.add(new Tree<V, E>(alphas));
 			return alphaSortings;
-		}
+		}		
+		//start sorting
 		V alphaClass = alphas.getRoot();
 		boolean[] skipElement = new boolean[topoOrderedSet.size()];
 		for (int i = 0 ; i < topoOrderedSet.size() - 1 ; i++) {
 			if (!skipElement[i]) {
+				//select betas as one kind of alphas
 				V betaClass = topoOrderedSet.get(i);
 				Set<V> reachedMinima = setEncodingInPowerSetOfMinima.get(i);
 				Set<V> unreachedMinima = new HashSet<>(Sets.difference(minima, reachedMinima));
@@ -84,12 +91,14 @@ public class UnidimensionalSorter<V, E> implements IUnidimensionalSorter<V, E> {
 				UpperSemilattice<V, E> nonBetas;
 				int antiBetaClassIdx = setEncodingInPowerSetOfMinima.indexOf(unreachedMinima);
 				if (antiBetaClassIdx != -1) {
+					//then there exists a beta/non-beta dichotomy
 					V antiBetaClass = topoOrderedSet.get(antiBetaClassIdx);
 					nonBetas = new UpperSemilattice<V, E>(
 							alphas, lowerSets.get(antiBetaClassIdx), antiBetaClass, unreachedMinima);
 					skipElement[antiBetaClassIdx] = true;
 				}
 				else {
+					//then the beta/non-beta dichotomy does not exist
 					V unreachedMinimaSupremum = Functions.supremum(alphas, unreachedMinima);
 					nonBetas = new UpperSemilattice<V, E>(alphas, 
 							new HashSet<>(
@@ -98,6 +107,7 @@ public class UnidimensionalSorter<V, E> implements IUnidimensionalSorter<V, E> {
 											betas.vertexSet())),  
 							unreachedMinimaSupremum, unreachedMinima); 
 				}
+				//each alpha sorting based on betas contains a beta sorting and a sorting of non-betas
 				for (Tree<V, E> betaSorting : sort(betas)) {
 					for (Tree<V, E> nonBetaSorting : sort(nonBetas)) {
 						DirectedAcyclicGraph<V, E> alphaSorting = 
