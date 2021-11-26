@@ -2,11 +2,9 @@ package com.tregouet.tree_finder.algo.unidimensional_sorting.impl;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.jgrapht.alg.TransitiveReduction;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 
 import com.google.common.collect.Sets;
@@ -17,35 +15,15 @@ import com.tregouet.tree_finder.data.UpperSemilattice;
 import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
-public class UnidimensionalSorter<V, E> implements IUnidimensionalSorter<V, E> {
+public class UnidimensionalSorter<V, E> extends AbstractSorter<V, E> implements IUnidimensionalSorter<V, E> {
 	
-	private final Set<Tree<V, E>> trees;
-	private Iterator<Tree<V, E>> treeIte;
-
 	public UnidimensionalSorter(UpperSemilattice<V, E> alphas) 
 			throws InvalidInputException {
-		TransitiveReduction.INSTANCE.reduce(alphas);
-		alphas.validate();
-		trees = sort(alphas);
-		treeIte = trees.iterator();
+		super(alphas);
 	}
 	
 	@Override
-	public Set<Tree<V, E>> getSortingTrees() {
-		return trees;
-	}
-
-	@Override
-	public boolean hasNext() {
-		return treeIte.hasNext();
-	}
-
-	@Override
-	public Tree<V, E> next() {
-		return treeIte.next();
-	}
-
-	private Set<Tree<V, E>> sort(UpperSemilattice<V, E> alphas) {
+	protected Set<Tree<V, E>> sort(UpperSemilattice<V, E> alphas) {
 		//returned set of sortings
 		Set<Tree<V, E>> alphaSortings = new HashSet<>();
 		List<V> topoOrderedSet = alphas.getTopologicalOrder();

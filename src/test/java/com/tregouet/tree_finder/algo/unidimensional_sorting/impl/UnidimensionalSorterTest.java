@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -53,7 +54,7 @@ public class UnidimensionalSorterTest {
 		setUpPowerSet();
 		IUnidimensionalSorter<Set<String>, EdgeForTests> sorter = 
 				new UnidimensionalSorter<Set<String>, EdgeForTests>(powerSetUSL);
-		Set<Tree<Set<String>, EdgeForTests>> sortingTrees = sorter.getSortingTrees();
+		Collection<Tree<Set<String>, EdgeForTests>> sortingTrees = sorter.getSortingTrees();
 		assertTrue(sortingTrees.size() > 0);
 	}
 	
@@ -66,7 +67,7 @@ public class UnidimensionalSorterTest {
 		*/
 		IUnidimensionalSorter<String, EdgeForTests> sorter = 
 				new UnidimensionalSorter<String, EdgeForTests>(notComplementedUSL);
-		Set<Tree<String, EdgeForTests>> sortingTrees = sorter.getSortingTrees();
+		Collection<Tree<String, EdgeForTests>> sortingTrees = sorter.getSortingTrees();
 		/*
 		int treeIdx = 0;
 		for (Tree<String, EdgeForTests> tree : sortingTrees){
@@ -114,7 +115,7 @@ public class UnidimensionalSorterTest {
 		*/
 		IUnidimensionalSorter<Set<String>, EdgeForTests> sorter = 
 				new UnidimensionalSorter<Set<String>, EdgeForTests>(powerSetUSL);
-		Set<Tree<Set<String>, EdgeForTests>> sortingTrees = sorter.getSortingTrees();
+		Collection<Tree<Set<String>, EdgeForTests>> sortingTrees = sorter.getSortingTrees();
 		/*
 		int treeIdx = 0;
 		for (Tree<String, EdgeForTests> tree : sortingTrees){

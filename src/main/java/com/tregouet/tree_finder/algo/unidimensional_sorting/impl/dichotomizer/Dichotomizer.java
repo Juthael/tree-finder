@@ -3,26 +3,24 @@ package com.tregouet.tree_finder.algo.unidimensional_sorting.impl.dichotomizer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import org.jgrapht.Graphs;
-import org.jgrapht.alg.TransitiveReduction;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 
 import com.google.common.collect.Sets;
 import com.tregouet.tree_finder.algo.unidimensional_sorting.IUnidimensionalSorter;
+import com.tregouet.tree_finder.algo.unidimensional_sorting.impl.AbstractSorter;
 import com.tregouet.tree_finder.algo.unidimensional_sorting.utils.Functions;
 import com.tregouet.tree_finder.data.Tree;
 import com.tregouet.tree_finder.data.UpperSemilattice;
 import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
-public class Dichotomizer<D extends IDichotomizable<D>, E> implements IUnidimensionalSorter<D, E> {
+public class Dichotomizer<D extends IDichotomizable<D>, E>
+	extends AbstractSorter<D, E> implements IUnidimensionalSorter<D, E> {
 	
-	private final List<Tree<D, E>> trees;
-	private Iterator<Tree<D, E>> treeIte;
 	private final List<D> topoOrderedSet;
 	private final Set<D> minima;
 	private final List<Set<D>> lowerSets;
@@ -30,8 +28,7 @@ public class Dichotomizer<D extends IDichotomizable<D>, E> implements IUnidimens
 	
 	public Dichotomizer(UpperSemilattice<D, E> alphas) 
 			throws InvalidInputException {
-		TransitiveReduction.INSTANCE.reduce(alphas);
-		alphas.validate();
+		super(alphas);
 		topoOrderedSet = alphas.getTopologicalOrder();
 		minima = alphas.getLeaves();
 		lowerSets = new ArrayList<>();
@@ -55,26 +52,10 @@ public class Dichotomizer<D extends IDichotomizable<D>, E> implements IUnidimens
 				setEncodingInPowerSetOfMinima.add(elementEncoding);
 			}
 		}
-		trees = sort(alphas);
-		treeIte = trees.iterator();
-	}
-
-	@Override
-	public boolean hasNext() {
-		return treeIte.hasNext();
-	}
-
-	@Override
-	public Tree<D, E> next() {
-		return treeIte.next();
-	}
-
-	@Override
-	public List<Tree<D, E>> getSortingTrees() {
-		return trees;
 	}
 	
-	private List<Tree<D, E>> sort(UpperSemilattice<D, E> alphas) {
+	@Override
+	protected List<Tree<D, E>> sort(UpperSemilattice<D, E> alphas) {
 		//returned set of sortings
 		List<Tree<D, E>> alphaSortings = new ArrayList<>();
 		//unnecessary but efficient shortcut
@@ -84,27 +65,41 @@ public class Dichotomizer<D extends IDichotomizable<D>, E> implements IUnidimens
 		}
 		//start sorting
 		D alphaClass = alphas.getRoot();
-		Set<Set<D>> perfectPartitions = new HashSet<>();
+		/* A clean partition of alphas is a set of alpha subclasses such as
+		 * 1/ no subclass is a "rebutter", i.e. defined as the complement of another class 
+		 * 2/ the intersection of the subclasses' respective encodings in the power set of minima is empty 
+		 * 3/ the union of the subclasses' respective encodings in the power set of minima is the set 
+		 * of minima in the semilattice of alphas.
+		 */
+		Set<Set<D>> cleanPartitions = new HashSet<>();
 		for (int i = 0 ; i < topoOrderedSet.size() - 1 ; i++) {
 			//select betas as one kind of alphas
 			D betaClass = topoOrderedSet.get(i);
 			Set<D> reachedMinima = setEncodingInPowerSetOfMinima.get(i);
 			Set<D> unreachedMinima = new HashSet<>(Sets.difference(minima, reachedMinima));
+			//build the semilattice of betas
 			UpperSemilattice<D, E> betas = 
 					new UpperSemilattice<D, E>(
 							alphas, lowerSets.get(i), betaClass, reachedMinima);
 			UpperSemilattice<D, E> nonBetas;
 			D unreachedMinimaSupremum = Functions.supremum(alphas, unreachedMinima);
+			//build the semilattice of non betas, which may have alpha class as a maximum
 			nonBetas = new UpperSemilattice<D, E>(alphas, 
 					new HashSet<>(
 							Sets.difference(
 									Functions.lowerSet(alphas, unreachedMinimaSupremum), 
 									betas.vertexSet())),  
 					unreachedMinimaSupremum, unreachedMinima);
+			/* Each alpha sorting having betas as a kind of alphas contains a sorting of betas and a 
+			 * sorting of non-betas.
+			 */
 			for (Tree<D, E> betaSorting : sort(betas)) {
 				for (Tree<D, E> nonBetaSorting : sort(nonBetas)) {
 					boolean nonBetaContainsRebutters;
-					boolean partitionIsPerfect;
+					boolean partitionIsClean;
+					/* If the semilattice of non-betas has alpha class as its maximum, then the non-beta 
+					 * classes are its coatoms ; if not, the unique non-beta class is the semilattice's maximum. 
+					 */
 					List<D> nonBetaClasses;
 					if (nonBetaSorting.getRoot().equals(alphaClass)) {
 						nonBetaClasses = Graphs.predecessorListOf(nonBetaSorting, alphaClass);
@@ -115,19 +110,21 @@ public class Dichotomizer<D extends IDichotomizable<D>, E> implements IUnidimens
 						nonBetaClasses.add(nonBetaSorting.getRoot());
 						nonBetaContainsRebutters = false;
 					}
-					partitionIsPerfect = 
+					partitionIsClean = 
 							(nonBetaContainsRebutters ? 
 									false : perfectPartition(reachedMinima, nonBetaClasses));
-					if (partitionIsPerfect) {
+					if (partitionIsClean) {
+						//then no need to instantiate a beta class rebutter
 						Set<D> alphaKinds = new HashSet<>(nonBetaClasses);
 						alphaKinds.add(betaClass);
-						boolean newPartition = perfectPartitions.add(alphaKinds);
+						boolean newPartition = cleanPartitions.add(alphaKinds);
 						if (newPartition) {
 							alphaSortings.add(
 									instantiateAlphaSortingTree(alphaClass, alphas, betaSorting, nonBetaSorting));
 						}
 					}
 					else {
+						//then the non-beta maximum is a beta class rebutter
 						nonBetaSorting.removeVertex(alphaClass);
 						D antiBetaClass = betaClass.rebut();
 						for (D nonBetaClass : nonBetaClasses)
