@@ -1,7 +1,9 @@
 package com.tregouet.tree_finder.algo.unidimensional_sorting.impl.dichotomizer;
 
-public interface IDichotomizable<V> {
+public interface IDichotomizable<D> {
 	
-	V dichotomize(V v); 
+	D rebut(); 
+	
+	boolean isRebutter();
 
 }
