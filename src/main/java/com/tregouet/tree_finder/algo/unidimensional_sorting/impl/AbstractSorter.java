@@ -12,15 +12,18 @@ import com.tregouet.tree_finder.error.InvalidInputException;
 
 public abstract class AbstractSorter<V, E> implements IUnidimensionalSorter<V, E> {
 
-	protected final Collection<Tree<V, E>> trees;
-	private Iterator<Tree<V, E>> treeIte;
+	protected Collection<Tree<V, E>> trees;
+	protected Iterator<Tree<V, E>> treeIte;
 	
 	public AbstractSorter(UpperSemilattice<V, E> alphas) throws InvalidInputException {
 		TransitiveReduction.INSTANCE.reduce(alphas);
 		alphas.validate();
-		trees = sort(alphas);
-		treeIte = trees.iterator();
 	}
+	
+	//UNSAFE
+	protected AbstractSorter(UpperSemilattice<V, E> alphas, boolean skipValidation) {
+		TransitiveReduction.INSTANCE.reduce(alphas);
+	}	
 
 	@Override
 	public boolean hasNext() {

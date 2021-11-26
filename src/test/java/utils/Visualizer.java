@@ -71,6 +71,31 @@ public class Visualizer {
 			.render(Format.PNG).toFile(new File("D:\\ProjetDocs\\essais_viz\\" + fileName));
 	}	
 	
+	public static void visualize(DirectedAcyclicGraph<DichotomizableString, EdgeForTests> graph, String fileName, double any) throws IOException {
+		//convert in DOT format
+		DOTExporter<DichotomizableString, EdgeForTests> exporter = new DOTExporter<>();
+		exporter.setGraphAttributeProvider(() -> {
+			Map<String, Attribute> map = new LinkedHashMap<>();
+			map.put("rankdir", DefaultAttribute.createAttribute("BT"));
+			return map;
+		});
+		exporter.setVertexAttributeProvider((v) -> {
+			Map<String, Attribute> map = new LinkedHashMap<>();
+			map.put("label", DefaultAttribute.createAttribute(v.toString()));
+			return map;
+		}); 
+		Writer writer = new StringWriter();
+		exporter.exportGraph(graph, writer);
+		String stringDOT = writer.toString();
+		/*
+		 System.out.println(writer.toString());
+		*/ 
+		//display graph
+		MutableGraph dotGraph = new Parser().read(stringDOT);
+		Graphviz.fromGraph(dotGraph)
+			.render(Format.PNG).toFile(new File("D:\\ProjetDocs\\essais_viz\\" + fileName));
+	}		
+	
 	public static void visualize(DirectedAcyclicGraph<Set<Integer>, EdgeForTests> graph, String fileName, boolean any) 
 			throws IOException {
 		//convert in DOT format

@@ -4,6 +4,8 @@ public interface IDichotomizable<D> {
 	
 	D rebut(); 
 	
+	D rebutWith(D absorbed);
+	
 	boolean isRebutter();
 
 }

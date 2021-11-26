@@ -165,32 +165,32 @@ public class UnidimensionalSorterTest {
 		String abc = "ABC";
 		String bcd = "BCD";
 		String abcd = "ABCD";
-		DirectedAcyclicGraph<String, EdgeForTests> smallUpperSemilattice = 
+		DirectedAcyclicGraph<String, EdgeForTests> notComplementedUSL = 
 				new DirectedAcyclicGraph<>(null, EdgeForTests::new, false);
-		smallUpperSemilattice.addVertex(a);
-		smallUpperSemilattice.addVertex(b);
-		smallUpperSemilattice.addVertex(c);
-		smallUpperSemilattice.addVertex(d);
-		smallUpperSemilattice.addVertex(bc);
-		smallUpperSemilattice.addVertex(cd);
-		smallUpperSemilattice.addVertex(abc);
-		smallUpperSemilattice.addVertex(bcd);
-		smallUpperSemilattice.addVertex(abcd);
-		smallUpperSemilattice.addEdge(a, abc);
-		smallUpperSemilattice.addEdge(b, bc);
-		smallUpperSemilattice.addEdge(c, bc);
-		smallUpperSemilattice.addEdge(c, cd);
-		smallUpperSemilattice.addEdge(d, cd);
-		smallUpperSemilattice.addEdge(bc, abc);
-		smallUpperSemilattice.addEdge(bc, bcd);
-		smallUpperSemilattice.addEdge(cd, bcd);
-		smallUpperSemilattice.addEdge(abc, abcd);
-		smallUpperSemilattice.addEdge(bcd, abcd);
+		notComplementedUSL.addVertex(a);
+		notComplementedUSL.addVertex(b);
+		notComplementedUSL.addVertex(c);
+		notComplementedUSL.addVertex(d);
+		notComplementedUSL.addVertex(bc);
+		notComplementedUSL.addVertex(cd);
+		notComplementedUSL.addVertex(abc);
+		notComplementedUSL.addVertex(bcd);
+		notComplementedUSL.addVertex(abcd);
+		notComplementedUSL.addEdge(a, abc);
+		notComplementedUSL.addEdge(b, bc);
+		notComplementedUSL.addEdge(c, bc);
+		notComplementedUSL.addEdge(c, cd);
+		notComplementedUSL.addEdge(d, cd);
+		notComplementedUSL.addEdge(bc, abc);
+		notComplementedUSL.addEdge(bc, bcd);
+		notComplementedUSL.addEdge(cd, bcd);
+		notComplementedUSL.addEdge(abc, abcd);
+		notComplementedUSL.addEdge(bcd, abcd);
 		List<String> topologicalOrder =new ArrayList<>();
-		new TopologicalOrderIterator<>(smallUpperSemilattice).forEachRemaining(topologicalOrder::add);
+		new TopologicalOrderIterator<>(notComplementedUSL).forEachRemaining(topologicalOrder::add);
 		Set<String> leaves = new HashSet<>(Arrays.asList(new String[] {a, b, c, d}));
 		this.notComplementedUSL = 
-				new UpperSemilattice<String, EdgeForTests>(smallUpperSemilattice, abcd, leaves, topologicalOrder);
+				new UpperSemilattice<String, EdgeForTests>(notComplementedUSL, abcd, leaves, topologicalOrder);
 	}
 
 }

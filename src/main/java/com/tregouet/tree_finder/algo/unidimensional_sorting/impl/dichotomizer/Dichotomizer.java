@@ -1,4 +1,4 @@
-package com.tregouet.tree_finder.algo.unidimensional_sorting.impl.dichotomizer;
+ package com.tregouet.tree_finder.algo.unidimensional_sorting.impl.dichotomizer;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,38 +21,21 @@ import com.tregouet.tree_finder.utils.StructureInspector;
 public class Dichotomizer<D extends IDichotomizable<D>, E>
 	extends AbstractSorter<D, E> implements IUnidimensionalSorter<D, E> {
 	
-	private final List<D> topoOrderedSet;
-	private final Set<D> minima;
-	private final List<Set<D>> lowerSets;
-	private final List<Set<D>> setEncodingInPowerSetOfMinima;
+	private List<D> topoOrderedSet;
+	private Set<D> minima;
+	private List<Set<D>> lowerSets;
+	private List<Set<D>> setEncodingInPowerSetOfMinima;
 	
 	public Dichotomizer(UpperSemilattice<D, E> alphas) 
 			throws InvalidInputException {
 		super(alphas);
-		topoOrderedSet = alphas.getTopologicalOrder();
-		minima = alphas.getLeaves();
-		lowerSets = new ArrayList<>();
-		//make the upper semilattice atomistic
-		//build topological list of lowersets
-		//build semilattice encoding in power set of minima
-		setEncodingInPowerSetOfMinima = new ArrayList<>();
-		for (int i = 0 ; i < topoOrderedSet.size() ; i++) {
-			D element = topoOrderedSet.get(i);
-			Set<D> elementLowerSet = Functions.lowerSet(alphas, element); 
-			Set<D> elementEncoding = 
-					new HashSet<>(
-							Sets.intersection(elementLowerSet, minima));
-			if (setEncodingInPowerSetOfMinima.contains(elementEncoding)) {
-				topoOrderedSet.remove(i);
-				Functions.removeVertexAndPreserveConnectivity(alphas, element);
-				i--;
-			}
-			else {
-				lowerSets.add(elementLowerSet);
-				setEncodingInPowerSetOfMinima.add(elementEncoding);
-			}
-		}
+		setUpDichotomizer(alphas);
 	}
+	
+	protected Dichotomizer(UpperSemilattice<D, E> alphas, boolean skipValidation) {
+		super(alphas, skipValidation);
+		setUpDichotomizer(alphas);
+	}	
 	
 	@Override
 	protected List<Tree<D, E>> sort(UpperSemilattice<D, E> alphas) {
@@ -66,7 +49,7 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 		//start sorting
 		D alphaClass = alphas.getRoot();
 		/* A clean partition of alphas is a set of alpha subclasses such as
-		 * 1/ no subclass is a "rebutter", i.e. defined as the complement of another class 
+		 * 1/ no subclass is a "rebutter", i.e. the generated complement of another class 
 		 * 2/ the intersection of the subclasses' respective encodings in the power set of minima is empty 
 		 * 3/ the union of the subclasses' respective encodings in the power set of minima is the set 
 		 * of minima in the semilattice of alphas.
@@ -94,7 +77,7 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 			 * sorting of non-betas.
 			 */
 			for (Tree<D, E> betaSorting : sort(betas)) {
-				for (Tree<D, E> nonBetaSorting : sort(nonBetas)) {
+				for (Tree<D, E> nonBetaSorting : new Dichotomizer<D, E>(nonBetas, true).getSortingTrees()) {
 					boolean nonBetaContainsRebutters;
 					boolean partitionIsClean;
 					/* If the semilattice of non-betas has alpha class as its maximum, then the non-beta 
@@ -126,9 +109,24 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 					else {
 						//then the non-beta maximum is a beta class rebutter
 						nonBetaSorting.removeVertex(alphaClass);
-						D antiBetaClass = betaClass.rebut();
-						for (D nonBetaClass : nonBetaClasses)
-							nonBetaSorting.addEdge(nonBetaClass, antiBetaClass);
+						D antiBetaClass;
+						if (nonBetaClasses.size() ==1) {
+							D nonBetaClass = nonBetaClasses.get(0);
+							antiBetaClass = betaClass.rebutWith(nonBetaClass);
+							List<D> nonBetaClassPredecessors = Graphs.predecessorListOf(nonBetaSorting, nonBetaClass);
+							nonBetaSorting.removeVertex(nonBetaClass);
+							nonBetaSorting.addVertex(antiBetaClass);
+							for(D nonBetaClassPredecessor : nonBetaClassPredecessors) {
+								nonBetaSorting.addEdge(nonBetaClassPredecessor, antiBetaClass);
+							}
+						}
+						else {
+							antiBetaClass = betaClass.rebut();
+							nonBetaSorting.addVertex(antiBetaClass);
+							for (D nonBetaClass : nonBetaClasses)
+								nonBetaSorting.addEdge(nonBetaClass, antiBetaClass);
+						}
+						
 						alphaSortings.add(
 								instantiateAlphaSortingTree(alphaClass, alphas, betaSorting, nonBetaSorting));
 					}
@@ -180,6 +178,34 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 				return false;
 		}
 		return true;
+	}
+	
+	private void setUpDichotomizer(UpperSemilattice<D, E> alphas) {
+		topoOrderedSet = alphas.getTopologicalOrder();
+		minima = alphas.getLeaves();
+		lowerSets = new ArrayList<>();
+		//make the upper semilattice atomistic
+		//build topological list of lowersets
+		//build semilattice encoding in power set of minima
+		setEncodingInPowerSetOfMinima = new ArrayList<>();
+		for (int i = 0 ; i < topoOrderedSet.size() ; i++) {
+			D element = topoOrderedSet.get(i);
+			Set<D> elementLowerSet = Functions.lowerSet(alphas, element); 
+			Set<D> elementEncoding = 
+					new HashSet<>(
+							Sets.intersection(elementLowerSet, minima));
+			if (setEncodingInPowerSetOfMinima.contains(elementEncoding)) {
+				topoOrderedSet.remove(i);
+				Functions.removeVertexAndPreserveConnectivity(alphas, element);
+				i--;
+			}
+			else {
+				lowerSets.add(elementLowerSet);
+				setEncodingInPowerSetOfMinima.add(elementEncoding);
+			}
+		}
+		trees = sort(alphas);
+		treeIte = trees.iterator();
 	}
 
 }

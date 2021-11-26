@@ -20,6 +20,8 @@ public class UnidimensionalSorter<V, E> extends AbstractSorter<V, E> implements 
 	public UnidimensionalSorter(UpperSemilattice<V, E> alphas) 
 			throws InvalidInputException {
 		super(alphas);
+		trees = sort(alphas);
+		treeIte = trees.iterator();
 	}
 	
 	@Override

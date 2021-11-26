@@ -25,6 +25,7 @@ import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
 import utils.EdgeForTests;
+import utils.Visualizer;
 
 @SuppressWarnings("unused")
 public class RestrictorBruteForceTest {
@@ -69,9 +70,9 @@ public class RestrictorBruteForceTest {
 		}
 		semiLatticeTreeFinder = 
 				new RestrictorBruteForce<>(upperSemilattice);
-		/*
+		
 		Visualizer.visualize(upperSemilattice, "2110091649_BFusl");
-		*/
+		
 		boolean returnedValid = true;
 		int checkCount = 0;
 		while (semiLatticeTreeFinder.hasNext()) {
