@@ -105,6 +105,7 @@ public class RootedInverted<V, E> extends DirectedAcyclicGraph<V, E> {
 		if (root.equals(element)) {
 			Set<E> rootIncomingEdges = incomingEdgesOf(root);
 			if (rootIncomingEdges.size() != 1)
+				//otherwise, the DAG wouldn't be rooted anymore
 				return false;
 			else root = getEdgeSource(rootIncomingEdges.iterator().next());
 		}
@@ -115,6 +116,21 @@ public class RootedInverted<V, E> extends DirectedAcyclicGraph<V, E> {
 		}
 		return removed;
 	}	
+	
+	public boolean replaceVertex(V element, V substitute) {
+		List<V> successors = Graphs.successorListOf(this, element);
+		List<V> predecessors = Graphs.predecessorListOf(this, element);
+		boolean removed = super.removeVertex(element);
+		if (removed) {
+			addVertex(substitute);
+			for (V successor : successors)
+				addEdge(substitute, successor);
+			for (V predecessor : predecessors)
+				addEdge(predecessor, substitute);
+			return true;
+		}
+		return false;
+	}
 	
 	public void validate() throws InvalidInputException {
 		if (!StructureInspector.isARootedInvertedDirectedAcyclicGraph(this))

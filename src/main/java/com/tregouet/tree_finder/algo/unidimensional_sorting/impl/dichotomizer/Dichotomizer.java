@@ -5,9 +5,11 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.jgrapht.Graphs;
 import org.jgrapht.graph.DirectedAcyclicGraph;
+import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import com.google.common.collect.Sets;
 import com.tregouet.tree_finder.algo.unidimensional_sorting.IUnidimensionalSorter;
@@ -54,86 +56,89 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 		 * of minima in the semilattice of alphas.
 		 */
 		Set<D> alphaMinima = alphas.getLeaves();
+		//because of recursivity
+		List<D> alphaRestrictedTopoOrderedSet = restrictTopoOrderedSetTo(alphas);
 		Set<Set<D>> cleanPartitions = new HashSet<>();
 		//a beta class is one kind of alphas
 		D betaClass;
-		int maxBetaClassIdx = topoOrderedSet.indexOf(alphaClass) - 1;
-		for (int i = 0 ; i < maxBetaClassIdx ; i++) {
+		for (int i = 0 ; i < topoOrderedSet.indexOf(alphaClass) - 1 ; i++) {
 			//select a beta class
-			betaClass = topoOrderedSet.get(i);
-			Set<D> reachedMinima = setEncodingInPowerSetOfMinima.get(i);
-			Set<D> unreachedMinima = new HashSet<>(Sets.difference(alphaMinima, reachedMinima));
-			//build the semilattice of betas
-			UpperSemilattice<D, E> betas = 
-					new UpperSemilattice<D, E>(
-							alphas, lowerSets.get(i), betaClass, reachedMinima);
-			UpperSemilattice<D, E> nonBetas;
-			D unreachedMinimaSupremum = Functions.supremum(alphas, unreachedMinima);
-			//build the semilattice of non betas, which may have alpha class as a maximum
-			nonBetas = new UpperSemilattice<D, E>(alphas, 
-					new HashSet<>(
-							Sets.difference(
-									Functions.lowerSet(alphas, unreachedMinimaSupremum), 
-									betas.vertexSet())),  
-					unreachedMinimaSupremum, unreachedMinima);
-			/* Each alpha sorting having betas as a kind of alphas contains a sorting of betas and a 
-			 * sorting of non-betas.
-			 */
-			for (Tree<D, E> betaSorting : sort(betas)) {
-				for (Tree<D, E> nonBetaSorting : new Dichotomizer<D, E>(nonBetas, true).getSortingTrees()) {
-					boolean nonBetaContainsRebutters;
-					boolean partitionIsClean;
-					/* If the semilattice of non-betas has alpha class as its maximum, then the non-beta 
-					 * classes are its coatoms ; if not, the unique non-beta class is the semilattice's maximum. 
-					 */
-					List<D> nonBetaClasses;
-					if (nonBetaSorting.getRoot().equals(alphaClass)) {
-						nonBetaClasses = Graphs.predecessorListOf(nonBetaSorting, alphaClass);
-						nonBetaContainsRebutters = containsRebutters(nonBetaClasses);
-					}
-					else {
-						nonBetaClasses = new ArrayList<>(1);
-						nonBetaClasses.add(nonBetaSorting.getRoot());
-						nonBetaContainsRebutters = false;
-					}
-					partitionIsClean = 
-							(nonBetaContainsRebutters ? 
-									false : perfectPartition(reachedMinima, nonBetaClasses));
-					if (partitionIsClean) {
-						//then no need to instantiate a beta class rebutter
-						Set<D> alphaKinds = new HashSet<>(nonBetaClasses);
-						alphaKinds.add(betaClass);
-						boolean newPartition = cleanPartitions.add(alphaKinds);
-						if (newPartition) {
+			betaClass = alphaRestrictedTopoOrderedSet.get(i);
+			if (betaClass != null) {
+				Set<D> reachedMinima = setEncodingInPowerSetOfMinima.get(i);
+				Set<D> unreachedMinima = new HashSet<>(Sets.difference(alphaMinima, reachedMinima));
+				//build the semilattice of betas
+				UpperSemilattice<D, E> betas = 
+						new UpperSemilattice<D, E>(
+								alphas, lowerSets.get(i), betaClass, reachedMinima);
+				UpperSemilattice<D, E> nonBetas;
+				D unreachedMinimaSupremum = Functions.supremum(alphas, unreachedMinima);
+				//build the semilattice of non betas, which may have alpha class as a maximum
+				nonBetas = new UpperSemilattice<D, E>(alphas, 
+						new HashSet<>(
+								Sets.difference(
+										Functions.lowerSet(alphas, unreachedMinimaSupremum), 
+										betas.vertexSet())),  
+						unreachedMinimaSupremum, unreachedMinima);
+				/* Each alpha sorting having betas as a kind of alphas contains a sorting of betas and a 
+				 * sorting of non-betas.
+				 */
+				for (Tree<D, E> betaSorting : sort(betas)) {
+					for (Tree<D, E> nonBetaSorting : new Dichotomizer<D, E>(nonBetas, true).getSortingTrees()) {
+						boolean nonBetaContainsRebutters;
+						boolean partitionIsClean;
+						/* If the semilattice of non-betas has alpha class as its maximum, then the non-beta 
+						 * classes are its coatoms ; if not, the unique non-beta class is the semilattice's maximum. 
+						 */
+						List<D> nonBetaClasses;
+						if (nonBetaSorting.getRoot().equals(alphaClass)) {
+							nonBetaClasses = Graphs.predecessorListOf(nonBetaSorting, alphaClass);
+							nonBetaContainsRebutters = containsRebutters(nonBetaClasses);
+						}
+						else {
+							nonBetaClasses = new ArrayList<>(1);
+							nonBetaClasses.add(nonBetaSorting.getRoot());
+							nonBetaContainsRebutters = false;
+						}
+						partitionIsClean = 
+								(nonBetaContainsRebutters ? 
+										false : perfectPartition(reachedMinima, nonBetaClasses));
+						if (partitionIsClean) {
+							//then no need to instantiate a beta class rebutter
+							Set<D> alphaKinds = new HashSet<>(nonBetaClasses);
+							alphaKinds.add(betaClass);
+							boolean newPartition = cleanPartitions.add(alphaKinds);
+							if (newPartition) {
+								alphaSortings.add(
+										instantiateAlphaSortingTree(alphaClass, alphas, alphaMinima, 
+												betaSorting, nonBetaSorting));
+							}
+						}
+						else {
+							//then the non-beta maximum is a beta class rebutter
+							D antiBetaClass;
+							boolean alphaClassToBeRemoved = nonBetaSorting.containsVertex(alphaClass);
+							if (nonBetaClasses.size() == 1) {
+								D nonBetaClass = nonBetaClasses.get(0);
+								antiBetaClass = betaClass.rebutWith(nonBetaClass);
+								nonBetaSorting.replaceVertex(nonBetaClass, antiBetaClass); 
+								if (alphaClassToBeRemoved)
+									nonBetaSorting.removeVertex(alphaClass);
+							}
+							else {
+								antiBetaClass = betaClass.rebut();
+								if (alphaClassToBeRemoved)
+									nonBetaSorting.replaceVertex(alphaClass, antiBetaClass);
+								else {
+									nonBetaSorting.addVertex(antiBetaClass);
+									for (D nonBetaClass : nonBetaClasses)
+										nonBetaSorting.addEdge(nonBetaClass, antiBetaClass);
+								}
+							}
 							alphaSortings.add(
 									instantiateAlphaSortingTree(alphaClass, alphas, alphaMinima, 
 											betaSorting, nonBetaSorting));
 						}
-					}
-					else {
-						//then the non-beta maximum is a beta class rebutter
-						nonBetaSorting.removeVertex(alphaClass);
-						D antiBetaClass;
-						if (nonBetaClasses.size() == 1) {
-							D nonBetaClass = nonBetaClasses.get(0);
-							antiBetaClass = betaClass.rebutWith(nonBetaClass);
-							List<D> nonBetaClassPredecessors = Graphs.predecessorListOf(nonBetaSorting, nonBetaClass);
-							nonBetaSorting.removeVertex(nonBetaClass);
-							nonBetaSorting.addVertex(antiBetaClass);
-							for(D nonBetaClassPredecessor : nonBetaClassPredecessors) {
-								nonBetaSorting.addEdge(nonBetaClassPredecessor, antiBetaClass);
-							}
-						}
-						else {
-							antiBetaClass = betaClass.rebut();
-							nonBetaSorting.addVertex(antiBetaClass);
-							for (D nonBetaClass : nonBetaClasses)
-								nonBetaSorting.addEdge(nonBetaClass, antiBetaClass);
-						}
-						
-						alphaSortings.add(
-								instantiateAlphaSortingTree(alphaClass, alphas, alphaMinima, 
-										betaSorting, nonBetaSorting));
 					}
 				}
 			}
@@ -167,6 +172,16 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 			reachedMinima.addAll(setEncodingInPowerSetOfMinima.get(topoOrderedSet.indexOf(d)));
 		}
 		return reachedMinima;
+	}
+	
+	private List<D> restrictTopoOrderedSetTo(UpperSemilattice<D, E> alphas){
+		List<D> restrictedTopoOrderedSet = new ArrayList<>(topoOrderedSet.size());
+		for (D element : topoOrderedSet) {
+			if (alphas.containsVertex(element))
+				restrictedTopoOrderedSet.add(element);
+			else restrictedTopoOrderedSet.add(null);
+		}
+		return restrictedTopoOrderedSet;
 	}
 	
 	private boolean containsRebutters(Collection<D> nonBetaClasses) {
