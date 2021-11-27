@@ -22,7 +22,6 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 	extends AbstractSorter<D, E> implements IUnidimensionalSorter<D, E> {
 	
 	private List<D> topoOrderedSet;
-	private Set<D> minima;
 	private List<Set<D>> lowerSets;
 	private List<Set<D>> setEncodingInPowerSetOfMinima;
 	
@@ -54,12 +53,16 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 		 * 3/ the union of the subclasses' respective encodings in the power set of minima is the set 
 		 * of minima in the semilattice of alphas.
 		 */
+		Set<D> alphaMinima = alphas.getLeaves();
 		Set<Set<D>> cleanPartitions = new HashSet<>();
-		for (int i = 0 ; i < topoOrderedSet.size() - 1 ; i++) {
-			//select betas as one kind of alphas
-			D betaClass = topoOrderedSet.get(i);
+		//a beta class is one kind of alphas
+		D betaClass;
+		int maxBetaClassIdx = topoOrderedSet.indexOf(alphaClass) - 1;
+		for (int i = 0 ; i < maxBetaClassIdx ; i++) {
+			//select a beta class
+			betaClass = topoOrderedSet.get(i);
 			Set<D> reachedMinima = setEncodingInPowerSetOfMinima.get(i);
-			Set<D> unreachedMinima = new HashSet<>(Sets.difference(minima, reachedMinima));
+			Set<D> unreachedMinima = new HashSet<>(Sets.difference(alphaMinima, reachedMinima));
 			//build the semilattice of betas
 			UpperSemilattice<D, E> betas = 
 					new UpperSemilattice<D, E>(
@@ -103,14 +106,15 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 						boolean newPartition = cleanPartitions.add(alphaKinds);
 						if (newPartition) {
 							alphaSortings.add(
-									instantiateAlphaSortingTree(alphaClass, alphas, betaSorting, nonBetaSorting));
+									instantiateAlphaSortingTree(alphaClass, alphas, alphaMinima, 
+											betaSorting, nonBetaSorting));
 						}
 					}
 					else {
 						//then the non-beta maximum is a beta class rebutter
 						nonBetaSorting.removeVertex(alphaClass);
 						D antiBetaClass;
-						if (nonBetaClasses.size() ==1) {
+						if (nonBetaClasses.size() == 1) {
 							D nonBetaClass = nonBetaClasses.get(0);
 							antiBetaClass = betaClass.rebutWith(nonBetaClass);
 							List<D> nonBetaClassPredecessors = Graphs.predecessorListOf(nonBetaSorting, nonBetaClass);
@@ -128,7 +132,8 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 						}
 						
 						alphaSortings.add(
-								instantiateAlphaSortingTree(alphaClass, alphas, betaSorting, nonBetaSorting));
+								instantiateAlphaSortingTree(alphaClass, alphas, alphaMinima, 
+										betaSorting, nonBetaSorting));
 					}
 				}
 			}
@@ -137,7 +142,7 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 	}
 	
 	private Tree<D, E> instantiateAlphaSortingTree(D alphaClass, UpperSemilattice<D, E> alphas, 
-			Tree<D, E> betaSorting, Tree<D, E> nonBetaSorting) {
+			Set<D> alphasMinima, Tree<D, E> betaSorting, Tree<D, E> nonBetaSorting) {
 		Tree<D, E> alphaSortingTree;
 		DirectedAcyclicGraph<D, E> alphaSorting = 
 				Functions.cardinalSum(betaSorting, nonBetaSorting, alphas.getEdgeSupplier());
@@ -147,7 +152,7 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 			if (!maximalElement.equals(alphaClass))
 				alphaSorting.addEdge(maximalElement, alphaClass);
 		}
-		alphaSortingTree = new Tree<D, E>(alphaSorting, alphaClass, minima, null);
+		alphaSortingTree = new Tree<D, E>(alphaSorting, alphaClass, alphasMinima, null);
 		return alphaSortingTree;
 	}
 	
@@ -167,9 +172,9 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 	private boolean containsRebutters(Collection<D> nonBetaClasses) {
 		for (D nonBetaClass : nonBetaClasses) {
 			if (nonBetaClass.isRebutter())
-				return false;
+				return true;
 		}
-		return true;
+		return false;
 	}
 	
 	private static <A> boolean emptyIntersection(Set<A> set1, Set<A> set2) {
@@ -182,7 +187,7 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 	
 	private void setUpDichotomizer(UpperSemilattice<D, E> alphas) {
 		topoOrderedSet = alphas.getTopologicalOrder();
-		minima = alphas.getLeaves();
+		Set<D> minima = alphas.getLeaves();
 		lowerSets = new ArrayList<>();
 		//make the upper semilattice atomistic
 		//build topological list of lowersets

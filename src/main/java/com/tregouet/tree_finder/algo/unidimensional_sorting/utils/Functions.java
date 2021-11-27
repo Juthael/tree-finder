@@ -94,7 +94,15 @@ public class Functions {
 		}
 		else {
 			Set<V> upperBounds = new HashSet<>();
-			upperBounds.addAll(dag.getDescendants(subsetIte.next()));
+			//HERE
+			try {
+				upperBounds.addAll(dag.getDescendants(subsetIte.next()));
+			}
+			catch (Exception e) {
+				System.out.println("here");
+			}
+			
+			//HERE
 			while (subsetIte.hasNext())
 				upperBounds.retainAll(dag.getDescendants(subsetIte.next()));
 			Set<V> minimalUpperBounds = new HashSet<>(upperBounds);

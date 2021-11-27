@@ -4,8 +4,8 @@ import com.tregouet.tree_finder.algo.unidimensional_sorting.impl.dichotomizer.ID
 
 public class DichotomizableString implements IDichotomizable<DichotomizableString> {
 
-	private String name;
-	private boolean rebutter;
+	private final String name;
+	private final boolean rebutter;
 	
 	public DichotomizableString(String name) {
 		this.name = name;
