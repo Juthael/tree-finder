@@ -26,6 +26,9 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 	private List<D> topoOrderedSet;
 	private List<Set<D>> lowerSets;
 	private List<Set<D>> setEncodingInPowerSetOfMinima;
+	//HERE
+	private static int staticCount = 0;
+	//HERE
 	
 	public Dichotomizer(UpperSemilattice<D, E> alphas) 
 			throws InvalidInputException {
@@ -40,6 +43,9 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 	
 	@Override
 	protected List<Tree<D, E>> sort(UpperSemilattice<D, E> alphas) {
+		//HERE
+		staticCount++;
+		//HERE
 		//returned set of sortings
 		List<Tree<D, E>> alphaSortings = new ArrayList<>();
 		//unnecessary but efficient shortcut
@@ -62,6 +68,12 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 		//a beta class is one kind of alphas
 		D betaClass;
 		for (int i = 0 ; i < topoOrderedSet.indexOf(alphaClass) - 1 ; i++) {
+			//HERE
+			System.out.print("static count = " + staticCount + " ; ");
+			System.out.println("i = " + i);
+			if (staticCount == 61 && i == 2)
+				System.out.println("STOP");
+			//HERE
 			//select a beta class
 			betaClass = alphaRestrictedTopoOrderedSet.get(i);
 			if (betaClass != null) {
@@ -83,8 +95,13 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 				/* Each alpha sorting having betas as a kind of alphas contains a sorting of betas and a 
 				 * sorting of non-betas.
 				 */
+				//HERE OPTIMISABLE !!
 				for (Tree<D, E> betaSorting : sort(betas)) {
 					for (Tree<D, E> nonBetaSorting : new Dichotomizer<D, E>(nonBetas, true).getSortingTrees()) {
+						//HERE
+						if (!noOutDegreeSuperiorTo1(nonBetaSorting))
+							System.out.println("here");
+						//HERE
 						boolean nonBetaContainsRebutters;
 						boolean partitionIsClean;
 						/* If the semilattice of non-betas has alpha class as its maximum, then the non-beta 
@@ -148,6 +165,10 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 	
 	private Tree<D, E> instantiateAlphaSortingTree(D alphaClass, UpperSemilattice<D, E> alphas, 
 			Set<D> alphasMinima, Tree<D, E> betaSorting, Tree<D, E> nonBetaSorting) {
+		//HERE
+		if (!noOutDegreeSuperiorTo1(betaSorting) || !noOutDegreeSuperiorTo1(nonBetaSorting))
+			System.out.println("here");
+		//HERE
 		Tree<D, E> alphaSortingTree;
 		DirectedAcyclicGraph<D, E> alphaSorting = 
 				Functions.cardinalSum(betaSorting, nonBetaSorting, alphas.getEdgeSupplier());
@@ -158,6 +179,10 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 				alphaSorting.addEdge(maximalElement, alphaClass);
 		}
 		alphaSortingTree = new Tree<D, E>(alphaSorting, alphaClass, alphasMinima, null);
+		//HERE
+		if (!noOutDegreeSuperiorTo1(alphaSortingTree))
+			System.out.println("here");
+		//HERE
 		return alphaSortingTree;
 	}
 	
@@ -227,5 +252,15 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 		trees = sort(alphas);
 		treeIte = trees.iterator();
 	}
+	
+	//HERE
+	private boolean noOutDegreeSuperiorTo1(DirectedAcyclicGraph<D, E> dag) {
+		for (D vertex : dag.vertexSet()) {
+			if (dag.outDegreeOf(vertex) > 1)
+				return false;
+		}
+		return true;
+	}
+	//HERE
 
 }

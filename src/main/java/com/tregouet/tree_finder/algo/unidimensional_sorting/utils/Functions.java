@@ -1,5 +1,6 @@
 package com.tregouet.tree_finder.algo.unidimensional_sorting.utils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -63,7 +64,9 @@ public class Functions {
 		Set<E> inEdges = dag.incomingEdgesOf(element);
 		Set<E> outEdges = dag.outgoingEdgesOf(element);
 		for (E inEdge : inEdges) {
+			V inEdgeSource = dag.getEdgeSource(inEdge);
 			for (E outEdge : outEdges) {
+				V outEdgeTarget = dag.getEdgeTarget(outEdge);
 				dag.addEdge(dag.getEdgeSource(inEdge), dag.getEdgeTarget(outEdge));
 			}
 		}
@@ -115,5 +118,14 @@ public class Functions {
 		}
 		return null;
 	}	
+	
+	private static <V, E> boolean isAnUpperBoundOf(V v1, V v2, DirectedAcyclicGraph<V, E> graph) {
+		for (E incomingEdge : graph.incomingEdgesOf(v1)) {
+			V predecessor = graph.getEdgeSource(incomingEdge);
+			if (predecessor.equals(v2) || isAnUpperBoundOf(predecessor, v2, graph))
+				return true;
+		}
+		return false;
+	}
 
 }
