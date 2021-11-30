@@ -1,6 +1,6 @@
 package utils;
 
-import com.tregouet.tree_finder.algo.unidimensional_sorting.impl.dichotomizer.IDichotomizable;
+import com.tregouet.tree_finder.algo.unidimensional_sorting.IDichotomizable;
 
 public class DichotomizableString implements IDichotomizable<DichotomizableString> {
 

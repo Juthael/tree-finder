@@ -1,12 +1,12 @@
 package com.tregouet.tree_finder.algo.unidimensional_sorting;
 
-import java.util.Collection;
+import java.util.List;
 
 import com.tregouet.tree_finder.ITreeFinder;
 import com.tregouet.tree_finder.data.Tree;
 
-public interface IUnidimensionalSorter<V, E> extends ITreeFinder<V, E> {
+public interface IUnidimensionalSorter<D extends IDichotomizable<D>, E> extends ITreeFinder<D, E> {
 	
-	Collection<Tree<V, E>> getSortingTrees();
+	List<Tree<D, E>> getSortingTrees();
 
 }

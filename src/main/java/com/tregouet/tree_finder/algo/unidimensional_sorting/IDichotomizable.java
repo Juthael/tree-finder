@@ -1,4 +1,4 @@
-package com.tregouet.tree_finder.algo.unidimensional_sorting.impl.dichotomizer;
+package com.tregouet.tree_finder.algo.unidimensional_sorting;
 
 public interface IDichotomizable<D> {
 	
