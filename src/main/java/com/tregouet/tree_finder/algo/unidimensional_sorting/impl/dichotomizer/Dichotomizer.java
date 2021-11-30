@@ -81,9 +81,10 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 				/* Each alpha sorting having betas as a kind of alphas contains a sorting of betas and a 
 				 * sorting of non-betas.
 				 */
-				//HERE OPTIMISABLE !!
-				for (Tree<D, E> betaSorting : sort(betas)) {
-					for (Tree<D, E> nonBetaSorting : new Dichotomizer<D, E>(nonBetas, true).getSortingTrees()) {
+				List<Tree<D, E>> betaSortings = sort(betas);
+				Collection<Tree<D, E>> nonBetaSortings = new Dichotomizer<D, E>(nonBetas, true).getSortingTrees();
+				for (Tree<D, E> betaSorting : betaSortings) {
+					for (Tree<D, E> nonBetaSorting : nonBetaSortings) {
 						boolean nonBetaContainsRebutters;
 						boolean partitionIsClean;
 						/* If the semilattice of non-betas has alpha class as its maximum, then the non-beta 
