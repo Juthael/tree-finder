@@ -70,9 +70,9 @@ public class RestrictorBruteForceTest {
 		}
 		semiLatticeTreeFinder = 
 				new RestrictorBruteForce<>(upperSemilattice);
-		
+		/*
 		Visualizer.visualize(upperSemilattice, "2110091649_BFusl");
-		
+		*/
 		boolean returnedValid = true;
 		int checkCount = 0;
 		while (semiLatticeTreeFinder.hasNext()) {

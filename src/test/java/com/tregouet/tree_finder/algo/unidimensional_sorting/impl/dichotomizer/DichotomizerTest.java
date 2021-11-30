@@ -45,20 +45,20 @@ public class DichotomizerTest {
 	@Test
 	public void whenSortingsOfNotComplementedUSLRequestedThenReturned() throws IOException, InvalidInputException {
 		setUpNotComplementedUSL();
-		
+		/*
 		Visualizer.visualize(
 				((DirectedAcyclicGraph<DichotomizableString, EdgeForTests>) notComplementedUSL), 
 				"2111030946_USL", 0.0);
-		
+		*/
 		IUnidimensionalSorter<DichotomizableString, EdgeForTests> sorter = 
 				new Dichotomizer<DichotomizableString, EdgeForTests>(notComplementedUSL);
 		Collection<Tree<DichotomizableString, EdgeForTests>> sortingTrees = sorter.getSortingTrees();
-		
+		/*
 		int treeIdx = 0;
 		for (Tree<DichotomizableString, EdgeForTests> tree : sortingTrees){
 			Visualizer.visualize(tree, "2111261532_D_tree" + Integer.toString(treeIdx++), 0.0);
 		}
-		
+		*/
 		assertTrue(sortingTrees.size() > 0);
 	}
 	

@@ -79,6 +79,14 @@ public class RestrictorSparse {
 		return trees;
 	}
 
+	private IntArraySet beginningSet(IntArrayList set) {
+		IntArraySet lowerSet = new IntArraySet();
+		for (int element : set) {
+			lowerSet.addAll(lowerSets.get(element));
+		}
+		return lowerSet;
+	}
+
 	private List<IntArrayList> completeForkingSubsetsOfLowerBounds(int element, IntArrayList uncompleteFork, 
 			IntArraySet atomsToCover, IntArraySet coveredAtomsSoFar, boolean[] inspect) {
 		List<IntArrayList> completeMaxForks = new ArrayList<>();
@@ -116,7 +124,7 @@ public class RestrictorSparse {
 		}
 		return completeMaxForks;
 	}
-
+	
 	private boolean forkIsMaximal(IntArrayList newFork, List<IntArrayList> previousForks) {
 		for (IntArrayList previousFork : previousForks) {
 			IntArraySet prevForkLowerSet = beginningSet(previousFork);
@@ -167,14 +175,6 @@ public class RestrictorSparse {
 		}
 		subTrees.set(localRoot, subTreesFromLocalRoot);
 		return subTreesFromLocalRoot;
-	}
-	
-	private IntArraySet beginningSet(IntArrayList set) {
-		IntArraySet lowerSet = new IntArraySet();
-		for (int element : set) {
-			lowerSet.addAll(lowerSets.get(element));
-		}
-		return lowerSet;
 	}
 	
 	private int max(IntArrayList set) {

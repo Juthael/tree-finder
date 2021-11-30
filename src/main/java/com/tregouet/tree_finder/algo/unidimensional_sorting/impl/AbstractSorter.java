@@ -26,6 +26,11 @@ public abstract class AbstractSorter<V, E> implements IUnidimensionalSorter<V, E
 	}	
 
 	@Override
+	public Collection<Tree<V, E>> getSortingTrees() {
+		return trees;
+	}
+
+	@Override
 	public boolean hasNext() {
 		return treeIte.hasNext();
 	}
@@ -33,11 +38,6 @@ public abstract class AbstractSorter<V, E> implements IUnidimensionalSorter<V, E
 	@Override
 	public Tree<V, E> next() {
 		return treeIte.next();
-	}
-
-	@Override
-	public Collection<Tree<V, E>> getSortingTrees() {
-		return trees;
 	}
 	
 	abstract protected Collection<Tree<V, E>> sort(UpperSemilattice<V, E> alphas);

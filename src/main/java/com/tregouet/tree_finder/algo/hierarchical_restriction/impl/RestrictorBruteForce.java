@@ -76,6 +76,13 @@ public class RestrictorBruteForce<V, E> implements IHierarchicalRestrictionFinde
 		return new Tree<V, E>(rootedInverted, treeIte.next(), maximum, atoms);
 	}
 	
+	@Override
+	public Tree<V, E> nextTransitiveReduction() {
+		Tree<V, E> next = next();
+		TransitiveReduction.INSTANCE.reduce(next);
+		return next;
+	}
+	
 	private boolean isATree(Set<V> candidateRestriction) {
 		DirectedAcyclicGraph<V, E> candidateGraph = new DirectedAcyclicGraph<>(null, null, false);
 		Graphs.addAllVertices(candidateGraph, candidateRestriction);
@@ -88,7 +95,7 @@ public class RestrictorBruteForce<V, E> implements IHierarchicalRestrictionFinde
 		Graphs.addAllEdges(candidateGraph, rootedInverted, edges);
 		return StructureInspector.isATree(candidateGraph);
 	}
-	
+
 	private boolean isMaximal(Set<V> thisTree) {
 		boolean isMaximal = true;
 		Set<Set<V>> notMaximalAfterAll = new HashSet<>(); 
@@ -100,13 +107,6 @@ public class RestrictorBruteForce<V, E> implements IHierarchicalRestrictionFinde
 		}
 		treeRestrictions.removeAll(notMaximalAfterAll);
 		return isMaximal;
-	}
-
-	@Override
-	public Tree<V, E> nextTransitiveReduction() {
-		Tree<V, E> next = next();
-		TransitiveReduction.INSTANCE.reduce(next);
-		return next;
 	}
 
 }

@@ -36,6 +36,14 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 		setUpDichotomizer(alphas);
 	}	
 	
+	private static <A> boolean emptyIntersection(Set<A> set1, Set<A> set2) {
+		for (A a : set1) {
+			if (set2.contains(a))
+				return false;
+		}
+		return true;
+	}
+	
 	@Override
 	protected List<Tree<D, E>> sort(UpperSemilattice<D, E> alphas) {
 		//returned set of sortings
@@ -84,7 +92,9 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 				List<Tree<D, E>> betaSortings = sort(betas);
 				Collection<Tree<D, E>> nonBetaSortings = new Dichotomizer<D, E>(nonBetas, true).getSortingTrees();
 				for (Tree<D, E> betaSorting : betaSortings) {
-					for (Tree<D, E> nonBetaSorting : nonBetaSortings) {
+					for (Tree<D, E> immutableNonBetaSorting : nonBetaSortings) {
+						//because rebutting mechanism can modify the non beta sorting tree
+						Tree<D, E> nonBetaSorting = new Tree<D, E>(immutableNonBetaSorting);
 						boolean nonBetaContainsRebutters;
 						boolean partitionIsClean;
 						/* If the semilattice of non-betas has alpha class as its maximum, then the non-beta 
@@ -121,7 +131,14 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 							if (nonBetaClasses.size() == 1) {
 								D nonBetaClass = nonBetaClasses.get(0);
 								antiBetaClass = betaClass.rebutWith(nonBetaClass);
-								nonBetaSorting.replaceVertex(nonBetaClass, antiBetaClass); 
+								//HERE
+								try {
+									nonBetaSorting.replaceVertex(nonBetaClass, antiBetaClass);
+								}
+								catch (Exception e) {
+									System.out.println("here");
+								}
+								//HERE
 								if (alphaClassToBeRemoved)
 									nonBetaSorting.removeVertex(alphaClass);
 							}
@@ -144,6 +161,14 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 			}
 		}
 		return alphaSortings;
+	}
+	
+	private boolean containsRebutters(Collection<D> nonBetaClasses) {
+		for (D nonBetaClass : nonBetaClasses) {
+			if (nonBetaClass.isRebutter())
+				return true;
+		}
+		return false;
 	}
 	
 	private Tree<D, E> instantiateAlphaSortingTree(D alphaClass, UpperSemilattice<D, E> alphas, 
@@ -182,22 +207,6 @@ public class Dichotomizer<D extends IDichotomizable<D>, E>
 			else restrictedTopoOrderedSet.add(null);
 		}
 		return restrictedTopoOrderedSet;
-	}
-	
-	private boolean containsRebutters(Collection<D> nonBetaClasses) {
-		for (D nonBetaClass : nonBetaClasses) {
-			if (nonBetaClass.isRebutter())
-				return true;
-		}
-		return false;
-	}
-	
-	private static <A> boolean emptyIntersection(Set<A> set1, Set<A> set2) {
-		for (A a : set1) {
-			if (set2.contains(a))
-				return false;
-		}
-		return true;
 	}
 	
 	private void setUpDichotomizer(UpperSemilattice<D, E> alphas) {

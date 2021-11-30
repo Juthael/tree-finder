@@ -42,12 +42,41 @@ public class Functions {
 		return cardinalSum;
 	}
 	
+	public static <V, E> boolean isStrictUpperBoundOfBreadthFirst(V v1, V v2, DirectedAcyclicGraph<V, E> graph) {
+		if (v1.equals(v2))
+			return false;
+		List<V> nextRankSuccessors;
+		Set<V> nextRank = new HashSet<>(Graphs.predecessorListOf(graph, v1));
+		do {
+			if (nextRank.contains(v2))
+				return true;
+			nextRankSuccessors = new ArrayList<>(nextRank);
+			nextRank.clear();
+			for (V nextRankSucc : nextRankSuccessors)
+				nextRank.addAll(Graphs.predecessorListOf(graph, nextRankSucc));
+			
+		}
+		while(!nextRank.isEmpty());
+		return false;
+	}
+		
+	
+	public static <V, E> boolean isStrictUpperBoundOfDepthFirst(V v1, V v2, DirectedAcyclicGraph<V, E> graph) {
+		if (v1.equals(v2))
+			return false;
+		for (E incomingEdge : graph.incomingEdgesOf(v1)) {
+			V predecessor = graph.getEdgeSource(incomingEdge);
+			if (predecessor.equals(v2) || isStrictUpperBoundOfDepthFirst(predecessor, v2, graph))
+				return true;
+		}
+		return false;
+	}	
+	
 	public static <V, E> Set<V> lowerSet(DirectedAcyclicGraph<V, E> source, V lowerSetMaximum) {
 		Set<V> lowerSet = source.getAncestors(lowerSetMaximum);
 		lowerSet.add(lowerSetMaximum);
 		return lowerSet;
 	}
-		
 	
 	public static <V, E> Set<V> maxima(DirectedAcyclicGraph<V, E> dag) {
 		Set<V> maxima = new HashSet<>();
@@ -56,7 +85,7 @@ public class Functions {
 				maxima.add(element);
 		}
 		return maxima;
-	}	
+	}
 	
 	public static <V, E> boolean removeVertexAndPreserveConnectivity(DirectedAcyclicGraph<V, E> dag, V removed) {
 		if (!dag.containsVertex(removed))
@@ -71,7 +100,7 @@ public class Functions {
 			}
 		}
 		return true;
-	}
+	}	
 	
 	public static <V, E extends DefaultEdge> DirectedAcyclicGraph<V, E> restriction(DirectedAcyclicGraph<V, E> source, 
 			Collection<V> restrictTo) {
@@ -107,35 +136,6 @@ public class Functions {
 				return minimalUpperBounds.iterator().next();
 		}
 		return null;
-	}	
-	
-	public static <V, E> boolean isStrictUpperBoundOfDepthFirst(V v1, V v2, DirectedAcyclicGraph<V, E> graph) {
-		if (v1.equals(v2))
-			return false;
-		for (E incomingEdge : graph.incomingEdgesOf(v1)) {
-			V predecessor = graph.getEdgeSource(incomingEdge);
-			if (predecessor.equals(v2) || isStrictUpperBoundOfDepthFirst(predecessor, v2, graph))
-				return true;
-		}
-		return false;
-	}
-	
-	public static <V, E> boolean isStrictUpperBoundOfBreadthFirst(V v1, V v2, DirectedAcyclicGraph<V, E> graph) {
-		if (v1.equals(v2))
-			return false;
-		List<V> nextRankSuccessors;
-		Set<V> nextRank = new HashSet<>(Graphs.predecessorListOf(graph, v1));
-		do {
-			if (nextRank.contains(v2))
-				return true;
-			nextRankSuccessors = new ArrayList<>(nextRank);
-			nextRank.clear();
-			for (V nextRankSucc : nextRankSuccessors)
-				nextRank.addAll(Graphs.predecessorListOf(graph, nextRankSucc));
-			
-		}
-		while(!nextRank.isEmpty());
-		return false;
 	}
 
 }
