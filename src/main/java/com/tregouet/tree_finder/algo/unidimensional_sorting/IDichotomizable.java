@@ -1,11 +1,17 @@
 package com.tregouet.tree_finder.algo.unidimensional_sorting;
 
+import java.util.Set;
+
 public interface IDichotomizable<D> {
 	
 	boolean isRebutter(); 
 	
-	D rebut();
+	D buildRebutterOfThis(Set<D> rebutterMinimalLowerBounds);
 	
-	D rebutWith(D absorbed);
+	D rebutThisWith(D absorbed);
+	
+	void setAsRebutterOf(D rebutted);
+	
+	D getRebutted();
 
 }

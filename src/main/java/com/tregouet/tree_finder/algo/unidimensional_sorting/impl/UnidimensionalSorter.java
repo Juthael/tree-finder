@@ -148,20 +148,13 @@ public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IU
 							boolean alphaClassToBeRemoved = nonBetaSorting.containsVertex(alphaClass);
 							if (nonBetaClasses.size() == 1) {
 								D nonBetaClass = nonBetaClasses.get(0);
-								antiBetaClass = betaClass.rebutWith(nonBetaClass);
-								//HERE
-								try {
-									nonBetaSorting.replaceVertex(nonBetaClass, antiBetaClass);
-								}
-								catch (Exception e) {
-									System.out.println("here");
-								}
-								//HERE
+								antiBetaClass = betaClass.rebutThisWith(nonBetaClass);
+								nonBetaSorting.replaceVertex(nonBetaClass, antiBetaClass);
 								if (alphaClassToBeRemoved)
 									nonBetaSorting.removeVertex(alphaClass);
 							}
 							else {
-								antiBetaClass = betaClass.rebut();
+								antiBetaClass = betaClass.buildRebutterOfThis(unreachedMinima);
 								if (alphaClassToBeRemoved)
 									nonBetaSorting.replaceVertex(alphaClass, antiBetaClass);
 								else {

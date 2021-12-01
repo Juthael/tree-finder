@@ -1,5 +1,7 @@
 package utils;
 
+import java.util.Set;
+
 import com.tregouet.tree_finder.algo.unidimensional_sorting.IDichotomizable;
 
 public class DichotomizableString implements IDichotomizable<DichotomizableString> {
@@ -19,12 +21,12 @@ public class DichotomizableString implements IDichotomizable<DichotomizableStrin
 	}
 	
 	@Override
-	public DichotomizableString rebut() {
+	public DichotomizableString buildRebutterOfThis(Set<DichotomizableString> rebutterMinimalLowerBounds) {
 		return new DichotomizableString(name, true);
 	}
 	
 	@Override
-	public DichotomizableString rebutWith(DichotomizableString absorbed) {
+	public DichotomizableString rebutThisWith(DichotomizableString absorbed) {
 		return new DichotomizableString(name + " ABSORB " + absorbed.name , true);
 	}
 
@@ -64,6 +66,16 @@ public class DichotomizableString implements IDichotomizable<DichotomizableStrin
 		if (rebutter != other.rebutter)
 			return false;
 		return true;
+	}
+
+	@Override
+	public void setAsRebutterOf(DichotomizableString rebutted) {
+		//do nothing
+	}
+
+	@Override
+	public DichotomizableString getRebutted() {
+		return null;
 	}
 
 }
