@@ -16,6 +16,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.tregouet.tree_finder.data.UpperSemilattice;
+import com.tregouet.tree_finder.utils.Functions;
 
 import utils.DichotomizableString;
 import utils.EdgeForTests;

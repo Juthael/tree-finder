@@ -1,4 +1,4 @@
-package com.tregouet.tree_finder.algo.unidimensional_sorting.utils;
+package com.tregouet.tree_finder.utils;
 
 import java.util.ArrayList;
 import java.util.Collection;

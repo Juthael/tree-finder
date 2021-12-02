@@ -14,10 +14,10 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 import com.google.common.collect.Sets;
 import com.tregouet.tree_finder.algo.unidimensional_sorting.IDichotomizable;
 import com.tregouet.tree_finder.algo.unidimensional_sorting.IUnidimensionalSorter;
-import com.tregouet.tree_finder.algo.unidimensional_sorting.utils.Functions;
 import com.tregouet.tree_finder.data.Tree;
 import com.tregouet.tree_finder.data.UpperSemilattice;
 import com.tregouet.tree_finder.error.InvalidInputException;
+import com.tregouet.tree_finder.utils.Functions;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
 public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IUnidimensionalSorter<D, E> {
