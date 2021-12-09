@@ -25,6 +25,7 @@ import utils.DichotomizableString;
 import utils.EdgeForTests;
 import utils.Visualizer;
 
+@SuppressWarnings("unused")
 public class UnidimensionalSorterTest {
 	
 	private final DichotomizableString a = new DichotomizableString("A");
