@@ -4,14 +4,12 @@ import java.util.Set;
 
 public interface IDichotomizable<D> {
 	
-	boolean isRebutter(); 
+	boolean isComplementary(); 
 	
-	D buildRebutterOfThis(Set<D> rebutterMinimalLowerBounds);
+	D buildComplementOfThis(Set<D> rebutterMinimalLowerBounds);
 	
-	D rebutThisWith(D absorbed);
+	D complementThisWith(D absorbed);
 	
-	void setAsRebutterOf(D rebutted);
-	
-	D getRebutted();
+	D getComplemented();
 
 }

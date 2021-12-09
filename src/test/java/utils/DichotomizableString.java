@@ -21,17 +21,17 @@ public class DichotomizableString implements IDichotomizable<DichotomizableStrin
 	}
 	
 	@Override
-	public DichotomizableString buildRebutterOfThis(Set<DichotomizableString> rebutterMinimalLowerBounds) {
+	public DichotomizableString buildComplementOfThis(Set<DichotomizableString> rebutterMinimalLowerBounds) {
 		return new DichotomizableString(name, true);
 	}
 	
 	@Override
-	public DichotomizableString rebutThisWith(DichotomizableString absorbed) {
+	public DichotomizableString complementThisWith(DichotomizableString absorbed) {
 		return new DichotomizableString(name + " ABSORB " + absorbed.name , true);
 	}
 
 	@Override
-	public boolean isRebutter() {
+	public boolean isComplementary() {
 		return rebutter;
 	}
 	
@@ -69,12 +69,7 @@ public class DichotomizableString implements IDichotomizable<DichotomizableStrin
 	}
 
 	@Override
-	public void setAsRebutterOf(DichotomizableString rebutted) {
-		//do nothing
-	}
-
-	@Override
-	public DichotomizableString getRebutted() {
+	public DichotomizableString getComplemented() {
 		return null;
 	}
 

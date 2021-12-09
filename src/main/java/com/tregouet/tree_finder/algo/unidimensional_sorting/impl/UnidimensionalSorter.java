@@ -32,12 +32,12 @@ public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IU
 			throws InvalidInputException {
 		TransitiveReduction.INSTANCE.reduce(alphas);
 		alphas.validate();
-		setUpDichotomizer(alphas);
+		setUpSorter(alphas);
 	}
 	
 	protected UnidimensionalSorter(UpperSemilattice<D, E> alphas, boolean skipValidation) {
 		TransitiveReduction.INSTANCE.reduce(alphas);
-		setUpDichotomizer(alphas);
+		setUpSorter(alphas);
 	}	
 	
 	private static <A> boolean emptyIntersection(Set<A> set1, Set<A> set2) {
@@ -148,13 +148,13 @@ public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IU
 							boolean alphaClassToBeRemoved = nonBetaSorting.containsVertex(alphaClass);
 							if (nonBetaClasses.size() == 1) {
 								D nonBetaClass = nonBetaClasses.get(0);
-								antiBetaClass = betaClass.rebutThisWith(nonBetaClass);
+								antiBetaClass = betaClass.complementThisWith(nonBetaClass);
 								nonBetaSorting.replaceVertex(nonBetaClass, antiBetaClass);
 								if (alphaClassToBeRemoved)
 									nonBetaSorting.removeVertex(alphaClass);
 							}
 							else {
-								antiBetaClass = betaClass.buildRebutterOfThis(unreachedMinima);
+								antiBetaClass = betaClass.buildComplementOfThis(unreachedMinima);
 								if (alphaClassToBeRemoved)
 									nonBetaSorting.replaceVertex(alphaClass, antiBetaClass);
 								else {
@@ -176,7 +176,7 @@ public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IU
 	
 	private boolean containsRebutters(Collection<D> nonBetaClasses) {
 		for (D nonBetaClass : nonBetaClasses) {
-			if (nonBetaClass.isRebutter())
+			if (nonBetaClass.isComplementary())
 				return true;
 		}
 		return false;
@@ -220,7 +220,7 @@ public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IU
 		return restrictedTopoOrderedSet;
 	}
 	
-	private void setUpDichotomizer(UpperSemilattice<D, E> alphas) {
+	private void setUpSorter(UpperSemilattice<D, E> alphas) {
 		topoOrderedSet = alphas.getTopologicalOrder();
 		Set<D> minima = alphas.getLeaves();
 		lowerSets = new ArrayList<>();

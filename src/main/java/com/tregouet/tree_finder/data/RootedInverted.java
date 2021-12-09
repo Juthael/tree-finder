@@ -118,12 +118,11 @@ public class RootedInverted<V, E> extends DirectedAcyclicGraph<V, E> {
 	}	
 	
 	public boolean replaceVertex(V element, V substitute) {
-		if (element.equals(substitute))
+		if (element == substitute)
 			return true;
 		List<V> successors = Graphs.successorListOf(this, element);
 		List<V> predecessors = Graphs.predecessorListOf(this, element);
-		boolean removed = super.removeVertex(element);
-		if (removed) {
+		if (super.removeVertex(element)) {
 			addVertex(substitute);
 			for (V successor : successors)
 				addEdge(substitute, successor);
