@@ -1,16 +1,17 @@
 package com.tregouet.tree_finder.data;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.zip.DataFormatException;
 
 import org.jgrapht.Graphs;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
-import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
 public class RootedInverted<V, E> extends DirectedAcyclicGraph<V, E> {
@@ -133,9 +134,9 @@ public class RootedInverted<V, E> extends DirectedAcyclicGraph<V, E> {
 		return false;
 	}
 	
-	public void validate() throws InvalidInputException {
+	public void validate() throws DataFormatException {
 		if (!StructureInspector.isARootedInvertedDirectedAcyclicGraph(this))
-			throw new InvalidInputException("ClassificationTree() : parameters do not allow the instantiation "
+			throw new DataFormatException("ClassificationTree() : parameters do not allow the instantiation "
 					+ "of a valid classification tree.");
 	}
 

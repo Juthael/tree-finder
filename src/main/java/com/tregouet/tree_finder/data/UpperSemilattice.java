@@ -1,12 +1,13 @@
 package com.tregouet.tree_finder.data;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.zip.DataFormatException;
 
 import org.jgrapht.graph.DirectedAcyclicGraph;
 
-import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
 public class UpperSemilattice<V, E> extends RootedInverted<V, E> {
@@ -27,9 +28,9 @@ public class UpperSemilattice<V, E> extends RootedInverted<V, E> {
 	}
 	
 	@Override
-	public void validate() throws InvalidInputException {
+	public void validate() throws DataFormatException {
 		if (!StructureInspector.isAnUpperSemilattice(this))
-			throw new InvalidInputException("ClassificationTree() : parameters do not allow the instantiation "
+			throw new DataFormatException("ClassificationTree() : parameters do not allow the instantiation "
 					+ "of a valid classification tree.");
 	}
 

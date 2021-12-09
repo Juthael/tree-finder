@@ -1,11 +1,13 @@
  package com.tregouet.tree_finder.algo.unidimensional_sorting.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.zip.DataFormatException;
 
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.TransitiveReduction;
@@ -16,7 +18,6 @@ import com.tregouet.tree_finder.algo.unidimensional_sorting.IDichotomizable;
 import com.tregouet.tree_finder.algo.unidimensional_sorting.IUnidimensionalSorter;
 import com.tregouet.tree_finder.data.Tree;
 import com.tregouet.tree_finder.data.UpperSemilattice;
-import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.Functions;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
@@ -29,9 +30,14 @@ public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IU
 	private List<Set<D>> setEncodingInPowerSetOfMinima;
 	
 	public UnidimensionalSorter(UpperSemilattice<D, E> alphas) 
-			throws InvalidInputException {
+			throws IOException {
 		TransitiveReduction.INSTANCE.reduce(alphas);
-		alphas.validate();
+		try {
+			alphas.validate();
+		}
+		catch (DataFormatException e) {
+			throw new IOException("UnidimensionalSorter() : invalid parameter");
+		}
 		setUpSorter(alphas);
 	}
 	

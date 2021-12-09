@@ -17,8 +17,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.tregouet.tree_finder.error.InvalidInputException;
-
 public class TreeTest {
 
 	private String a = "A";
@@ -46,7 +44,7 @@ public class TreeTest {
 	}
 
 	@Test
-	public void whenDifferentVerticesThenNotEqual() throws InvalidInputException {
+	public void whenDifferentVerticesThenNotEqual() {
 		DirectedAcyclicGraph<String, Edge> otherDAG = new DirectedAcyclicGraph<>(null, Edge::new, false);
 		Graphs.addAllEdges(otherDAG, properTreeDAG, properTreeDAG.edgeSet());
 		otherDAG.addVertex(d);
@@ -61,7 +59,7 @@ public class TreeTest {
 	}
 	
 	@Test
-	public void whenSameVerticesAndDifferentEdgesThenNotEqual() throws InvalidInputException {
+	public void whenSameVerticesAndDifferentEdgesThenNotEqual() {
 		DirectedAcyclicGraph<String, Edge> differentTreeArg = new DirectedAcyclicGraph<>(null, Edge::new, false);
 		Graphs.addAllVertices(differentTreeArg, properTreeDAG.vertexSet());
 		differentTreeArg.addEdge(a, ab);
@@ -79,7 +77,7 @@ public class TreeTest {
 	
 	//provided edge class overrides hashCode() and equals()
 	@Test
-	public void whenSameVerticesAndSameEdgesThenEqual() throws InvalidInputException {
+	public void whenSameVerticesAndSameEdgesThenEqual() {
 		DirectedAcyclicGraph<String, Edge> sameTreeDAG = new DirectedAcyclicGraph<>(null, Edge::new, false);
 		sameTreeDAG.addVertex(a);
 		sameTreeDAG.addVertex(b);

@@ -1,5 +1,6 @@
 package com.tregouet.tree_finder.algo.hierarchical_restriction.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -14,7 +15,6 @@ import org.jgrapht.traverse.TopologicalOrderIterator;
 import com.tregouet.tree_finder.algo.hierarchical_restriction.IHierarchicalRestrictionFinder;
 import com.tregouet.tree_finder.algo.hierarchical_restriction.utils.SparseGraphConverter;
 import com.tregouet.tree_finder.data.Tree;
-import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -34,11 +34,11 @@ public class RestrictorOpt<V, E> implements IHierarchicalRestrictionFinder<V, E>
 	 * The first parameter MUST be a rooted inverted DAG. 
 	 * No transitive reduction must have been operated on it.
 	 */
-	public RestrictorOpt(DirectedAcyclicGraph<V, E> rootedInverted) throws InvalidInputException {
+	public RestrictorOpt(DirectedAcyclicGraph<V, E> rootedInverted) throws IOException {
 		if (!StructureInspector.isARootedInvertedDirectedAcyclicGraph(rootedInverted))
-			throw new InvalidInputException("The parameter is not a rooted inverted directed acyclic graph.");
+			throw new IOException("The parameter is not a rooted inverted directed acyclic graph.");
 		if (!StructureInspector.isTransitive(rootedInverted))
-			throw new InvalidInputException("The parameter graph is not transitive.");
+			throw new IOException("The parameter graph is not transitive.");
 		this.rootedInverted = new DirectedAcyclicGraph<>(null, null, false);
 		Graphs.addAllEdges(this.rootedInverted, rootedInverted, rootedInverted.edgeSet());
 		TransitiveReduction.INSTANCE.reduce(rootedInverted);

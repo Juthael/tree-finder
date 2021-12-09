@@ -20,7 +20,6 @@ import com.tregouet.tree_finder.algo.unidimensional_sorting.IUnidimensionalSorte
 import com.tregouet.tree_finder.algo.unidimensional_sorting.impl.UnidimensionalSorter;
 import com.tregouet.tree_finder.data.Tree;
 import com.tregouet.tree_finder.data.UpperSemilattice;
-import com.tregouet.tree_finder.error.InvalidInputException;
 
 import utils.DichotomizableString;
 import utils.EdgeForTests;
@@ -44,7 +43,7 @@ public class UnidimensionalSorterTest {
 	}
 
 	@Test
-	public void whenSortingsOfNotComplementedUSLRequestedThenReturned() throws IOException, InvalidInputException {
+	public void whenSortingsOfNotComplementedUSLRequestedThenReturned() throws IOException {
 		setUpNotComplementedUSL();
 		/*
 		Visualizer.visualize(
