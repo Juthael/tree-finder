@@ -58,7 +58,7 @@ public class Functions {
 		}
 		while(!nextRank.isEmpty());
 		return false;
-	}
+	}	
 		
 	
 	public static <V, E> boolean isStrictUpperBoundOfDepthFirst(V v1, V v2, DirectedAcyclicGraph<V, E> graph) {

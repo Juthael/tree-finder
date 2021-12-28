@@ -235,7 +235,6 @@ public class RestrictorBruteForceTest {
 			iLowerSet.add(iElement);
 			for (EdgeForTests incomingEdge : alledgedTree.incomingEdgesOf(iElement)) {
 				String predecessor = alledgedTree.getEdgeSource(incomingEdge);
-				//HERE
 				iLowerSet.addAll(lowerSets.get(topoElements.indexOf(predecessor)));
 			}
 			lowerSets.add(iLowerSet);

@@ -99,6 +99,19 @@ public class TreeTest {
 		assertTrue(sameTree.equals(properTree));
 	}
 	
+	@Test
+	public void whenEntropyReductionMatrixRequiredThenReturned() {
+		boolean asExpected = true;
+		Double[][] entropyReductionMatrix = null;
+		try {
+			entropyReductionMatrix = properTree.getEntropyReductionMatrix();			
+		}
+		catch (Exception e) {
+			asExpected = false;
+		}
+		assertTrue(asExpected && entropyReductionMatrix != null);
+	}
+	
 	private void setUnrootedDAG() {
 		notRootedDAG = new DirectedAcyclicGraph<>(null, Edge::new, false);
 		Graphs.addAllEdges(notRootedDAG, properTreeDAG, properTreeDAG.edgeSet());
