@@ -114,7 +114,8 @@ public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IU
 				 * sorting of non-betas.
 				 */
 				List<Tree<D, E>> betaSortings = sort(betas);
-				Collection<Tree<D, E>> nonBetaSortings = new UnidimensionalSorter<D, E>(nonBetas, true).getSortingTrees();
+				Collection<Tree<D, E>> nonBetaSortings = 
+						new UnidimensionalSorter<D, E>(nonBetas, true).getSortingTrees();
 				for (Tree<D, E> betaSorting : betaSortings) {
 					for (Tree<D, E> immutableNonBetaSorting : nonBetaSortings) {
 						//because rebutting mechanism can modify the non beta sorting tree
