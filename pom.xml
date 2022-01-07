@@ -39,14 +39,6 @@
 		<artifactId>jgrapht-opt</artifactId>
 		<version>1.5.1</version>
 	</dependency>
-	
-	<!-- n-dimensional arrays -->
-	
-    <dependency>
-    	<groupId>hyperdrive</groupId>
-    	<artifactId>hyperdrive</artifactId>
-    	<version>0.0.1-SNAPSHOT</version>
-    </dependency>	
     
     <!-- visualization in unit tests -->	    
     
