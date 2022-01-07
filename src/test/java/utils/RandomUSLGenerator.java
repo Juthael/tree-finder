@@ -13,8 +13,8 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import com.google.common.collect.Sets;
-import com.tregouet.tree_finder.algo.unidimensional_sorting.utils.Functions;
 import com.tregouet.tree_finder.data.UpperSemilattice;
+import com.tregouet.tree_finder.utils.Functions;
 
 public class RandomUSLGenerator {
 

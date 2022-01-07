@@ -1,6 +1,8 @@
 package utils;
 
-import com.tregouet.tree_finder.algo.unidimensional_sorting.impl.dichotomizer.IDichotomizable;
+import java.util.Set;
+
+import com.tregouet.tree_finder.algo.unidimensional_sorting.IDichotomizable;
 
 public class DichotomizableString implements IDichotomizable<DichotomizableString> {
 
@@ -19,17 +21,17 @@ public class DichotomizableString implements IDichotomizable<DichotomizableStrin
 	}
 	
 	@Override
-	public DichotomizableString rebut() {
+	public DichotomizableString buildComplementOfThis(Set<DichotomizableString> rebutterMinimalLowerBounds) {
 		return new DichotomizableString(name, true);
 	}
 	
 	@Override
-	public DichotomizableString rebutWith(DichotomizableString absorbed) {
+	public DichotomizableString complementThisWith(DichotomizableString absorbed) {
 		return new DichotomizableString(name + " ABSORB " + absorbed.name , true);
 	}
 
 	@Override
-	public boolean isRebutter() {
+	public boolean isComplementary() {
 		return rebutter;
 	}
 	
@@ -64,6 +66,11 @@ public class DichotomizableString implements IDichotomizable<DichotomizableStrin
 		if (rebutter != other.rebutter)
 			return false;
 		return true;
+	}
+
+	@Override
+	public DichotomizableString getComplemented() {
+		return null;
 	}
 
 }

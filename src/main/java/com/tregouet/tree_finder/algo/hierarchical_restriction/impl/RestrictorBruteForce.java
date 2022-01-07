@@ -1,5 +1,6 @@
 package com.tregouet.tree_finder.algo.hierarchical_restriction.impl;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -11,7 +12,6 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 import com.google.common.collect.Sets;
 import com.tregouet.tree_finder.algo.hierarchical_restriction.IHierarchicalRestrictionFinder;
 import com.tregouet.tree_finder.data.Tree;
-import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
 public class RestrictorBruteForce<V, E> implements IHierarchicalRestrictionFinder<V, E> {
@@ -28,9 +28,9 @@ public class RestrictorBruteForce<V, E> implements IHierarchicalRestrictionFinde
 	 * generation of a power set is involved, large inputs will throw exceptions. 
 	 */
 	protected RestrictorBruteForce(DirectedAcyclicGraph<V, E> rootedInverted) 
-			throws InvalidInputException {
+			throws IOException {
 		if (!StructureInspector.isARootedInvertedDirectedAcyclicGraph(rootedInverted))
-			throw new InvalidInputException("The parameter is not a rooted inverted directed acyclic graph.");
+			throw new IOException("The parameter is not a rooted inverted directed acyclic graph.");
 		this.rootedInverted = rootedInverted;
 		V maximum = null;
 		Iterator<V> vIte = rootedInverted.vertexSet().iterator();

@@ -19,12 +19,10 @@ import com.tregouet.tree_finder.ITreeFinder;
 import com.tregouet.tree_finder.algo.hierarchical_restriction.impl.RestrictorBruteForce;
 import com.tregouet.tree_finder.algo.hierarchical_restriction.impl.RestrictorOpt;
 import com.tregouet.tree_finder.data.Tree;
-import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
 import utils.EdgeForTests;
 
-@SuppressWarnings("unused")
 public class RestrictorOptTest {
 	
 	//toy dataset "rooted inverted"
@@ -60,7 +58,7 @@ public class RestrictorOptTest {
 	}
 
 	@Test
-	public void whenInputIsLargeThenProceedsInReasonableTime() throws IOException, InvalidInputException {
+	public void whenInputIsLargeThenProceedsInReasonableTime() throws IOException {
 		setUpUpperSemiLatticeFromPowerSetOfNElements(7);
 		long start = System.currentTimeMillis();
 		ITreeFinder<Set<Integer>, EdgeForTests> tF = new RestrictorOpt<>(nPowerSet);
@@ -77,7 +75,7 @@ public class RestrictorOptTest {
 	}
 	
 	@Test
-	public void whenTreesReturnedThenValid() throws IOException, InvalidInputException {
+	public void whenTreesReturnedThenValid() throws IOException {
 		boolean valid = true;
 		int rInvCheckCount = 0;
 		int nPowerCheckCount = 0;
@@ -138,7 +136,7 @@ public class RestrictorOptTest {
 	}
 	
 	@Test
-	public void whenTreesRequestedThenExpectedReturned2() throws InvalidInputException, IOException {
+	public void whenTreesRequestedThenExpectedReturned2() throws IOException {
 		setUpRootedInverted();
 		Set<Tree<String, EdgeForTests>> expected = new HashSet<>();
 		Set<Tree<String, EdgeForTests>> returned = new HashSet<>();

@@ -1,4 +1,4 @@
-package com.tregouet.tree_finder.algo.unidimensional_sorting.utils;
+package com.tregouet.tree_finder.utils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,6 +12,7 @@ import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 
+import com.google.common.collect.Sets;
 import com.tregouet.tree_finder.data.Tree;
 import com.tregouet.tree_finder.data.UpperSemilattice;
 
@@ -58,7 +59,7 @@ public class Functions {
 		}
 		while(!nextRank.isEmpty());
 		return false;
-	}
+	}	
 		
 	
 	public static <V, E> boolean isStrictUpperBoundOfDepthFirst(V v1, V v2, DirectedAcyclicGraph<V, E> graph) {
@@ -76,6 +77,12 @@ public class Functions {
 		Set<V> lowerSet = source.getAncestors(lowerSetMaximum);
 		lowerSet.add(lowerSetMaximum);
 		return lowerSet;
+	}
+	
+	public static <V, E> Set<V> upperSet(DirectedAcyclicGraph<V, E> source, V upperSetMinimum) {
+		Set<V> upperSet = source.getDescendants(upperSetMinimum);
+		upperSet.add(upperSetMinimum);
+		return upperSet;
 	}
 	
 	public static <V, E> Set<V> maxima(DirectedAcyclicGraph<V, E> dag) {
@@ -120,21 +127,32 @@ public class Functions {
 		if (subsetSize == 0)
 			return null;
 		Iterator<V> subsetIte = subset.iterator();
-		if (subsetSize == 1) {
+		if (subsetSize == 1) 
 			return subsetIte.next();
+		Set<V> upperBounds = new HashSet<>(upperSet(dag, subsetIte.next()));
+		while (subsetIte.hasNext())
+			upperBounds.retainAll(upperSet(dag, subsetIte.next()));
+		Set<V> minimalUpperBounds = new HashSet<>(upperBounds);
+		for (V upperBound : upperBounds) {
+			if (minimalUpperBounds.contains(upperBound))
+				minimalUpperBounds.removeAll(dag.getDescendants(upperBound));
 		}
-		else {
-			Set<V> upperBounds = new HashSet<>(dag.getDescendants(subsetIte.next()));
-			while (subsetIte.hasNext())
-				upperBounds.retainAll(dag.getDescendants(subsetIte.next()));
-			Set<V> minimalUpperBounds = new HashSet<>(upperBounds);
-			for (V upperBound : upperBounds) {
-				if (minimalUpperBounds.contains(upperBound))
-					minimalUpperBounds.removeAll(dag.getDescendants(upperBound));
-			}
-			if (minimalUpperBounds.size() ==1)
-				return minimalUpperBounds.iterator().next();
+		if (minimalUpperBounds.size() == 1)
+			return minimalUpperBounds.iterator().next();
+		return null;
+	}
+	
+	public static <V, E> V supremum(UpperSemilattice<V, E> dag, V v1, V v2) {
+		if (v1.equals(v2))
+			return v1;
+		Set<V> upperBounds = Sets.intersection(upperSet(dag, v1), upperSet(dag, v2));
+		Set<V> minimalUpperBounds = new HashSet<>(upperBounds);
+		for (V upperBound : upperBounds) {
+			if (minimalUpperBounds.contains(upperBound))
+				minimalUpperBounds.removeAll(dag.getDescendants(upperBound));
 		}
+		if (minimalUpperBounds.size() == 1)
+			return minimalUpperBounds.iterator().next();
 		return null;
 	}
 

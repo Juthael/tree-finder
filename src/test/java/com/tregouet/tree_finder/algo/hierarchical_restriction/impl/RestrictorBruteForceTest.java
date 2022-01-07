@@ -21,7 +21,6 @@ import org.junit.Test;
 import com.google.common.collect.Sets;
 import com.tregouet.tree_finder.algo.hierarchical_restriction.impl.RestrictorBruteForce;
 import com.tregouet.tree_finder.data.Tree;
-import com.tregouet.tree_finder.error.InvalidInputException;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
 import utils.EdgeForTests;
@@ -62,7 +61,7 @@ public class RestrictorBruteForceTest {
 	}
 
 	@Test
-	public void whenTreesReturnedThenValid1() throws IOException, InvalidInputException {
+	public void whenTreesReturnedThenValid1() throws IOException {
 		setUpPowerSetMinusEmptySet();
 		for (String vertex : upperSemilattice.vertexSet()) {
 			if (upperSemilattice.inDegreeOf(vertex) == 0)
@@ -89,7 +88,7 @@ public class RestrictorBruteForceTest {
 	}
 	
 	@Test
-	public void whenTreesReturnedThenValid2() throws IOException, InvalidInputException {
+	public void whenTreesReturnedThenValid2() throws IOException {
 		setUpRootedInverted();
 		boolean returnedValid = true;
 		int checkCount = 0;
@@ -108,7 +107,7 @@ public class RestrictorBruteForceTest {
 	}
 	
 	@Test
-	public void whenTreesRequestedThenExpectedReturned() throws InvalidInputException {
+	public void whenTreesRequestedThenExpectedReturned() throws IOException {
 		setUpRootedInverted();
 		Set<Tree<String, EdgeForTests>> returned = new HashSet<>();
 		rootedInvertedTreeFinder = new RestrictorBruteForce<>(rootedInverted);
@@ -236,7 +235,6 @@ public class RestrictorBruteForceTest {
 			iLowerSet.add(iElement);
 			for (EdgeForTests incomingEdge : alledgedTree.incomingEdgesOf(iElement)) {
 				String predecessor = alledgedTree.getEdgeSource(incomingEdge);
-				//HERE
 				iLowerSet.addAll(lowerSets.get(topoElements.indexOf(predecessor)));
 			}
 			lowerSets.add(iLowerSet);
