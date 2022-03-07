@@ -154,12 +154,11 @@ public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IU
 								D nonBetaClass = nonBetaClasses.get(0);
 								antiBetaClass = betaClass.complementThisWith(nonBetaClass);
 								nonBetaSorting.replaceVertex(nonBetaClass, antiBetaClass);
-								//HERE how would that be possible ??
 								if (alphaClassToBeRemoved)
 									nonBetaSorting.removeVertex(alphaClass);
 							}
 							else {
-								antiBetaClass = betaClass.buildComplementOfThis(unreachedMinima);
+								antiBetaClass = betaClass.buildComplementOfThis(unreachedMinima, alphaClass);
 								if (alphaClassToBeRemoved)
 									nonBetaSorting.replaceVertex(alphaClass, antiBetaClass);
 								else {
