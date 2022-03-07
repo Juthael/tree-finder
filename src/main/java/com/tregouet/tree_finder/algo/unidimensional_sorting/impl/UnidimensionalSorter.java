@@ -1,4 +1,4 @@
- package com.tregouet.tree_finder.algo.unidimensional_sorting.impl;
+package com.tregouet.tree_finder.algo.unidimensional_sorting.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ import com.tregouet.tree_finder.utils.StructureInspector;
 
 public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IUnidimensionalSorter<D, E> {
 	
-	private List<Tree<D, E>> trees;
+	private Set<Tree<D, E>> trees;
 	private Iterator<Tree<D, E>> treeIte;
 	private List<D> topoOrderedSet;
 	private List<Set<D>> lowerSets;
@@ -55,7 +55,7 @@ public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IU
 	}
 	
 	@Override
-	public List<Tree<D, E>> getSortingTrees() {
+	public Set<Tree<D, E>> getSortingTrees() {
 		return trees;
 	}	
 	
@@ -69,9 +69,9 @@ public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IU
 		return treeIte.next();
 	}	
 	
-	private List<Tree<D, E>> sort(UpperSemilattice<D, E> alphas) {
+	private Set<Tree<D, E>> sort(UpperSemilattice<D, E> alphas) {
 		//returned set of sortings
-		List<Tree<D, E>> alphaSortings = new ArrayList<>();
+		Set<Tree<D, E>> alphaSortings = new HashSet<>();
 		//unnecessary but efficient shortcut
 		if (StructureInspector.isATree(alphas)) {
 			alphaSortings.add(new Tree<D, E>(alphas));
@@ -88,10 +88,9 @@ public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IU
 		Set<D> alphaMinima = alphas.getLeaves();
 		//because of recursivity
 		List<D> alphaRestrictedTopoOrderedSet = restrictTopoOrderedSetTo(alphas);
-		Set<Set<D>> cleanPartitions = new HashSet<>();
 		//a beta class is one kind of alphas
 		D betaClass;
-		for (int i = 0 ; i < topoOrderedSet.indexOf(alphaClass) - 1 ; i++) {
+		for (int i = 0 ; i < topoOrderedSet.indexOf(alphaClass) ; i++) {
 			//select a beta class
 			betaClass = alphaRestrictedTopoOrderedSet.get(i);
 			if (betaClass != null) {
@@ -113,8 +112,9 @@ public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IU
 				/* Each alpha sorting having betas as a kind of alphas contains a sorting of betas and a 
 				 * sorting of non-betas.
 				 */
-				List<Tree<D, E>> betaSortings = sort(betas);
-				Collection<Tree<D, E>> nonBetaSortings = 
+				Set<Tree<D, E>> betaSortings = sort(betas);
+				//HERE List ?
+				Set<Tree<D, E>> nonBetaSortings = 
 						new UnidimensionalSorter<D, E>(nonBetas, true).getSortingTrees();
 				for (Tree<D, E> betaSorting : betaSortings) {
 					for (Tree<D, E> immutableNonBetaSorting : nonBetaSortings) {
@@ -142,12 +142,9 @@ public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IU
 							//then no need to instantiate a beta class rebutter
 							Set<D> alphaKinds = new HashSet<>(nonBetaClasses);
 							alphaKinds.add(betaClass);
-							boolean newPartition = cleanPartitions.add(alphaKinds);
-							if (newPartition) {
-								alphaSortings.add(
-										instantiateAlphaSortingTree(alphaClass, alphas, alphaMinima, 
-												betaSorting, nonBetaSorting));
-							}
+							alphaSortings.add(
+									instantiateAlphaSortingTree(alphaClass, alphas, alphaMinima, 
+											betaSorting, nonBetaSorting));
 						}
 						else {
 							//then the non-beta maximum is a beta class rebutter
@@ -157,6 +154,7 @@ public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IU
 								D nonBetaClass = nonBetaClasses.get(0);
 								antiBetaClass = betaClass.complementThisWith(nonBetaClass);
 								nonBetaSorting.replaceVertex(nonBetaClass, antiBetaClass);
+								//HERE how would that be possible ??
 								if (alphaClassToBeRemoved)
 									nonBetaSorting.removeVertex(alphaClass);
 							}

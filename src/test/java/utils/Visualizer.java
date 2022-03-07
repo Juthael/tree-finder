@@ -94,7 +94,7 @@ public class Visualizer {
 		MutableGraph dotGraph = new Parser().read(stringDOT);
 		Graphviz.fromGraph(dotGraph)
 			.render(Format.PNG).toFile(new File("D:\\ProjetDocs\\essais_viz\\" + fileName));
-	}		
+	}			
 	
 	public static void visualize(DirectedAcyclicGraph<Set<Integer>, EdgeForTests> graph, String fileName, boolean any) 
 			throws IOException {
