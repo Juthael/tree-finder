@@ -6,7 +6,7 @@ public interface IDichotomizable<D> {
 	
 	boolean isComplementary(); 
 	
-	D buildComplementOfThis(Set<D> rebutterMinimalLowerBounds, D superordinate);
+	D buildComplementOfThis(Set<D> rebutterMinimalLowerBounds, D supremum);
 	
 	D complementThisWith(D absorbed);
 	

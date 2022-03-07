@@ -21,7 +21,8 @@ public class DichotomizableString implements IDichotomizable<DichotomizableStrin
 	}
 	
 	@Override
-	public DichotomizableString buildComplementOfThis(Set<DichotomizableString> rebutterMinimalLowerBounds) {
+	public DichotomizableString buildComplementOfThis(Set<DichotomizableString> rebutterMinimalLowerBounds, 
+			DichotomizableString supremum) {
 		return new DichotomizableString(name, true);
 	}
 	
