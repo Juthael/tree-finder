@@ -74,12 +74,4 @@ public class DichotomizableString implements IDichotomizable<DichotomizableStrin
 		return null;
 	}
 
-	//HERE
-	@Override
-	public int getID() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-	//HERE
-
 }

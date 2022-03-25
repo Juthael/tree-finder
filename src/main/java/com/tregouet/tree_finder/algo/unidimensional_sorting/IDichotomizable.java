@@ -11,9 +11,5 @@ public interface IDichotomizable<D> {
 	D complementThisWith(D absorbed);
 	
 	D getComplemented();
-	
-	//HERE
-	int getID();
-	//HERE
 
 }
