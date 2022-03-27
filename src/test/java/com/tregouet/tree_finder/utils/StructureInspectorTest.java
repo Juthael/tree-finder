@@ -59,10 +59,10 @@ public class StructureInspectorTest {
 	@Test
 	public void whenChecksIfParameterIsClassificationTreeThenReturnsAsExpected() {
 		assertTrue(
-				StructureInspector.isATree(classificationTree)
-				&& !StructureInspector.isATree(wronglyOrientedClassificationTree)
-				&& !StructureInspector.isATree(upperSemilatticeButNotTree)
-				&& !StructureInspector.isATree(doesNotHaveARoot));
+				StructureInspector.isAnInvertedTree(classificationTree)
+				&& !StructureInspector.isAnInvertedTree(wronglyOrientedClassificationTree)
+				&& !StructureInspector.isAnInvertedTree(upperSemilatticeButNotTree)
+				&& !StructureInspector.isAnInvertedTree(doesNotHaveARoot));
 	}
 	
 	@Test
@@ -167,10 +167,10 @@ public class StructureInspectorTest {
 		SparseIntDirectedGraph wronglyOrientedSparse = wronglyOrientedConverter.getSparseGraph();
 		SparseIntDirectedGraph semilatticeNotTreeSparse = semilatticeNotTreeConverter.getSparseGraph();
 		SparseIntDirectedGraph unrootedSparse = unrootedConverter.getSparseGraph();
-		assertTrue(StructureInspector.isRooted(classificationTreeSparse)
-				&& !StructureInspector.isRooted(wronglyOrientedSparse)
-				&& StructureInspector.isRooted(semilatticeNotTreeSparse)
-				&& !StructureInspector.isRooted(unrootedSparse));
+		assertTrue(StructureInspector.isRootedInverted(classificationTreeSparse)
+				&& !StructureInspector.isRootedInverted(wronglyOrientedSparse)
+				&& StructureInspector.isRootedInverted(semilatticeNotTreeSparse)
+				&& !StructureInspector.isRootedInverted(unrootedSparse));
 	}
 	
 	@Test
@@ -198,14 +198,14 @@ public class StructureInspectorTest {
 		//except isTransitive(), obviously
 		setUpReducedDAGS();
 		assertTrue(
-				(StructureInspector.isATree(classificationTree) == 
-					StructureInspector.isATree(classificationTreeReduced)) 
-				&& (StructureInspector.isATree(wronglyOrientedClassificationTree) == 
-				StructureInspector.isATree(wronglyOrientedClassificationTreeReduced)) 
-				&& (StructureInspector.isATree(upperSemilatticeButNotTree) == 
-				StructureInspector.isATree(upperSemilatticeButNotTreeReduced)) 
-				&& (StructureInspector.isATree(doesNotHaveARoot) == 
-				StructureInspector.isATree(doesNotHaveARootReduced)) 
+				(StructureInspector.isAnInvertedTree(classificationTree) == 
+					StructureInspector.isAnInvertedTree(classificationTreeReduced)) 
+				&& (StructureInspector.isAnInvertedTree(wronglyOrientedClassificationTree) == 
+				StructureInspector.isAnInvertedTree(wronglyOrientedClassificationTreeReduced)) 
+				&& (StructureInspector.isAnInvertedTree(upperSemilatticeButNotTree) == 
+				StructureInspector.isAnInvertedTree(upperSemilatticeButNotTreeReduced)) 
+				&& (StructureInspector.isAnInvertedTree(doesNotHaveARoot) == 
+				StructureInspector.isAnInvertedTree(doesNotHaveARootReduced)) 
 				
 				&& (StructureInspector.isAnUpperSemilattice(classificationTree) == 
 					StructureInspector.isAnUpperSemilattice(classificationTreeReduced))

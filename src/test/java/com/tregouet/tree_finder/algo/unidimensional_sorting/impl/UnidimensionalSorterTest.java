@@ -17,8 +17,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.tregouet.tree_finder.algo.unidimensional_sorting.IUnidimensionalSorter;
-import com.tregouet.tree_finder.data.Tree;
-import com.tregouet.tree_finder.data.UpperSemilattice;
+import com.tregouet.tree_finder.data.InvertedTree;
+import com.tregouet.tree_finder.data.InvertedUpperSemilattice;
 
 import utils.DichotomizableString;
 import utils.EdgeForTests;
@@ -30,7 +30,7 @@ public class UnidimensionalSorterTest {
 	private final DichotomizableString c = new DichotomizableString("C");
 	private final DichotomizableString d = new DichotomizableString("D");
 	private final DichotomizableString e = new DichotomizableString("E");
-	private UpperSemilattice<DichotomizableString, EdgeForTests> notComplementedUSL = null;
+	private InvertedUpperSemilattice<DichotomizableString, EdgeForTests> notComplementedUSL = null;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -50,7 +50,7 @@ public class UnidimensionalSorterTest {
 		*/
 		IUnidimensionalSorter<DichotomizableString, EdgeForTests> sorter = 
 				new UnidimensionalSorter<DichotomizableString, EdgeForTests>(notComplementedUSL);
-		Collection<Tree<DichotomizableString, EdgeForTests>> sortingTrees = sorter.getSortingTrees();
+		Collection<InvertedTree<DichotomizableString, EdgeForTests>> sortingTrees = sorter.getSortingTrees();
 		/*
 		int treeIdx = 0;
 		for (Tree<DichotomizableString, EdgeForTests> tree : sortingTrees){
@@ -96,7 +96,7 @@ public class UnidimensionalSorterTest {
 		new TopologicalOrderIterator<>(notComplementedUSL).forEachRemaining(topologicalOrder::add);
 		Set<DichotomizableString> leaves = new HashSet<>(Arrays.asList(new DichotomizableString[] {a, b, c, d, e}));
 		this.notComplementedUSL = 
-				new UpperSemilattice<DichotomizableString, EdgeForTests>(
+				new InvertedUpperSemilattice<DichotomizableString, EdgeForTests>(
 						notComplementedUSL, abcde, leaves, topologicalOrder);
 	}
 

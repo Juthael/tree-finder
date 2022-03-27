@@ -30,7 +30,7 @@ public class TreeTest {
 	DirectedAcyclicGraph<String, Edge> properTreeDAG;
 	DirectedAcyclicGraph<String, Edge> notRootedDAG;
 	DirectedAcyclicGraph<String, Edge> violatingHierarchyClauseDAG;
-	Tree<String, Edge> properTree;
+	InvertedTree<String, Edge> properTree;
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -52,8 +52,8 @@ public class TreeTest {
 		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(otherDAG);
 		List<String> topoOrder = new ArrayList<>();
 		new TopologicalOrderIterator<>(otherDAG).forEachRemaining(topoOrder::add);
-		Tree<String, Edge> otherTree = 
-				new Tree<String, Edge>(otherDAG, abc, new HashSet<String>(Arrays.asList(new String[] {a, b, c})), 
+		InvertedTree<String, Edge> otherTree = 
+				new InvertedTree<String, Edge>(otherDAG, abc, new HashSet<String>(Arrays.asList(new String[] {a, b, c})), 
 						topoOrder);
 		assertFalse(properTree.equals(otherTree));
 	}
@@ -69,8 +69,8 @@ public class TreeTest {
 		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(differentTreeArg);
 		List<String> topoOrder = new ArrayList<>();
 		new TopologicalOrderIterator<>(differentTreeArg).forEachRemaining(topoOrder::add);
-		Tree<String, Edge> differentTree = 
-				new Tree<String, Edge>(differentTreeArg, abc, new HashSet<String>(Arrays.asList(new String[] {a, b, c})), 
+		InvertedTree<String, Edge> differentTree = 
+				new InvertedTree<String, Edge>(differentTreeArg, abc, new HashSet<String>(Arrays.asList(new String[] {a, b, c})), 
 						topoOrder);
 		assertFalse(differentTree.equals(properTreeDAG));
 	}
@@ -93,8 +93,8 @@ public class TreeTest {
 		TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(sameTreeDAG);
 		List<String> topoOrder = new ArrayList<>();
 		new TopologicalOrderIterator<>(sameTreeDAG).forEachRemaining(topoOrder::add);
-		Tree<String, Edge> sameTree = 
-				new Tree<String, Edge>(sameTreeDAG, abc, new HashSet<String>(Arrays.asList(new String[] {a, b, c})), 
+		InvertedTree<String, Edge> sameTree = 
+				new InvertedTree<String, Edge>(sameTreeDAG, abc, new HashSet<String>(Arrays.asList(new String[] {a, b, c})), 
 						topoOrder);
 		assertTrue(sameTree.equals(properTree));
 	}
@@ -157,7 +157,7 @@ public class TreeTest {
 		List<String> topoOrder = new ArrayList<>();
 		new TopologicalOrderIterator<>(properTreeDAG).forEachRemaining(topoOrder::add);
 		properTree = 
-				new Tree<String, Edge>(properTreeDAG, abc, new HashSet<String>(Arrays.asList(new String[] {a, b, c})), 
+				new InvertedTree<String, Edge>(properTreeDAG, abc, new HashSet<String>(Arrays.asList(new String[] {a, b, c})), 
 						topoOrder);
 	}
 }

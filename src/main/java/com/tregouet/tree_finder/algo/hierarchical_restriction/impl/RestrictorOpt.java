@@ -14,7 +14,7 @@ import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import com.tregouet.tree_finder.algo.hierarchical_restriction.IHierarchicalRestrictionFinder;
 import com.tregouet.tree_finder.algo.hierarchical_restriction.utils.SparseGraphConverter;
-import com.tregouet.tree_finder.data.Tree;
+import com.tregouet.tree_finder.data.InvertedTree;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -85,8 +85,8 @@ public class RestrictorOpt<V, E> implements IHierarchicalRestrictionFinder<V, E>
 	}
 
 	@Override
-	public Tree<V, E> next() {
-		Tree<V, E> nextTree = new Tree<V, E>(
+	public InvertedTree<V, E> next() {
+		InvertedTree<V, E> nextTree = new InvertedTree<V, E>(
 				rootedInverted, sparseConverter.getSet(sparseTreeRestrictions.get(treeIdx)), 
 				maximum, atoms);
 		treeIdx++;
@@ -94,8 +94,8 @@ public class RestrictorOpt<V, E> implements IHierarchicalRestrictionFinder<V, E>
 	}
 	
 	@Override
-	public Tree<V, E> nextTransitiveReduction() {
-		Tree<V, E> nextTree = next();
+	public InvertedTree<V, E> nextTransitiveReduction() {
+		InvertedTree<V, E> nextTree = next();
 		TransitiveReduction.INSTANCE.reduce(nextTree);
 		return nextTree;
 	}

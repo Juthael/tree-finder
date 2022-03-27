@@ -16,20 +16,20 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 import com.google.common.collect.Sets;
 import com.tregouet.tree_finder.algo.unidimensional_sorting.IDichotomizable;
 import com.tregouet.tree_finder.algo.unidimensional_sorting.IUnidimensionalSorter;
-import com.tregouet.tree_finder.data.Tree;
-import com.tregouet.tree_finder.data.UpperSemilattice;
+import com.tregouet.tree_finder.data.InvertedTree;
+import com.tregouet.tree_finder.data.InvertedUpperSemilattice;
 import com.tregouet.tree_finder.utils.Functions;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
 public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IUnidimensionalSorter<D, E> {
 	
-	private Set<Tree<D, E>> trees;
-	private Iterator<Tree<D, E>> treeIte;
+	private Set<InvertedTree<D, E>> invertedTrees;
+	private Iterator<InvertedTree<D, E>> treeIte;
 	private List<D> topoOrderedSet;
 	private List<Set<D>> lowerSets;
 	private List<Set<D>> setEncodingInPowerSetOfMinima;
 	
-	public UnidimensionalSorter(UpperSemilattice<D, E> alphas) 
+	public UnidimensionalSorter(InvertedUpperSemilattice<D, E> alphas) 
 			throws IOException {
 		TransitiveReduction.INSTANCE.reduce(alphas);
 		try {
@@ -41,7 +41,7 @@ public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IU
 		setUpSorter(alphas);
 	}
 	
-	protected UnidimensionalSorter(UpperSemilattice<D, E> alphas, boolean skipValidation) {
+	protected UnidimensionalSorter(InvertedUpperSemilattice<D, E> alphas, boolean skipValidation) {
 		TransitiveReduction.INSTANCE.reduce(alphas);
 		setUpSorter(alphas);
 	}	
@@ -55,8 +55,8 @@ public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IU
 	}
 	
 	@Override
-	public Set<Tree<D, E>> getSortingTrees() {
-		return trees;
+	public Set<InvertedTree<D, E>> getSortingTrees() {
+		return invertedTrees;
 	}	
 	
 	@Override
@@ -65,16 +65,16 @@ public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IU
 	}	
 	
 	@Override
-	public Tree<D, E> next() {
+	public InvertedTree<D, E> next() {
 		return treeIte.next();
 	}	
 	
-	private Set<Tree<D, E>> sort(UpperSemilattice<D, E> alphas) {
+	private Set<InvertedTree<D, E>> sort(InvertedUpperSemilattice<D, E> alphas) {
 		//returned set of sortings
-		Set<Tree<D, E>> alphaSortings = new HashSet<>();
+		Set<InvertedTree<D, E>> alphaSortings = new HashSet<>();
 		//unnecessary but efficient shortcut
-		if (StructureInspector.isATree(alphas)) {
-			alphaSortings.add(new Tree<D, E>(alphas));
+		if (StructureInspector.isAnInvertedTree(alphas)) {
+			alphaSortings.add(new InvertedTree<D, E>(alphas));
 			return alphaSortings;
 		}
 		//start sorting
@@ -97,13 +97,13 @@ public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IU
 				Set<D> reachedMinima = setEncodingInPowerSetOfMinima.get(i);
 				Set<D> unreachedMinima = new HashSet<>(Sets.difference(alphaMinima, reachedMinima));
 				//build the semilattice of betas
-				UpperSemilattice<D, E> betas = 
-						new UpperSemilattice<D, E>(
+				InvertedUpperSemilattice<D, E> betas = 
+						new InvertedUpperSemilattice<D, E>(
 								alphas, lowerSets.get(i), betaClass, reachedMinima);
-				UpperSemilattice<D, E> nonBetas;
+				InvertedUpperSemilattice<D, E> nonBetas;
 				D unreachedMinimaSupremum = Functions.supremum(alphas, unreachedMinima);
 				//build the semilattice of non betas, which may have alpha class as a maximum
-				nonBetas = new UpperSemilattice<D, E>(alphas, 
+				nonBetas = new InvertedUpperSemilattice<D, E>(alphas, 
 						new HashSet<>(
 								Sets.difference(
 										Functions.lowerSet(alphas, unreachedMinimaSupremum), 
@@ -112,14 +112,14 @@ public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IU
 				/* Each alpha sorting having betas as a kind of alphas contains a sorting of betas and a 
 				 * sorting of non-betas.
 				 */
-				Set<Tree<D, E>> betaSortings = sort(betas);
+				Set<InvertedTree<D, E>> betaSortings = sort(betas);
 				//HERE List ?
-				Set<Tree<D, E>> nonBetaSortings = 
+				Set<InvertedTree<D, E>> nonBetaSortings = 
 						new UnidimensionalSorter<D, E>(nonBetas, true).getSortingTrees();
-				for (Tree<D, E> betaSorting : betaSortings) {
-					for (Tree<D, E> immutableNonBetaSorting : nonBetaSortings) {
+				for (InvertedTree<D, E> betaSorting : betaSortings) {
+					for (InvertedTree<D, E> immutableNonBetaSorting : nonBetaSortings) {
 						//because rebutting mechanism can modify the non beta sorting tree
-						Tree<D, E> nonBetaSorting = new Tree<D, E>(immutableNonBetaSorting);
+						InvertedTree<D, E> nonBetaSorting = new InvertedTree<D, E>(immutableNonBetaSorting);
 						boolean nonBetaContainsRebutters;
 						boolean partitionIsClean;
 						/* If the semilattice of non-betas has alpha class as its maximum, then the non-beta 
@@ -186,9 +186,9 @@ public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IU
 		return false;
 	}
 	
-	private Tree<D, E> instantiateAlphaSortingTree(D alphaClass, UpperSemilattice<D, E> alphas, 
-			Set<D> alphasMinima, Tree<D, E> betaSorting, Tree<D, E> nonBetaSorting) {
-		Tree<D, E> alphaSortingTree;
+	private InvertedTree<D, E> instantiateAlphaSortingTree(D alphaClass, InvertedUpperSemilattice<D, E> alphas, 
+			Set<D> alphasMinima, InvertedTree<D, E> betaSorting, InvertedTree<D, E> nonBetaSorting) {
+		InvertedTree<D, E> alphaSortingTree;
 		DirectedAcyclicGraph<D, E> alphaSorting = 
 				Functions.cardinalSum(betaSorting, nonBetaSorting, alphas.getEdgeSupplier());
 		Set<D> maxima = Functions.maxima(alphaSorting);
@@ -197,7 +197,7 @@ public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IU
 			if (!maximalElement.equals(alphaClass))
 				alphaSorting.addEdge(maximalElement, alphaClass);
 		}
-		alphaSortingTree = new Tree<D, E>(alphaSorting, alphaClass, alphasMinima, null);
+		alphaSortingTree = new InvertedTree<D, E>(alphaSorting, alphaClass, alphasMinima, null);
 		return alphaSortingTree;
 	}
 	
@@ -214,7 +214,7 @@ public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IU
 		return reachedMinima;
 	}
 	
-	private List<D> restrictTopoOrderedSetTo(UpperSemilattice<D, E> alphas){
+	private List<D> restrictTopoOrderedSetTo(InvertedUpperSemilattice<D, E> alphas){
 		List<D> restrictedTopoOrderedSet = new ArrayList<>(topoOrderedSet.size());
 		for (D element : topoOrderedSet) {
 			if (alphas.containsVertex(element))
@@ -224,7 +224,7 @@ public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IU
 		return restrictedTopoOrderedSet;
 	}
 	
-	private void setUpSorter(UpperSemilattice<D, E> alphas) {
+	private void setUpSorter(InvertedUpperSemilattice<D, E> alphas) {
 		topoOrderedSet = alphas.getTopologicalOrder();
 		Set<D> minima = alphas.getLeaves();
 		lowerSets = new ArrayList<>();
@@ -248,8 +248,8 @@ public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IU
 				setEncodingInPowerSetOfMinima.add(elementEncoding);
 			}
 		}
-		trees = sort(alphas);
-		treeIte = trees.iterator();
+		invertedTrees = sort(alphas);
+		treeIte = invertedTrees.iterator();
 	}
 
 }

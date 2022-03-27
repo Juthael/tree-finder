@@ -11,7 +11,7 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 
 import com.google.common.collect.Sets;
 import com.tregouet.tree_finder.algo.hierarchical_restriction.IHierarchicalRestrictionFinder;
-import com.tregouet.tree_finder.data.Tree;
+import com.tregouet.tree_finder.data.InvertedTree;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
 public class RestrictorBruteForce<V, E> implements IHierarchicalRestrictionFinder<V, E> {
@@ -72,13 +72,13 @@ public class RestrictorBruteForce<V, E> implements IHierarchicalRestrictionFinde
 	}
 
 	@Override
-	public Tree<V, E> next() {
-		return new Tree<V, E>(rootedInverted, treeIte.next(), maximum, atoms);
+	public InvertedTree<V, E> next() {
+		return new InvertedTree<V, E>(rootedInverted, treeIte.next(), maximum, atoms);
 	}
 	
 	@Override
-	public Tree<V, E> nextTransitiveReduction() {
-		Tree<V, E> next = next();
+	public InvertedTree<V, E> nextTransitiveReduction() {
+		InvertedTree<V, E> next = next();
 		TransitiveReduction.INSTANCE.reduce(next);
 		return next;
 	}
@@ -93,7 +93,7 @@ public class RestrictorBruteForce<V, E> implements IHierarchicalRestrictionFinde
 				edges.add(edge);
 		}
 		Graphs.addAllEdges(candidateGraph, rootedInverted, edges);
-		return StructureInspector.isATree(candidateGraph);
+		return StructureInspector.isAnInvertedTree(candidateGraph);
 	}
 
 	private boolean isMaximal(Set<V> thisTree) {

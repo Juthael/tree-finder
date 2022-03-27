@@ -12,7 +12,8 @@ import org.jgrapht.opt.graph.sparse.SparseIntDirectedGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import com.google.common.collect.Sets;
-import com.tregouet.tree_finder.data.RootedInverted;
+import com.tregouet.tree_finder.data.InvertedRooted;
+import com.tregouet.tree_finder.data.Rooted;
 
 public class StructureInspector {
 
@@ -63,7 +64,7 @@ public class StructureInspector {
 				jLowerSet.add(jElement);
 				Set<V> ijLowerSet = new HashSet<>(Sets.intersection(iLowerSet, jLowerSet));
 				if (ijLowerSet.isEmpty())
-					//then {i,j} admits no upper bound, and dag is not an upper semilattice
+					//then {i,j} admits no lower bound, and dag is not a lower semilattice
 					return false;
 				V ijAlledgedInfimum = null;
 				int elementIdx = topoOrderedSet.size() - 1;
@@ -75,7 +76,7 @@ public class StructureInspector {
 				}
 				ijLowerSet.removeAll(dag.getAncestors(ijAlledgedInfimum));
 				if (ijLowerSet.size() != 1)
-					//then {i,j} upper set admits many minimal elements, and dag is not an upper semilattice. 
+					//then {i,j} upper set admits many maximal elements, and dag is not a lower semilattice. 
 					return false;
 			}
 		}
@@ -170,6 +171,20 @@ public class StructureInspector {
 		return true;
 	}
 	
+	public static <V, E> boolean isARootedDirectedAcyclicGraph(DirectedAcyclicGraph<V, E> dag) {
+		//directed and acyclic : guaranteed by the parameter type
+		//if directed, acyclic and has only 1 vertex of out degree 0, then rooted and inverted
+		V root = null;
+		for (V element : dag.vertexSet()) {
+			if (dag.inDegreeOf(element) == 0) {
+				if (root == null)
+					root = element;
+				else return false;
+			}
+		}
+		return true;
+	}	
+	
 	public static <V, E> boolean isAtomistic(DirectedAcyclicGraph<V, E> dag) {
 		Set<V> atoms = new HashSet<>();
 		Set<Set<V>> encodingSubsetsOfAtoms = new HashSet<>();
@@ -194,9 +209,47 @@ public class StructureInspector {
 		boolean isATree = true;
 		if (dag.vertexSet().size() == 1)
 			return isATree;
+		List<V> reversedTopoOrderedSet = new ArrayList<>();
+		new TopologicalOrderIterator<>(dag).forEachRemaining(e -> reversedTopoOrderedSet.add(0, e));
+		if (!(dag instanceof Rooted<?, ?>)) {
+			Set<V> inDegree0 = new HashSet<>();
+			for (V element : reversedTopoOrderedSet) {
+				if (dag.outDegreeOf(element) == 0)
+					inDegree0.add(element);
+			}
+			//hierarchy clause n°1
+			if (inDegree0.size() != 1)
+				isATree = false;	
+		}
+		List<Set<V>> upperSets = new ArrayList<>(reversedTopoOrderedSet.size());
+		for (V iElement : reversedTopoOrderedSet) {
+			Set<V> iUpperSet = new HashSet<>();
+			iUpperSet.add(iElement);
+			//more efficient if the graph is reduced, but still valid otherwise.
+			for (E outgoingEdge : dag.outgoingEdgesOf(iElement))
+				iUpperSet.addAll(upperSets.get(reversedTopoOrderedSet.indexOf(dag.getEdgeTarget(outgoingEdge))));
+			upperSets.add(iUpperSet);
+		}
+		for (int j = 0 ; j < reversedTopoOrderedSet.size() - 1 ; j++) {
+			Set<V> jUpperSet = upperSets.get(j);
+			for (int k = j + 1 ; k < reversedTopoOrderedSet.size() ; k++) {
+				Set<V> kUpperSet = upperSets.get(k);
+				Set<V> intersection = new HashSet<>(Sets.intersection(jUpperSet, kUpperSet));
+				//hierarchy clause n°2
+				if (!intersection.isEmpty() && !intersection.equals(jUpperSet) && !intersection.equals(kUpperSet))
+					isATree = false;
+			}
+		}
+		return isATree;
+	}	
+	
+	public static <V, E> boolean isAnInvertedTree(DirectedAcyclicGraph<V, E> dag) {
+		boolean isATree = true;
+		if (dag.vertexSet().size() == 1)
+			return isATree;
 		List<V> topoOrderedSet = new ArrayList<>();
 		new TopologicalOrderIterator<>(dag).forEachRemaining(e -> topoOrderedSet.add(e));
-		if (!(dag instanceof RootedInverted<?, ?>)) {
+		if (!(dag instanceof InvertedRooted<?, ?>)) {
 			Set<V> outDegree0 = new HashSet<>();
 			for (V element : topoOrderedSet) {
 				if (dag.outDegreeOf(element) == 0)
@@ -228,7 +281,7 @@ public class StructureInspector {
 		return isATree;
 	}
 	
-	public static boolean isRooted(SparseIntDirectedGraph directedGraph) {
+	public static boolean isRootedInverted(SparseIntDirectedGraph directedGraph) {
 		Integer root = null;
 		for (Integer element : directedGraph.vertexSet()) {
 			if (directedGraph.outDegreeOf(element) == 0) {

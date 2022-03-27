@@ -12,9 +12,11 @@ import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.tregouet.tree_finder.data.InvertedTree;
+import com.tregouet.tree_finder.data.InvertedUpperSemilattice;
 import com.tregouet.tree_finder.data.Tree;
-import com.tregouet.tree_finder.data.UpperSemilattice;
 
 public class Functions {
 
@@ -22,7 +24,7 @@ public class Functions {
 	}
 	
 	public static <V, E> DirectedAcyclicGraph<V, E> cardinalSum(
-			List<Tree<V, E>> dags, Supplier<E> edgeSupplier) {
+			List<InvertedTree<V, E>> dags, Supplier<E> edgeSupplier) {
 		if (dags.size() == 1)
 			return dags.get(0);
 		DirectedAcyclicGraph<V, E> cardinalSum = new DirectedAcyclicGraph<>(null, edgeSupplier, false);
@@ -33,7 +35,7 @@ public class Functions {
 		return cardinalSum;
 	}	
 	
-	public static <V, E> DirectedAcyclicGraph<V, E> cardinalSum(Tree<V, E> tree1, Tree<V, E> tree2, 
+	public static <V, E> DirectedAcyclicGraph<V, E> cardinalSum(InvertedTree<V, E> tree1, InvertedTree<V, E> tree2, 
 			Supplier<E> edgeSupplier) {
 		DirectedAcyclicGraph<V, E> cardinalSum = new DirectedAcyclicGraph<>(null, edgeSupplier, false);
 		Graphs.addAllVertices(cardinalSum, tree1.vertexSet());
@@ -122,7 +124,39 @@ public class Functions {
 		return restriction;
 	}
 	
-	public static <V, E> V supremum(UpperSemilattice<V, E> dag, Set<V> subset) {
+	public static <V, E> V commonAncestor(Tree<V, E> tree, Set<V> subset) {
+		V genus = null;
+		int subsetSize = subset.size();
+		if (subsetSize == 0)
+			return null;
+		Iterator<V> subsetIte = subset.iterator();
+		if (subsetSize == 1)
+			return subsetIte.next();
+		Set<V> lowerBounds = new HashSet<>(lowerSet(tree, subsetIte.next()));
+		while (subsetIte.hasNext())
+			lowerBounds.retainAll(lowerSet(tree, subsetIte.next()));
+		Iterator<V> reversedTopoOrderIte = Lists.reverse(tree.getTopologicalOrder()).iterator();
+		while(genus == null){
+			V next = reversedTopoOrderIte.next();
+			if (lowerBounds.contains(next))
+				genus = next;
+		}
+		return genus;
+	}	
+	
+	public static <V, E> V commonAncestor(Tree<V, E> tree, V v1, V v2) {
+		V genus = null;
+		Set<V> lowerBounds = Sets.intersection(lowerSet(tree, v1), lowerSet(tree, v2));
+		Iterator<V> reversedTopoOrderIte = Lists.reverse(tree.getTopologicalOrder()).iterator();
+		while(genus == null){
+			V next = reversedTopoOrderIte.next();
+			if (lowerBounds.contains(next))
+				genus = next;
+		}
+		return genus;
+	}
+	
+	public static <V, E> V supremum(InvertedUpperSemilattice<V, E> dag, Set<V> subset) {
 		int subsetSize = subset.size();
 		if (subsetSize == 0)
 			return null;
@@ -142,7 +176,7 @@ public class Functions {
 		return null;
 	}
 	
-	public static <V, E> V supremum(UpperSemilattice<V, E> dag, V v1, V v2) {
+	public static <V, E> V supremum(InvertedUpperSemilattice<V, E> dag, V v1, V v2) {
 		if (v1.equals(v2))
 			return v1;
 		Set<V> upperBounds = Sets.intersection(upperSet(dag, v1), upperSet(dag, v2));

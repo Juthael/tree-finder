@@ -16,7 +16,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.tregouet.tree_finder.ITreeFinder;
-import com.tregouet.tree_finder.data.Tree;
+import com.tregouet.tree_finder.data.InvertedTree;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
 import utils.EdgeForTests;
@@ -82,12 +82,12 @@ public class RestrictorOptTest {
 		ITreeFinder<String, EdgeForTests> treeFinderRootedInverted = new RestrictorOpt<>(rootedInverted);
 		ITreeFinder<Set<Integer>, EdgeForTests> treeFinderSemilattice = new RestrictorOpt<>(nPowerSet);
 		while (treeFinderRootedInverted.hasNext()) {
-			if (!StructureInspector.isATree(treeFinderRootedInverted.next()))
+			if (!StructureInspector.isAnInvertedTree(treeFinderRootedInverted.next()))
 				valid = false;
 			rInvCheckCount++;
 		}
 		while (treeFinderSemilattice.hasNext()) {
-			if (!StructureInspector.isATree(treeFinderSemilattice.next()))
+			if (!StructureInspector.isAnInvertedTree(treeFinderSemilattice.next()))
 				valid = false;
 			nPowerCheckCount++;
 		}
@@ -97,8 +97,8 @@ public class RestrictorOptTest {
 	@Test
 	public void whenTreesRequestedThenExpectedReturned1() throws Exception {
 		setUpSemilatticeForComparisonWithBruteForce();
-		Set<Tree<String, EdgeForTests>> returnedFromBruteForce = new HashSet<>();
-		Set<Tree<String, EdgeForTests>> returnedFromOpt = new HashSet<>();
+		Set<InvertedTree<String, EdgeForTests>> returnedFromBruteForce = new HashSet<>();
+		Set<InvertedTree<String, EdgeForTests>> returnedFromOpt = new HashSet<>();
 		ITreeFinder<String, EdgeForTests> brute = new RestrictorBruteForce<>(bruteForceComparison);
 		brute.forEachRemaining(t -> returnedFromBruteForce.add(t));
 		ITreeFinder<String, EdgeForTests> opt = new RestrictorOpt<>(bruteForceComparison);
@@ -136,8 +136,8 @@ public class RestrictorOptTest {
 	@Test
 	public void whenTreesRequestedThenExpectedReturned2() throws IOException {
 		setUpRootedInverted();
-		Set<Tree<String, EdgeForTests>> expected = new HashSet<>();
-		Set<Tree<String, EdgeForTests>> returned = new HashSet<>();
+		Set<InvertedTree<String, EdgeForTests>> expected = new HashSet<>();
+		Set<InvertedTree<String, EdgeForTests>> returned = new HashSet<>();
 		ITreeFinder<String, EdgeForTests> treeFinderBruteForce = 
 				new RestrictorBruteForce<>(rootedInverted);
 		while (treeFinderBruteForce.hasNext())

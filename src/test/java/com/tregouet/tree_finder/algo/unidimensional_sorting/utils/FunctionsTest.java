@@ -15,7 +15,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.tregouet.tree_finder.data.UpperSemilattice;
+import com.tregouet.tree_finder.data.InvertedUpperSemilattice;
 import com.tregouet.tree_finder.utils.Functions;
 
 import utils.DichotomizableString;
@@ -28,7 +28,7 @@ public class FunctionsTest {
 	private final DichotomizableString c = new DichotomizableString("C");
 	private final DichotomizableString d = new DichotomizableString("D");
 	private final DichotomizableString e = new DichotomizableString("E");
-	private UpperSemilattice<DichotomizableString, EdgeForTests> notComplementedUSL = null;
+	private InvertedUpperSemilattice<DichotomizableString, EdgeForTests> notComplementedUSL = null;
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -94,7 +94,7 @@ public class FunctionsTest {
 		new TopologicalOrderIterator<>(notComplementedUSL).forEachRemaining(topologicalOrder::add);
 		Set<DichotomizableString> leaves = new HashSet<>(Arrays.asList(new DichotomizableString[] {a, b, c, d, e}));
 		this.notComplementedUSL = 
-				new UpperSemilattice<DichotomizableString, EdgeForTests>(
+				new InvertedUpperSemilattice<DichotomizableString, EdgeForTests>(
 						notComplementedUSL, abcde, leaves, topologicalOrder);
 	}	
 

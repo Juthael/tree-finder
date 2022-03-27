@@ -13,20 +13,20 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import com.google.common.collect.Sets;
-import com.tregouet.tree_finder.data.UpperSemilattice;
+import com.tregouet.tree_finder.data.InvertedUpperSemilattice;
 import com.tregouet.tree_finder.utils.Functions;
 
 public class RandomUSLGenerator {
 
 	private final Set<String> atoms;
-	private final UpperSemilattice<Set<String>, DefaultEdge> powerSet;
+	private final InvertedUpperSemilattice<Set<String>, DefaultEdge> powerSet;
 	
 	public RandomUSLGenerator(int maxNbOfLeaves) {
 		atoms = setUpAtoms(maxNbOfLeaves);
 		powerSet = setUpPowerSet(atoms);
 	}
 	
-	private UpperSemilattice<Set<String>, DefaultEdge> setUpPowerSet(Set<String> atoms) {
+	private InvertedUpperSemilattice<Set<String>, DefaultEdge> setUpPowerSet(Set<String> atoms) {
 		DirectedAcyclicGraph<Set<String>, DefaultEdge> upperSemiLattice = 
 				new DirectedAcyclicGraph<>(null, DefaultEdge::new, false);
 		List<Set<String>> vertices = new ArrayList<>(Sets.powerSet(atoms));
@@ -54,7 +54,7 @@ public class RandomUSLGenerator {
 			if (upperSemiLattice.outDegreeOf(nextElement) == 0)
 				root = nextElement;
 		}
-		return new UpperSemilattice<Set<String>, DefaultEdge>(upperSemiLattice, root, leaves, topoOrder);
+		return new InvertedUpperSemilattice<Set<String>, DefaultEdge>(upperSemiLattice, root, leaves, topoOrder);
 	}
 	
 	private Set<String> setUpAtoms(int nbOfLeaves) {
@@ -66,7 +66,7 @@ public class RandomUSLGenerator {
 		return leaves;
 	}
 	
-	public UpperSemilattice<Set<String>, DefaultEdge> nextRandomUSL() {
+	public InvertedUpperSemilattice<Set<String>, DefaultEdge> nextRandomUSL() {
 		List<Set<String>> elements = new ArrayList<>(powerSet.vertexSet());
 		elements.remove(powerSet.getRoot());
 		Set<DirectedAcyclicGraph<Set<String>, DefaultEdge>> lowerSets = new HashSet<>();
@@ -92,7 +92,7 @@ public class RandomUSLGenerator {
 				.collect(Collectors.toSet());
 		List<Set<String>> topoOrder = new ArrayList<>();
 		new TopologicalOrderIterator<>(randomDAG).forEachRemaining(topoOrder::add);
-		return new UpperSemilattice<Set<String>, DefaultEdge>(randomDAG, powerSet.getRoot(), leaves, topoOrder);
+		return new InvertedUpperSemilattice<Set<String>, DefaultEdge>(randomDAG, powerSet.getRoot(), leaves, topoOrder);
 	}
 
 }
