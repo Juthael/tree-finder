@@ -209,30 +209,30 @@ public class StructureInspector {
 		boolean isATree = true;
 		if (dag.vertexSet().size() == 1)
 			return isATree;
-		List<V> reversedTopoOrderedSet = new ArrayList<>();
-		new TopologicalOrderIterator<>(dag).forEachRemaining(e -> reversedTopoOrderedSet.add(0, e));
+		List<V> reversedTopoOrderSet = new ArrayList<>();
+		new TopologicalOrderIterator<>(dag).forEachRemaining(v -> reversedTopoOrderSet.add(0, v));
 		if (!(dag instanceof Rooted<?, ?>)) {
 			Set<V> inDegree0 = new HashSet<>();
-			for (V element : reversedTopoOrderedSet) {
-				if (dag.outDegreeOf(element) == 0)
+			for (V element : reversedTopoOrderSet) {
+				if (dag.inDegreeOf(element) == 0)
 					inDegree0.add(element);
 			}
 			//hierarchy clause n°1
 			if (inDegree0.size() != 1)
 				isATree = false;	
 		}
-		List<Set<V>> upperSets = new ArrayList<>(reversedTopoOrderedSet.size());
-		for (V iElement : reversedTopoOrderedSet) {
+		List<Set<V>> upperSets = new ArrayList<>(reversedTopoOrderSet.size());
+		for (V iElement : reversedTopoOrderSet) {
 			Set<V> iUpperSet = new HashSet<>();
 			iUpperSet.add(iElement);
 			//more efficient if the graph is reduced, but still valid otherwise.
 			for (E outgoingEdge : dag.outgoingEdgesOf(iElement))
-				iUpperSet.addAll(upperSets.get(reversedTopoOrderedSet.indexOf(dag.getEdgeTarget(outgoingEdge))));
+				iUpperSet.addAll(upperSets.get(reversedTopoOrderSet.indexOf(dag.getEdgeTarget(outgoingEdge))));
 			upperSets.add(iUpperSet);
 		}
-		for (int j = 0 ; j < reversedTopoOrderedSet.size() - 1 ; j++) {
+		for (int j = 0 ; j < reversedTopoOrderSet.size() - 1 ; j++) {
 			Set<V> jUpperSet = upperSets.get(j);
-			for (int k = j + 1 ; k < reversedTopoOrderedSet.size() ; k++) {
+			for (int k = j + 1 ; k < reversedTopoOrderSet.size() ; k++) {
 				Set<V> kUpperSet = upperSets.get(k);
 				Set<V> intersection = new HashSet<>(Sets.intersection(jUpperSet, kUpperSet));
 				//hierarchy clause n°2

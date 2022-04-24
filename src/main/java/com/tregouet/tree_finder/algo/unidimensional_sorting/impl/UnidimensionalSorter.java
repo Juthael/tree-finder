@@ -38,7 +38,9 @@ public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IU
 		catch (DataFormatException e) {
 			throw new IOException("UnidimensionalSorter() : invalid parameter");
 		}
-		setUpSorter(alphas);
+		// copy of constructor's parameter because of side effects in setUpSorter(). 
+		InvertedUpperSemilattice<D, E> copyOfAlphas = getCopyOf(alphas);
+		setUpSorter(copyOfAlphas);
 	}
 	
 	protected UnidimensionalSorter(InvertedUpperSemilattice<D, E> alphas, boolean skipValidation) {
@@ -250,6 +252,13 @@ public class UnidimensionalSorter<D extends IDichotomizable<D>, E> implements IU
 		}
 		invertedTrees = sort(alphas);
 		treeIte = invertedTrees.iterator();
+	}
+	
+	private InvertedUpperSemilattice<D, E> getCopyOf(InvertedUpperSemilattice<D, E> alphas) {
+		return new InvertedUpperSemilattice<D, E>(
+				alphas, alphas.getRoot(), 
+				new HashSet<>(alphas.getLeaves()), 
+				new ArrayList<>(alphas.getTopologicalOrder()));
 	}
 
 }
