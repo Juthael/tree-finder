@@ -30,7 +30,5 @@ public class Tree<V, E> extends Rooted<V, E> {
 		}
 		return null;
 	}
-	
-	
 
 }

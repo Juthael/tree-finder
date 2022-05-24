@@ -1,6 +1,7 @@
 package com.tregouet.tree_finder.data;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.zip.DataFormatException;
@@ -84,5 +85,25 @@ public class InvertedTree<V, E> extends InvertedUpperSemilattice<V, E> {
 		}
 		return false;
 	}
+	
+	public E outgoingEdgeOf(V element) {
+		for (E edge : edgeSet()) {
+			if (getEdgeSource(edge).equals(element))
+				return edge;
+		}
+		return null;
+	}	
+	
+	public Set<V> upArrowRelatedWith(V element) {
+		if (element.equals(root))
+			return null;
+		V successor = getEdgeTarget(outgoingEdgeOf(element));
+		Set<V> upArrowRelated = new HashSet<>();
+		for (V v : Graphs.predecessorListOf(this, successor)) {
+			if (!v.equals(element))
+				upArrowRelated.add(v);
+		}
+		return upArrowRelated;
+	}	
 
 }
