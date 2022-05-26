@@ -1,4 +1,4 @@
-package com.tregouet.tree_finder.algo.hierarchical_restriction.utils;
+package com.tregouet.tree_finder.alg.hierarchical_restriction.utils;
 
 import static org.junit.Assert.assertTrue;
 
