@@ -11,9 +11,9 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
 public abstract class AbstractRooted<V, E> extends DirectedAcyclicGraph<V, E> {
-	
+
 	private static final long serialVersionUID = 2720735900692432726L;
-	
+
 	protected V root;
 	protected Set<V> leaves;
 	protected List<V> topologicalSortingOfVertices = null;
@@ -21,29 +21,30 @@ public abstract class AbstractRooted<V, E> extends DirectedAcyclicGraph<V, E> {
 	protected AbstractRooted(DirectedAcyclicGraph<V, E> dag) {
 		super(null, dag.getEdgeSupplier(), false);
 	}
-	
+
 	public abstract boolean addAsNewRoot(V element, boolean operateOnTransitiveReduction);
-	
+
 	public Set<V> getLeaves(){
 		return new HashSet<>(leaves);
 	}
-	
+
 	public V getRoot() {
 		return root;
 	}
-	
+
 	public List<V> getTopologicalOrder() {
 		if (topologicalSortingOfVertices == null) {
 			topologicalSortingOfVertices = new ArrayList<>();
-			new TopologicalOrderIterator<V, E>(this).forEachRemaining(topologicalSortingOfVertices::add);
+			new TopologicalOrderIterator<>(this).forEachRemaining(topologicalSortingOfVertices::add);
 		}
-		return new ArrayList<V>(topologicalSortingOfVertices);
+		return new ArrayList<>(topologicalSortingOfVertices);
 	}
-	
+
+	@Override
 	public boolean removeVertex(V element) {
 		return super.removeVertex(element);
 	}
-	
+
 	public boolean replaceVertex(V element, V substitute) {
 		if (element == substitute)
 			return true;
@@ -59,7 +60,7 @@ public abstract class AbstractRooted<V, E> extends DirectedAcyclicGraph<V, E> {
 		}
 		return false;
 	}
-	
+
 	public abstract void validate() throws DataFormatException;
 
 }

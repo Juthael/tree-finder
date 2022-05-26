@@ -17,15 +17,15 @@ public class InvertedUpperSemilattice<V, E> extends InvertedRooted<V, E> {
 		super(dag, restriction, root, leaves);
 	}
 
-	public InvertedUpperSemilattice(DirectedAcyclicGraph<V, E> rootedInverted, V root, Set<V> leaves, 
+	public InvertedUpperSemilattice(DirectedAcyclicGraph<V, E> rootedInverted, V root, Set<V> leaves,
 			List<V> topoOrder) {
 		super(rootedInverted, root, leaves, topoOrder);
-	}	
+	}
 
 	protected InvertedUpperSemilattice(InvertedRooted<V, E> rootedInverted) {
 		super(rootedInverted);
 	}
-	
+
 	@Override
 	public void validate() throws DataFormatException {
 		if (!StructureInspector.isAnUpperSemilattice(this))

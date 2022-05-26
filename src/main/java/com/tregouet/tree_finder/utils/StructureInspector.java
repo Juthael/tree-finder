@@ -19,7 +19,7 @@ public class StructureInspector {
 
 	private StructureInspector() {
 	}
-	
+
 	//public for test use
 	public static SparseIntDirectedGraph getTransitiveClosure(SparseIntDirectedGraph directedGraph) {
 		int nbOfElements = directedGraph.vertexSet().size();
@@ -28,7 +28,7 @@ public class StructureInspector {
 			strictUpperSets.add(null);
 		}
 		List<Integer> topoOrderedSet = new ArrayList<>();
-		new TopologicalOrderIterator<Integer, Integer>(directedGraph).forEachRemaining(v -> topoOrderedSet.add(v));
+		new TopologicalOrderIterator<>(directedGraph).forEachRemaining(v -> topoOrderedSet.add(v));
 		for (int i = nbOfElements - 1 ; i >= 0 ; i--) {
 			Integer iElement = topoOrderedSet.get(i);
 			Set<Integer> iStrictUpperSet = new HashSet<>();
@@ -48,12 +48,12 @@ public class StructureInspector {
 		}
 		return new SparseIntDirectedGraph(nbOfElements, edgesInTransitiveGraph);
 	}
-	
+
 	public static <G, V, E> boolean isALowerSemilattice(DirectedAcyclicGraph<V, E> dag) {
 		if (dag.vertexSet().isEmpty())
 			return true; //sad, but true
 		List<V> topoOrderedSet = new ArrayList<>();
-		new TopologicalOrderIterator<V, E>(dag).forEachRemaining(v -> topoOrderedSet.add(v));
+		new TopologicalOrderIterator<>(dag).forEachRemaining(v -> topoOrderedSet.add(v));
 		for (int i = 0 ; i < topoOrderedSet.size() - 1; i++) {
 			V iElement = topoOrderedSet.get(i);
 			Set<V> iLowerSet = dag.getAncestors(iElement);
@@ -76,18 +76,18 @@ public class StructureInspector {
 				}
 				ijLowerSet.removeAll(dag.getAncestors(ijAlledgedInfimum));
 				if (ijLowerSet.size() != 1)
-					//then {i,j} upper set admits many maximal elements, and dag is not a lower semilattice. 
+					//then {i,j} upper set admits many maximal elements, and dag is not a lower semilattice.
 					return false;
 			}
 		}
 		return true;
 	}
-	
+
 	public static <G, V, E> boolean isAnUpperSemilattice(DirectedAcyclicGraph<V, E> dag) {
 		if (dag.vertexSet().isEmpty())
 			return true; //sad, but true
 		List<V> topoOrderedSet = new ArrayList<>();
-		new TopologicalOrderIterator<V, E>(dag).forEachRemaining(v -> topoOrderedSet.add(v));
+		new TopologicalOrderIterator<>(dag).forEachRemaining(v -> topoOrderedSet.add(v));
 		for (int i = 0 ; i < topoOrderedSet.size() - 1; i++) {
 			V iElement = topoOrderedSet.get(i);
 			Set<V> iUpperSet = dag.getDescendants(iElement);
@@ -110,13 +110,13 @@ public class StructureInspector {
 				}
 				ijUpperSet.removeAll(dag.getDescendants(ijAlledgedSupremum));
 				if (ijUpperSet.size() != 1)
-					//then {i,j} upper set admits many minimal elements, and dag is not an upper semilattice. 
+					//then {i,j} upper set admits many minimal elements, and dag is not an upper semilattice.
 					return false;
 			}
 		}
 		return true;
-	}	
-	
+	}
+
 	public static boolean isAnUpperSemilattice(SparseIntDirectedGraph directedGraph) {
 		if (directedGraph.vertexSet().isEmpty())
 			return true; //sad, but true
@@ -150,13 +150,13 @@ public class StructureInspector {
 				}
 				ijUpperSet.removeAll(Graphs.successorListOf(transitiveDirectedGraph, ijAlledgedSupremum));
 				if (ijUpperSet.size() != 1)
-					//then {i,j} upper set admits many minimal elements, and dag is not an upper semilattice. 
+					//then {i,j} upper set admits many minimal elements, and dag is not an upper semilattice.
 					return false;
 			}
 		}
 		return true;
 	}
-	
+
 	public static <V, E> boolean isARootedInvertedDirectedAcyclicGraph(DirectedAcyclicGraph<V, E> dag) {
 		//directed and acyclic : guaranteed by the parameter type
 		//if directed, acyclic and has only 1 vertex of out degree 0, then rooted and inverted
@@ -170,7 +170,7 @@ public class StructureInspector {
 		}
 		return true;
 	}
-	
+
 	public static <V, E> boolean isARootedDirectedAcyclicGraph(DirectedAcyclicGraph<V, E> dag) {
 		//directed and acyclic : guaranteed by the parameter type
 		//if directed, acyclic and has only 1 vertex of out degree 0, then rooted and inverted
@@ -183,8 +183,8 @@ public class StructureInspector {
 			}
 		}
 		return true;
-	}	
-	
+	}
+
 	public static <V, E> boolean isAtomistic(DirectedAcyclicGraph<V, E> dag) {
 		Set<V> atoms = new HashSet<>();
 		Set<Set<V>> encodingSubsetsOfAtoms = new HashSet<>();
@@ -199,12 +199,12 @@ public class StructureInspector {
 			else {
 				Set<V> encodingSubsetOfAtoms = new HashSet<>(Sets.intersection(dag.getAncestors(nextElem), atoms));
 				if (!encodingSubsetsOfAtoms.add(encodingSubsetOfAtoms))
-					return false;	
+					return false;
 			}
 		}
 		return true;
 	}
-	
+
 	public static <V, E> boolean isATree(DirectedAcyclicGraph<V, E> dag) {
 		boolean isATree = true;
 		if (dag.vertexSet().size() == 1)
@@ -219,7 +219,7 @@ public class StructureInspector {
 			}
 			//hierarchy clause n°1
 			if (inDegree0.size() != 1)
-				isATree = false;	
+				isATree = false;
 		}
 		List<Set<V>> upperSets = new ArrayList<>(reversedTopoOrderSet.size());
 		for (V iElement : reversedTopoOrderSet) {
@@ -241,8 +241,8 @@ public class StructureInspector {
 			}
 		}
 		return isATree;
-	}	
-	
+	}
+
 	public static <V, E> boolean isAnInvertedTree(DirectedAcyclicGraph<V, E> dag) {
 		boolean isATree = true;
 		if (dag.vertexSet().size() == 1)
@@ -257,7 +257,7 @@ public class StructureInspector {
 			}
 			//hierarchy clause n°1
 			if (outDegree0.size() != 1)
-				isATree = false;	
+				isATree = false;
 		}
 		List<Set<V>> lowerSets = new ArrayList<>(topoOrderedSet.size());
 		for (V iElement : topoOrderedSet) {
@@ -280,7 +280,7 @@ public class StructureInspector {
 		}
 		return isATree;
 	}
-	
+
 	public static boolean isRootedInverted(SparseIntDirectedGraph directedGraph) {
 		Integer root = null;
 		for (Integer element : directedGraph.vertexSet()) {
@@ -291,8 +291,8 @@ public class StructureInspector {
 			}
 		}
 		return true;
-	}	
-	
+	}
+
 	public static <V, E> boolean isTransitive(DirectedAcyclicGraph<V, E> directedGraph) {
 		Set<E> edges = directedGraph.edgeSet();
 		for (E edge : edges) {
@@ -308,7 +308,7 @@ public class StructureInspector {
 		}
 		return true;
 	}
-	
+
 	public static boolean isTransitive(SparseIntDirectedGraph directedGraph) {
 		Set<Integer> edges = directedGraph.edgeSet();
 		for (Integer edge : edges) {

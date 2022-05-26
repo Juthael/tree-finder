@@ -22,12 +22,12 @@ public class RestrictorBruteForce<V, E> implements IHierarchicalRestrictionFinde
 	private final Set<V> others = new HashSet<>();
 	private final Set<Set<V>> treeRestrictions = new HashSet<>();
 	private Iterator<Set<V>> treeIte;
-	
+
 	/*
-	 * The parameter MUST be a rooted inverted DAG (reduced or not). Since the 
-	 * generation of a power set is involved, large inputs will throw exceptions. 
+	 * The parameter MUST be a rooted inverted DAG (reduced or not). Since the
+	 * generation of a power set is involved, large inputs will throw exceptions.
 	 */
-	protected RestrictorBruteForce(DirectedAcyclicGraph<V, E> rootedInverted) 
+	protected RestrictorBruteForce(DirectedAcyclicGraph<V, E> rootedInverted)
 			throws IOException {
 		if (!StructureInspector.isARootedInvertedDirectedAcyclicGraph(rootedInverted))
 			throw new IOException("The parameter is not a rooted inverted directed acyclic graph.");
@@ -73,16 +73,16 @@ public class RestrictorBruteForce<V, E> implements IHierarchicalRestrictionFinde
 
 	@Override
 	public InvertedTree<V, E> next() {
-		return new InvertedTree<V, E>(rootedInverted, treeIte.next(), maximum, atoms);
+		return new InvertedTree<>(rootedInverted, treeIte.next(), maximum, atoms);
 	}
-	
+
 	@Override
 	public InvertedTree<V, E> nextTransitiveReduction() {
 		InvertedTree<V, E> next = next();
 		TransitiveReduction.INSTANCE.reduce(next);
 		return next;
 	}
-	
+
 	private boolean isATree(Set<V> candidateRestriction) {
 		DirectedAcyclicGraph<V, E> candidateGraph = new DirectedAcyclicGraph<>(null, null, false);
 		Graphs.addAllVertices(candidateGraph, candidateRestriction);
@@ -98,7 +98,7 @@ public class RestrictorBruteForce<V, E> implements IHierarchicalRestrictionFinde
 
 	private boolean isMaximal(Set<V> thisTree) {
 		boolean isMaximal = true;
-		Set<Set<V>> notMaximalAfterAll = new HashSet<>(); 
+		Set<Set<V>> notMaximalAfterAll = new HashSet<>();
 		for (Set<V> alreadyFound : treeRestrictions) {
 			if (alreadyFound.containsAll(thisTree))
 				isMaximal = false;

@@ -18,24 +18,24 @@ public class InvertedTree<V, E> extends InvertedUpperSemilattice<V, E> {
 	private static final long serialVersionUID = 2206651329473240403L;
 	private Double[][] entropyReductionMatrix = null;
 
-	/* 
-	 * No transitive reduction must have been operated on first parameter. 
-	 * UNSAFE. The restriction of the first parameter to the second parameter MUST be a tree. 
+	/*
+	 * No transitive reduction must have been operated on first parameter.
+	 * UNSAFE. The restriction of the first parameter to the second parameter MUST be a tree.
 	 */
 	public InvertedTree(DirectedAcyclicGraph<V, E> source, Collection<V> treeVertices, V root, Set<V> leaves) {
 		super(source, treeVertices, root, leaves);
 	}
-	
+
 	//UNSAFE. The first parameter MUST be a tree.
 	public InvertedTree(DirectedAcyclicGraph<V, E> tree, V root, Set<V> leaves, List<V> topoOrderedSet) {
 		super(tree, root, leaves, topoOrderedSet);
 	}
-	
+
 	//UNSAFE. The parameter MUST be a tree.
 	public InvertedTree(InvertedRooted<V, E> tree) {
 		super(tree);
-	}	
-	
+	}
+
 	public Double[][] getEntropyReductionMatrix(){
 		if (entropyReductionMatrix == null)
 			setUpEntropyReductionMatrix();
@@ -48,7 +48,7 @@ public class InvertedTree<V, E> extends InvertedUpperSemilattice<V, E> {
 			throw new DataFormatException("parameters do not allow the instantiation "
 					+ "of a valid tree.");
 	}
-	
+
 	private void setUpEntropyReductionMatrix() {
 		List<V> topoOrderedSet = getTopologicalOrder();
 		Set<V> leaves = getLeaves();
@@ -56,9 +56,8 @@ public class InvertedTree<V, E> extends InvertedUpperSemilattice<V, E> {
 		entropyReductionMatrix = new Double[setCardinal][setCardinal];
 		double[] entropy = new double[setCardinal];
 		for (int i = 0 ; i < setCardinal ; i++) {
-			double iCardinal = (double) 
-					Sets.intersection(Functions.lowerSet(this, topoOrderedSet.get(i)), leaves).size();
-			entropy[i] = -binaryLogarithm(1 / iCardinal);		
+			double iCardinal = Sets.intersection(Functions.lowerSet(this, topoOrderedSet.get(i)), leaves).size();
+			entropy[i] = -binaryLogarithm(1 / iCardinal);
 		}
 		for (int i = 0 ; i < setCardinal ; i++) {
 			entropyReductionMatrix[i][i] = 0.0;
@@ -71,11 +70,11 @@ public class InvertedTree<V, E> extends InvertedUpperSemilattice<V, E> {
 			}
 		}
 	}
-	
+
 	private static double binaryLogarithm(double arg) {
 		return Math.log10(arg)/Math.log10(2);
 	}
-	
+
 	public boolean isStrictLowerBoundOf(V iVertex, V jVertex) {
 		V nextSuccessor = iVertex;
 		while (!nextSuccessor.equals(getRoot())) {
@@ -85,15 +84,15 @@ public class InvertedTree<V, E> extends InvertedUpperSemilattice<V, E> {
 		}
 		return false;
 	}
-	
+
 	public E outgoingEdgeOf(V element) {
 		for (E edge : edgeSet()) {
 			if (getEdgeSource(edge).equals(element))
 				return edge;
 		}
 		return null;
-	}	
-	
+	}
+
 	public Set<V> upArrowRelatedWith(V element) {
 		if (element.equals(root))
 			return null;
@@ -104,6 +103,6 @@ public class InvertedTree<V, E> extends InvertedUpperSemilattice<V, E> {
 				upArrowRelated.add(v);
 		}
 		return upArrowRelated;
-	}	
+	}
 
 }

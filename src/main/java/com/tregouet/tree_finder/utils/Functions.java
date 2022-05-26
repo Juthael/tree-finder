@@ -22,7 +22,7 @@ public class Functions {
 
 	private Functions() {
 	}
-	
+
 	public static <V, E> DirectedAcyclicGraph<V, E> cardinalSum(
 			List<InvertedTree<V, E>> dags, Supplier<E> edgeSupplier) {
 		if (dags.size() == 1)
@@ -33,9 +33,9 @@ public class Functions {
 			Graphs.addAllEdges(cardinalSum, dag, dag.edgeSet());
 		}
 		return cardinalSum;
-	}	
-	
-	public static <V, E> DirectedAcyclicGraph<V, E> cardinalSum(InvertedTree<V, E> tree1, InvertedTree<V, E> tree2, 
+	}
+
+	public static <V, E> DirectedAcyclicGraph<V, E> cardinalSum(InvertedTree<V, E> tree1, InvertedTree<V, E> tree2,
 			Supplier<E> edgeSupplier) {
 		DirectedAcyclicGraph<V, E> cardinalSum = new DirectedAcyclicGraph<>(null, edgeSupplier, false);
 		Graphs.addAllVertices(cardinalSum, tree1.vertexSet());
@@ -44,7 +44,7 @@ public class Functions {
 		Graphs.addAllEdges(cardinalSum, tree2, tree2.edgeSet());
 		return cardinalSum;
 	}
-	
+
 	public static <V, E> boolean isStrictUpperBoundOfBreadthFirst(V v1, V v2, DirectedAcyclicGraph<V, E> graph) {
 		if (v1.equals(v2))
 			return false;
@@ -57,13 +57,13 @@ public class Functions {
 			nextRank.clear();
 			for (V nextRankSucc : nextRankSuccessors)
 				nextRank.addAll(Graphs.predecessorListOf(graph, nextRankSucc));
-			
+
 		}
 		while(!nextRank.isEmpty());
 		return false;
-	}	
-		
-	
+	}
+
+
 	public static <V, E> boolean isStrictUpperBoundOfDepthFirst(V v1, V v2, DirectedAcyclicGraph<V, E> graph) {
 		if (v1.equals(v2))
 			return false;
@@ -73,20 +73,20 @@ public class Functions {
 				return true;
 		}
 		return false;
-	}	
-	
+	}
+
 	public static <V, E> Set<V> lowerSet(DirectedAcyclicGraph<V, E> source, V lowerSetMaximum) {
 		Set<V> lowerSet = source.getAncestors(lowerSetMaximum);
 		lowerSet.add(lowerSetMaximum);
 		return lowerSet;
 	}
-	
+
 	public static <V, E> Set<V> upperSet(DirectedAcyclicGraph<V, E> source, V upperSetMinimum) {
 		Set<V> upperSet = source.getDescendants(upperSetMinimum);
 		upperSet.add(upperSetMinimum);
 		return upperSet;
 	}
-	
+
 	public static <V, E> Set<V> maxima(DirectedAcyclicGraph<V, E> dag) {
 		Set<V> maxima = new HashSet<>();
 		for (V element : dag.vertexSet()) {
@@ -95,7 +95,7 @@ public class Functions {
 		}
 		return maxima;
 	}
-	
+
 	public static <V, E> boolean removeVertexAndPreserveConnectivity(DirectedAcyclicGraph<V, E> dag, V removed) {
 		if (!dag.containsVertex(removed))
 			return false;
@@ -109,9 +109,9 @@ public class Functions {
 			}
 		}
 		return true;
-	}	
-	
-	public static <V, E extends DefaultEdge> DirectedAcyclicGraph<V, E> restriction(DirectedAcyclicGraph<V, E> source, 
+	}
+
+	public static <V, E extends DefaultEdge> DirectedAcyclicGraph<V, E> restriction(DirectedAcyclicGraph<V, E> source,
 			Collection<V> restrictTo) {
 		DirectedAcyclicGraph<V, E> restriction = new DirectedAcyclicGraph<>(null, source.getEdgeSupplier(), false);
 		Set<E> restrictedEdges = new HashSet<>();
@@ -123,7 +123,7 @@ public class Functions {
 		Graphs.addAllEdges(restriction, source, restrictedEdges);
 		return restriction;
 	}
-	
+
 	public static <V, E> V commonAncestor(Tree<V, E> tree, Set<V> subset) {
 		V genus = null;
 		int subsetSize = subset.size();
@@ -142,8 +142,8 @@ public class Functions {
 				genus = next;
 		}
 		return genus;
-	}	
-	
+	}
+
 	public static <V, E> V commonAncestor(Tree<V, E> tree, V v1, V v2) {
 		V genus = null;
 		Set<V> lowerBounds = Sets.intersection(lowerSet(tree, v1), lowerSet(tree, v2));
@@ -155,13 +155,13 @@ public class Functions {
 		}
 		return genus;
 	}
-	
+
 	public static <V, E> V supremum(InvertedUpperSemilattice<V, E> dag, Set<V> subset) {
 		int subsetSize = subset.size();
 		if (subsetSize == 0)
 			return null;
 		Iterator<V> subsetIte = subset.iterator();
-		if (subsetSize == 1) 
+		if (subsetSize == 1)
 			return subsetIte.next();
 		Set<V> upperBounds = new HashSet<>(upperSet(dag, subsetIte.next()));
 		while (subsetIte.hasNext())
@@ -175,7 +175,7 @@ public class Functions {
 			return minimalUpperBounds.iterator().next();
 		return null;
 	}
-	
+
 	public static <V, E> V supremum(InvertedUpperSemilattice<V, E> dag, V v1, V v2) {
 		if (v1.equals(v2))
 			return v1;

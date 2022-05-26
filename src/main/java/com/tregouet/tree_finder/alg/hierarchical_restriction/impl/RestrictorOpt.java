@@ -24,14 +24,14 @@ public class RestrictorOpt<V, E> implements IHierarchicalRestrictionFinder<V, E>
 	private final DirectedAcyclicGraph<V, E> rootedInverted;
 	private final List<V> topoOrderedSet = new ArrayList<>();
 	private final SparseGraphConverter<V, E> sparseConverter;
-	private final V maximum;	
+	private final V maximum;
 	private final Set<V> atoms = new HashSet<>();
 	private final SparseIntDirectedGraph sparse;
 	private final List<IntArrayList> sparseTreeRestrictions = new ArrayList<>();
 	private int treeIdx = 0;
-	
+
 	/*
-	 * The first parameter MUST be a rooted inverted DAG. 
+	 * The first parameter MUST be a rooted inverted DAG.
 	 * No transitive reduction must have been operated on it.
 	 */
 	public RestrictorOpt(DirectedAcyclicGraph<V, E> rootedInverted) throws IOException {
@@ -53,10 +53,10 @@ public class RestrictorOpt<V, E> implements IHierarchicalRestrictionFinder<V, E>
 		RestrictorSparse restrictorSparse = new RestrictorSparse(sparse);
 		sparseTreeRestrictions.addAll(restrictorSparse.getSparseTreeVertexSets());
 	}
-	
+
 	/*
 	 * UNSAFE
-	 * The first parameter MUST be a rooted inverted DAG. 
+	 * The first parameter MUST be a rooted inverted DAG.
 	 * No transitive reduction must have been operated on it.
 	 */
 	public RestrictorOpt(DirectedAcyclicGraph<V, E> rootedInverted, boolean unsafeModeSignature) {
@@ -73,7 +73,7 @@ public class RestrictorOpt<V, E> implements IHierarchicalRestrictionFinder<V, E>
 		sparse = sparseConverter.getSparseGraph();
 		RestrictorSparse restrictorSparse = new RestrictorSparse(sparse);
 		sparseTreeRestrictions.addAll(restrictorSparse.getSparseTreeVertexSets());
-	}	
+	}
 
 	public int getNbOfTrees() {
 		return sparseTreeRestrictions.size();
@@ -86,13 +86,13 @@ public class RestrictorOpt<V, E> implements IHierarchicalRestrictionFinder<V, E>
 
 	@Override
 	public InvertedTree<V, E> next() {
-		InvertedTree<V, E> nextTree = new InvertedTree<V, E>(
-				rootedInverted, sparseConverter.getSet(sparseTreeRestrictions.get(treeIdx)), 
+		InvertedTree<V, E> nextTree = new InvertedTree<>(
+				rootedInverted, sparseConverter.getSet(sparseTreeRestrictions.get(treeIdx)),
 				maximum, atoms);
 		treeIdx++;
 		return nextTree;
 	}
-	
+
 	@Override
 	public InvertedTree<V, E> nextTransitiveReduction() {
 		InvertedTree<V, E> nextTree = next();

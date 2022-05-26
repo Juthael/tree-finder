@@ -22,10 +22,10 @@ public class RestrictorSparse {
 	private final List<List<IntArrayList>> forkingSubsets = new ArrayList<>();
 	private final List<List<IntArrayList>> subTrees;
 	private final List<IntArrayList> trees;
-	
+
 	/*
-	 * UNSAFE. Parameter MUST be the transitive reduction of an rooted inverted DAG, and the ascending 
-	 * order on vertices must be topological. 
+	 * UNSAFE. Parameter MUST be the transitive reduction of an rooted inverted DAG, and the ascending
+	 * order on vertices must be topological.
 	 */
 	protected RestrictorSparse(SparseIntDirectedGraph rootedInverted) {
 		int nbOfElements = rootedInverted.vertexSet().size();
@@ -70,11 +70,11 @@ public class RestrictorSparse {
 		//set trees
 		trees = getSubTrees(maximum);
 	}
-	
+
 	public int getNbOfTrees() {
 		return trees.size();
 	}
-	
+
 	public List<IntArrayList> getSparseTreeVertexSets() {
 		return trees;
 	}
@@ -87,10 +87,10 @@ public class RestrictorSparse {
 		return lowerSet;
 	}
 
-	private List<IntArrayList> completeForkingSubsetsOfLowerBounds(int element, IntArrayList uncompleteFork, 
+	private List<IntArrayList> completeForkingSubsetsOfLowerBounds(int element, IntArrayList uncompleteFork,
 			IntArraySet atomsToCover, IntArraySet coveredAtomsSoFar, boolean[] inspect) {
 		List<IntArrayList> completeMaxForks = new ArrayList<>();
-		int searchStartIdx =	
+		int searchStartIdx =
 				(uncompleteFork.isEmpty() ? element - 1 : (uncompleteFork.getInt(uncompleteFork.size() - 1)) - 1);
 		IntArrayList remainingAtoms = new IntArrayList(atomsToCover);
 		remainingAtoms.removeAll(coveredAtomsSoFar);
@@ -108,12 +108,12 @@ public class RestrictorSparse {
 					boolean[] nextInspect = new boolean[i];
 					System.arraycopy(inspect, 0, nextInspect, 0, i);
 					for (int j = 0 ; j < i ; j++) {
-						if (nextInspect[j] 
+						if (nextInspect[j]
 								&& (!Sets.intersection(nextCoveredAtoms, lowerBoundAtoms.get(j)).isEmpty()))
 							nextInspect[j] = false;
 					}
-					List<IntArrayList> returnedForks = 
-							completeForkingSubsetsOfLowerBounds(element, continuedFork, atomsToCover, 
+					List<IntArrayList> returnedForks =
+							completeForkingSubsetsOfLowerBounds(element, continuedFork, atomsToCover,
 							nextCoveredAtoms, nextInspect);
 					for (IntArrayList returnedFork : returnedForks) {
 						if (forkIsMaximal(returnedFork, completeMaxForks))
@@ -124,16 +124,16 @@ public class RestrictorSparse {
 		}
 		return completeMaxForks;
 	}
-	
+
 	private boolean forkIsMaximal(IntArrayList newFork, List<IntArrayList> previousForks) {
 		for (IntArrayList previousFork : previousForks) {
 			IntArraySet prevForkLowerSet = beginningSet(previousFork);
 			if (prevForkLowerSet.containsAll(newFork))
-				return false;				
+				return false;
 		}
 		return true;
 	}
-	
+
 	private List<IntArrayList> getForkingSubsetsOfLowerBounds(int element) {
 		if (atoms.contains(element))
 			return null;
@@ -144,10 +144,10 @@ public class RestrictorSparse {
 			if (lowerBound != element)
 				inspect[lowerBound] = true;
 		}
-		return completeForkingSubsetsOfLowerBounds(element, new IntArrayList(), atomsToCover, 
+		return completeForkingSubsetsOfLowerBounds(element, new IntArrayList(), atomsToCover,
 				new IntArraySet(), inspect);
 	}
-	
+
 	private List<IntArrayList> getSubTrees(int localRoot) {
 		List<IntArrayList> subTreesFromLocalRoot = new ArrayList<>();
 		if (atoms.contains(localRoot)) {
@@ -176,7 +176,7 @@ public class RestrictorSparse {
 		subTrees.set(localRoot, subTreesFromLocalRoot);
 		return subTreesFromLocalRoot;
 	}
-	
+
 	private int max(IntArrayList set) {
 		int max = -1;
 		for (int element : set) {

@@ -14,11 +14,11 @@ import com.tregouet.tree_finder.utils.StructureInspector;
 public class Rooted<V, E> extends AbstractRooted<V, E> {
 
 	private static final long serialVersionUID = -1794073516769685432L;
-	
+
 	/*UNSAFE. The first parameter MUST be a rooted graph, and the effective root must be the second parameter,
 	 * effective leaves the third, etc.
 	 */
-	protected Rooted(DirectedAcyclicGraph<V, E> rooted, V root, Set<V> leaves, 
+	protected Rooted(DirectedAcyclicGraph<V, E> rooted, V root, Set<V> leaves,
 			List<V> topoOrder) {
 		super(rooted);
 		Graphs.addAllVertices(this, rooted.vertexSet());
@@ -31,7 +31,7 @@ public class Rooted<V, E> extends AbstractRooted<V, E> {
 			topologicalSortingOfVertices = new ArrayList<>();
 			new TopologicalOrderIterator<>(rooted).forEachRemaining(topologicalSortingOfVertices::add);
 		}
-	}	
+	}
 
 	@Override
 	public boolean addAsNewRoot(V element, boolean operateOnTransitiveReduction) {
@@ -57,7 +57,7 @@ public class Rooted<V, E> extends AbstractRooted<V, E> {
 		}
 		return added;
 	}
-	
+
 	@Override
 	public boolean removeVertex(V element) {
 		if (root.equals(element)) {

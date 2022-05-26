@@ -15,7 +15,7 @@ import com.tregouet.tree_finder.utils.StructureInspector;
 public class InvertedRooted<V, E> extends AbstractRooted<V, E> {
 
 	private static final long serialVersionUID = -7454975765743463119L;
-	
+
 	protected InvertedRooted(DirectedAcyclicGraph<V, E> dag, Collection<V> restriction, V root, Set<V> leaves) {
 		super(dag);
 		this.root = root;
@@ -27,12 +27,12 @@ public class InvertedRooted<V, E> extends AbstractRooted<V, E> {
 		}
 		Graphs.addAllVertices(this, restriction);
 		Graphs.addAllEdges(this, dag, restrictedEdges);
-	}		
-	
+	}
+
 	/*UNSAFE. The first parameter MUST be a rooted inverted graph, and the effective root must be the second parameter,
 	 * effective leaves the third, etc.
 	 */
-	protected InvertedRooted(DirectedAcyclicGraph<V, E> rootedInverted, V root, Set<V> leaves, 
+	protected InvertedRooted(DirectedAcyclicGraph<V, E> rootedInverted, V root, Set<V> leaves,
 			List<V> topoOrder) {
 		super(rootedInverted);
 		Graphs.addAllVertices(this, rootedInverted.vertexSet());
@@ -46,7 +46,7 @@ public class InvertedRooted<V, E> extends AbstractRooted<V, E> {
 			new TopologicalOrderIterator<>(rootedInverted).forEachRemaining(topologicalSortingOfVertices::add);
 		}
 	}
-	
+
 	protected InvertedRooted(InvertedRooted<V, E> rootedInverted) {
 		super(rootedInverted);
 		this.root = rootedInverted.root;
@@ -54,8 +54,9 @@ public class InvertedRooted<V, E> extends AbstractRooted<V, E> {
 		Graphs.addAllVertices(this, rootedInverted.vertexSet());
 		Graphs.addAllEdges(this, rootedInverted, rootedInverted.edgeSet());
 		this.topologicalSortingOfVertices = rootedInverted.getTopologicalOrder();
-	}	
-	
+	}
+
+	@Override
 	public boolean addAsNewRoot(V element, boolean operateOnTransitiveReduction) {
 		boolean added;
 		if (operateOnTransitiveReduction) {
@@ -79,7 +80,7 @@ public class InvertedRooted<V, E> extends AbstractRooted<V, E> {
 		}
 		return added;
 	}
-	
+
 	@Override
 	public boolean removeVertex(V element) {
 		if (root.equals(element)) {
@@ -96,7 +97,7 @@ public class InvertedRooted<V, E> extends AbstractRooted<V, E> {
 		}
 		return removed;
 	}
-	
+
 	@Override
 	public void validate() throws DataFormatException {
 		if (!StructureInspector.isARootedInvertedDirectedAcyclicGraph(this))

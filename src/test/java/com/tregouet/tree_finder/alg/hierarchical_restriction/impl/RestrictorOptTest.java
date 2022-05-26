@@ -23,6 +23,7 @@ import com.tregouet.tree_finder.utils.StructureInspector;
 
 import utils.EdgeForTests;
 
+@SuppressWarnings("unused")
 public class RestrictorOptTest {
 	
 	//toy dataset "rooted inverted"

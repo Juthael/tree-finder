@@ -17,7 +17,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.tregouet.tree_finder.alg.unidimensional_sorting.IUnidimensionalSorter;
-import com.tregouet.tree_finder.alg.unidimensional_sorting.impl.UnidimensionalSorter;
 import com.tregouet.tree_finder.data.InvertedTree;
 import com.tregouet.tree_finder.data.InvertedUpperSemilattice;
 
