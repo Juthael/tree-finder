@@ -2,7 +2,7 @@ package utils;
 
 import java.util.Set;
 
-import com.tregouet.tree_finder.algo.unidimensional_sorting.IDichotomizable;
+import com.tregouet.tree_finder.alg.unidimensional_sorting.IDichotomizable;
 
 public class DichotomizableString implements IDichotomizable<DichotomizableString> {
 

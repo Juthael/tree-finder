@@ -18,7 +18,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.tregouet.tree_finder.algo.hierarchical_restriction.utils.SparseGraphConverter;
+import com.tregouet.tree_finder.alg.hierarchical_restriction.utils.SparseGraphConverter;
 
 import utils.EdgeForTests;
 

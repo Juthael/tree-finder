@@ -1,4 +1,4 @@
-package com.tregouet.tree_finder.algo.unidimensional_sorting.impl;
+package com.tregouet.tree_finder.alg.unidimensional_sorting.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,8 +14,8 @@ import org.jgrapht.alg.TransitiveReduction;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 
 import com.google.common.collect.Sets;
-import com.tregouet.tree_finder.algo.unidimensional_sorting.IDichotomizable;
-import com.tregouet.tree_finder.algo.unidimensional_sorting.IUnidimensionalSorter;
+import com.tregouet.tree_finder.alg.unidimensional_sorting.IDichotomizable;
+import com.tregouet.tree_finder.alg.unidimensional_sorting.IUnidimensionalSorter;
 import com.tregouet.tree_finder.data.InvertedTree;
 import com.tregouet.tree_finder.data.InvertedUpperSemilattice;
 import com.tregouet.tree_finder.utils.Functions;

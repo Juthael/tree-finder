@@ -1,4 +1,4 @@
-package com.tregouet.tree_finder.algo.hierarchical_restriction.impl;
+package com.tregouet.tree_finder.alg.hierarchical_restriction.impl;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -10,7 +10,7 @@ import org.jgrapht.alg.TransitiveReduction;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 
 import com.google.common.collect.Sets;
-import com.tregouet.tree_finder.algo.hierarchical_restriction.IHierarchicalRestrictionFinder;
+import com.tregouet.tree_finder.alg.hierarchical_restriction.IHierarchicalRestrictionFinder;
 import com.tregouet.tree_finder.data.InvertedTree;
 import com.tregouet.tree_finder.utils.StructureInspector;
 

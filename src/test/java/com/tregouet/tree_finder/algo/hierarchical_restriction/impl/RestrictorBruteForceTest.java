@@ -19,7 +19,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.google.common.collect.Sets;
-import com.tregouet.tree_finder.algo.hierarchical_restriction.impl.RestrictorBruteForce;
+import com.tregouet.tree_finder.alg.hierarchical_restriction.impl.RestrictorBruteForce;
 import com.tregouet.tree_finder.data.InvertedTree;
 import com.tregouet.tree_finder.utils.StructureInspector;
 

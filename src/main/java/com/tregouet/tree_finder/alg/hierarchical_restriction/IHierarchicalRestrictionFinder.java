@@ -1,4 +1,4 @@
-package com.tregouet.tree_finder.algo.hierarchical_restriction;
+package com.tregouet.tree_finder.alg.hierarchical_restriction;
 
 import com.tregouet.tree_finder.ITreeFinder;
 import com.tregouet.tree_finder.data.InvertedTree;

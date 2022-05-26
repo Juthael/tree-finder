@@ -16,6 +16,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.tregouet.tree_finder.ITreeFinder;
+import com.tregouet.tree_finder.alg.hierarchical_restriction.impl.RestrictorBruteForce;
+import com.tregouet.tree_finder.alg.hierarchical_restriction.impl.RestrictorOpt;
 import com.tregouet.tree_finder.data.InvertedTree;
 import com.tregouet.tree_finder.utils.StructureInspector;
 
